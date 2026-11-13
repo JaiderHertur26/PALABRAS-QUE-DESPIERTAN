@@ -1,0 +1,36 @@
+name: Calidad web y protección editorial
+
+on:
+  push:
+    branches:
+      - desarrollo-web-v0-1
+      - mejoras-web-v0-2
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Comprobación editorial y Next.js
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Recuperar el código
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Instalar Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Instalar dependencias revisadas
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Verificar integridad editorial
+        run: npm run check:editorial
+      - name: Ejecutar pruebas unitarias
+        run: npm test
+      - name: Compilar el sitio
+        run: npm run build

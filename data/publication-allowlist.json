@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "objetivo": "Lista blanca adicional para la importación de piezas cuya publicación ha sido confirmada por el autor.",
+  "publicaciones": [
+    {
+      "id": "PD-001",
+      "ficha": "PENDIENTES/T07 - LA ORACION QUE ABRE EL CORAZON/001 - DIOS_YA_LO_SABE.md",
+      "grafica": "PENDIENTES/T07 - LA ORACION QUE ABRE EL CORAZON/GRAFICAS/TARJETA OFICIAL ORIGINAL 001.png",
+      "sha256": "bd8f1eac71b6b2ff47643fb7a14dc69295d937bfb0b0480162b5825d995c6a83",
+      "autorizaWeb": true
+    }
+  ]
+}

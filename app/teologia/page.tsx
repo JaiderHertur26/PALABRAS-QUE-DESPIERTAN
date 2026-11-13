@@ -1,8 +1,27 @@
-import type { Metadata } from "next";
-export const metadata:Metadata={title:"Teología"};
+import type {Metadata} from "next";
+import Link from "next/link";
+import Image from "next/image";
+import {Breadcrumbs} from "@/components/Breadcrumbs";
+import {SectionIntro} from "@/components/SectionIntro";
+export const metadata:Metadata={title:"Teología",description:"Fundamento bíblico, doctrina católica y reflexión: el espacio de investigación de Palabras que despiertan."};
 export default function Teologia(){
- return <section className="shell content-page narrow"><p className="eyebrow">BIBLIOTECA TEOLÓGICA</p><h1>La fe que busca comprender</h1>
- <p className="lead">Este espacio reunirá investigaciones sobre la Sagrada Escritura, la tradición viva de la Iglesia y sus vínculos con los mensajes breves.</p>
- <div className="empty-state"><h2>Artículos en preparación editorial</h2><p>Existen manuscritos de trabajo, pero aún no han recibido autorización para aparecer en la página pública. Sus textos y archivos permanecen protegidos en el área editorial.</p></div>
+ return <section className="shell content-page">
+  <Breadcrumbs items={[{texto:"Teología"}]}/>
+  <SectionIntro eyebrow="PROFUNDIZAR EN LA FE" title="La fe que busca comprender" description="Un lugar para profundizar en los fundamentos de los mensajes: Sagrada Escritura, Tradición, Magisterio y reflexión teológica."/>
+  <div className="theology-intro">
+   <div className="theology-intro-art"><Image src="/identidad/cruz-fondo.png" alt="Cruz luminosa del fondo gráfico oficial" width={1024} height={1536} sizes="(max-width:800px) 96vw, 38vw"/></div>
+   <div><p className="eyebrow">EL SENTIDO DE ESTA BIBLIOTECA</p><h2>Del pensamiento breve al fundamento profundo.</h2>
+    <p>Las reflexiones de Palabras que despiertan no quieren quedarse en frases aisladas. La investigación teológica permitirá mostrar la relación entre una intuición pastoral, el contexto de la Escritura y la enseñanza de la Iglesia.</p>
+    <p>Los manuscritos preparados por el autor siguen su proceso de revisión. <strong>No se presentan como artículos publicados ni como documentos definitivos</strong> hasta recibir su autorización.</p>
+    <Link className="text-link" href="/mensajes">Leer las reflexiones publicadas ↗</Link>
+   </div>
+  </div>
+  <div className="section-divider"><h2>Cómo leeremos los artículos</h2></div>
+  <div className="principles-grid">
+   <article><span aria-hidden="true">01</span><h3>Palabra de Dios</h3><p>Lectura contextual de los textos bíblicos y respeto por su sentido.</p></article>
+   <article><span aria-hidden="true">02</span><h3>La fe de la Iglesia</h3><p>Referencias verificables a la Tradición y al Magisterio, distinguidas de la reflexión personal.</p></article>
+   <article><span aria-hidden="true">03</span><h3>Vida cotidiana</h3><p>Comprender para vivir con mayor profundidad, sin confundir acompañamiento espiritual con afirmaciones clínicas.</p></article>
+  </div>
+  <div className="empty-state theology-status"><h2>Artículos pendientes de autorización editorial</h2><p>La sala de lectura se habilitará cuando el autor apruebe los textos. Hasta entonces permanecen resguardados en sus archivos de investigación.</p></div>
  </section>;
 }

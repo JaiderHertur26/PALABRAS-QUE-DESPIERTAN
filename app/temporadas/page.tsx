@@ -1,13 +1,20 @@
-import type { Metadata } from "next";
-import { temporadas } from "@/lib/editorial";
-export const metadata:Metadata={title:"Temporadas"};
-export default function Temporadas(){
- return <section className="shell content-page"><p className="eyebrow">PLAN EDITORIAL</p><h1>Temporadas</h1>
- <p className="lead">Doce grandes recorridos temáticos. La numeración sigue el plan maestro; la primera temporada que se publica es la 07.</p>
- <div className="seasons-grid">
- {temporadas.map(t=><article className="season-card" key={t.id}><div className="season-index">{String(t.numero).padStart(2,"0")}</div>
- <h2>{t.titulo}</h2><ul>{t.series.map(s=><li key={s.id}>{s.titulo}</li>)}</ul>
- <p className="status-label">{t.publicaciones ? "En publicación · "+t.publicaciones+" reflexión disponible" : "Sin publicaciones todavía"}</p>
- </article>)}
- </div></section>;
+import type {Metadata} from "next";
+import Link from "next/link";
+import {temporadas,etiquetaEstado} from "@/lib/editorial";
+import {Breadcrumbs} from "@/components/Breadcrumbs";
+import {SectionIntro} from "@/components/SectionIntro";
+export const metadata:Metadata={title:"Temporadas",description:"Las doce temporadas del itinerario editorial Palabras que despiertan."};
+export default function Temporadas() {
+ return <section className="shell content-page">
+  <Breadcrumbs items={[{texto:"Temporadas"}]}/>
+  <SectionIntro eyebrow="EL GRAN ITINERARIO" title="Doce temporadas, un camino de fe" description="Cada temporada ilumina una dimensión de nuestra relación con Dios y con los demás. El recorrido editorial comenzó con la Temporada 07: Aprender a confiar."/>
+  <div className="seasons-grid">
+  {temporadas.map(t=><Link href={`/temporadas/${t.id}`} className={`season-card ${t.publicaciones?"season-active":""}`} key={t.id}>
+    <div className="season-topline"><span className="season-index">{String(t.numero).padStart(2,"0")}</span><span className="season-status">{etiquetaEstado(t.publicaciones)}</span></div>
+    <h2>{t.titulo}</h2>
+    <ol>{t.series.map(s=><li key={s.id}>{s.titulo}</li>)}</ol>
+    <span className="season-more">Explorar temporada <span aria-hidden="true">↗</span></span>
+  </Link>)}
+  </div>
+ </section>;
 }

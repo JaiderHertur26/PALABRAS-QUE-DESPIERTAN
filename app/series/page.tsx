@@ -1,16 +1,31 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { temporadas } from "@/lib/editorial";
-export const metadata:Metadata={title:"Series"};
-export default function Series(){
- return <section className="shell content-page"><p className="eyebrow">RECORRIDOS TEMÁTICOS</p><h1>Series</h1>
- <p className="lead">36 series previstas dentro de 12 temporadas. El comienzo editorial se realiza en la Temporada 07.</p>
- {temporadas.map(t=><section key={t.id} className="series-section">
- <h2>{t.id} · {t.titulo}</h2>
- <div className="series-list">{t.series.map(s=><div className="series-row" key={s.id}>
- <div><span className="eyebrow">{s.id}</span><h3>{s.titulo}</h3></div>
- <span className="status-label">{s.publicaciones ? s.publicaciones+" publicado" : "Sin publicaciones aún"}</span>
- </div>)}</div></section>)}
- <Link href="/mensajes" className="text-link">Leer mensajes disponibles</Link>
+import {temporadas, cuentaSeries, etiquetaEstado} from "@/lib/editorial";
+import {Breadcrumbs} from "@/components/Breadcrumbs";
+import {SectionIntro} from "@/components/SectionIntro";
+
+export const metadata:Metadata={title:"Series",description:"Itinerarios temáticos del plan editorial de Palabras que despiertan."};
+export default function Series() {
+ return <section className="shell content-page inner-main">
+ <Breadcrumbs items={[{texto:"Series"}]}/>
+ <SectionIntro eyebrow="ITINERARIOS DE REFLEXIÓN" title="Series para recorrer la fe" description={`El proyecto contempla ${cuentaSeries} series agrupadas en doce temporadas. Cada una propone un camino de mensajes conectados, sin sustituir el estudio personal de la Palabra de Dios.`}/>
+ <div className="series-sections">
+  {[...temporadas].sort((a,b)=>a.id==="T07"?-1:b.id==="T07"?1:a.numero-b.numero).map(t=>
+   <section className="series-section" key={t.id} aria-labelledby={`titulo-${t.id}`}>
+    <div className="collection-heading">
+      <span className="season-number">{String(t.numero).padStart(2,"0")}</span>
+      <div><p className="eyebrow">TEMPORADA {String(t.numero).padStart(2,"0")}</p><h2 id={`titulo-${t.id}`}>{t.titulo}</h2></div>
+      <Link href={`/temporadas/${t.id}`} className="text-link">Ver temporada ↗</Link>
+    </div>
+    <div className="series-cards">
+     {t.series.map((s,i)=><Link href={`/series/${s.id}`} className="series-card" key={s.id}>
+      <span className="series-card-number">{String(i+1).padStart(2,"0")}</span>
+      <span><strong>{s.titulo}</strong><small>{etiquetaEstado(s.publicaciones)}</small></span>
+      <span className="card-arrow" aria-hidden="true">↗</span>
+     </Link>)}
+    </div>
+   </section>
+  )}
+ </div>
  </section>;
 }

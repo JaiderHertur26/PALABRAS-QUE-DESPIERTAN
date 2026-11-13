@@ -1,0 +1,127 @@
+/* Responsividad accesible: escritorio, tableta y móvil */
+@media(max-width:1260px){
+ .primary-nav{gap:.6rem;font-size:.88rem}
+ .brand{font-size:1.1rem;letter-spacing:.1em}
+ .hero-content{grid-template-columns:1.15fr .68fr .9fr}
+ .hero-copy{padding-left:0}
+ .hero-copy h1{font-size:clamp(2.3rem,4vw,4.3rem)}
+ .discover-grid{gap:.6rem}
+ .discovery-panel{padding-right:.6rem}
+ .author-inner{grid-template-columns:120px minmax(160px,.75fr) 1.5fr}
+ .author-inner>.button-outline{grid-column:3;justify-self:start}
+}
+@media(max-width:1100px){
+ .primary-nav{display:none}
+ .header-inner{min-height:74px}
+ .mobile-toggle{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:44px;height:44px;flex-shrink:0;border:1px solid var(--line);color:var(--gold-bright);background:#1a120b}
+ .mobile-toggle span{display:block;width:22px;height:2px;background:currentColor}
+ .mobile-toggle:hover{background:#362212}
+ .mobile-panel{display:none;position:absolute;top:100%;right:0;left:0;background:#151009;border-bottom:1px solid var(--gold);box-shadow:0 20px 55px #000b;padding:1.1rem max(1.75rem,calc((100vw - var(--shell))/2))}
+ .mobile-panel.is-open{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.3rem .65rem}
+ .mobile-panel a{display:block;padding:.65rem .9rem;border:1px solid transparent;font-family:var(--serif);font-size:1.05rem}
+ .mobile-panel a:hover,.mobile-panel a[aria-current=page]{background:#302014;border-color:var(--line);color:var(--gold-bright)}
+ .hero-content{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:1.2rem;padding-block:2.8rem}
+ .hero-copy{grid-column:1}
+ .hero-art{grid-column:2;height:350px}
+ .hero-spotlight{grid-column:1 / -1;justify-self:center;max-width:390px;margin:1.5rem 0 0}
+ .discover-grid{grid-template-columns:1fr 1fr;gap:1.5rem}
+ .discovery-panel:not(:last-child){border-right:0}
+ .discovery-panel{padding:1rem 0;border-bottom:1px solid var(--line-soft)}
+ .discovery-panel:last-child{grid-column:1 / -1;border-bottom:0}
+ .theology-mini-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .theology-icon{flex-basis:25%}
+ .series-cards,.seasons-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .archive-filters{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .filter-search{grid-column:1 / -1}
+ .invitation-inner{grid-template-columns:auto minmax(0,1fr)}
+ .invitation-inner>.button-outline{grid-column:2;justify-self:start}
+}
+@media(max-width:780px){
+ .shell,.header-inner{width:min(calc(100% - 2rem),var(--shell))}
+ .content-page,.article-detail{padding-block:2.2rem 5rem}
+ .section-heading{margin-bottom:2.1rem}
+ .hero-content{display:flex;flex-direction:column;align-items:center;text-align:center;gap:1rem}
+ .hero-copy{width:100%;padding:0}
+ .hero-topline{margin-bottom:.9rem}
+ .hero-copy h1{font-size:clamp(2.4rem,8vw,4.7rem)}
+ .hero-summary{margin-inline:auto}
+ .hero-actions{justify-content:center}
+ .hero-art{width:min(90%,410px);height:270px}
+ .hero-spotlight{width:min(100%,390px);margin:1rem auto}
+ .discover-grid{grid-template-columns:1fr;gap:.5rem}
+ .discovery-panel,.discovery-panel:last-child{grid-column:1 / -1;border-bottom:1px solid var(--line-soft);padding:1.2rem 0}
+ .theology-mini-list{grid-template-columns:1fr}
+ .mini-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .invitation-inner{display:flex;flex-direction:column;text-align:center;gap:1rem}
+ .invitation-symbol{font-size:3rem}
+ .invitation-inner>.button-outline{align-self:center}
+ .author-inner{grid-template-columns:1fr;text-align:center;gap:1rem;padding:2rem 0}
+ .author-art{margin:auto}
+ .author-heading{border-right:0;padding:0}
+ .author-inner>.button-outline{grid-column:auto;justify-self:center}
+ .footer-content{grid-template-columns:1.5fr 1fr;gap:2rem}
+ .footer-content>div:first-child{grid-column:1 / -1}
+ .footer-bottom{display:block;text-align:center}
+ .footer-bottom span{display:block;margin-bottom:.3rem}
+ .article-columns,.theology-intro,.author-profile{grid-template-columns:1fr}
+ .editorial-figure{max-width:620px;margin-inline:auto}
+ .reader-area{max-width:690px;margin-inline:auto}
+ .author-photo-placeholder{height:290px;max-width:500px}
+ .author-profile{gap:2rem}
+ .theology-intro-art{max-height:270px}
+ .theology-intro-art img{height:270px}
+ .principles-grid{grid-template-columns:1fr}
+ .seasons-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .series-cards{grid-template-columns:1fr}
+ .huge-number{font-size:7rem}
+ .large-ornament{font-size:6rem}
+}
+@media(max-width:560px){
+ .brand{font-size:.91rem;letter-spacing:.05em;gap:.45rem}
+ .brand-cross{font-size:2rem}
+ .mobile-panel.is-open{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .hero-content{padding-block:2.1rem}
+ .hero-topline{font-size:.55rem}
+ .hero-copy h1{font-size:clamp(2.05rem,8.4vw,3.4rem)}
+ .hero-copy h1 span{letter-spacing:.1em}
+ .hero-copy h1 em{letter-spacing:.03em}
+ .hero-summary{font-size:1.15rem}
+ .hero-art{height:230px;width:100%}
+ .hero-actions a{font-size:.83rem;min-width:0;flex:1}
+ .panel-heading h2{font-size:1.2rem}
+ .mini-card-grid{grid-template-columns:1fr}
+ .mini-card{min-height:85px}
+ .mini-art{height:85px;width:30%}
+ .archive-filters{grid-template-columns:1fr;padding:1rem}
+ .filter-search,.filter-buttons{grid-column:1}
+ .filter-buttons{justify-content:flex-start}
+ .archive-result-header{flex-direction:column;gap:.15rem}
+ .seasons-grid{grid-template-columns:1fr}
+ .season-card{min-height:285px}
+ .collection-heading{gap:.65rem;flex-wrap:wrap}
+ .collection-heading>.text-link{margin-left:0}
+ .collection-detail-head{align-items:flex-start}
+ .huge-number,.large-ornament{display:none}
+ .reading-navigation{grid-template-columns:1fr;gap:1.2rem}
+ .reading-navigation>a,.reading-navigation>a:last-child{text-align:left}
+ .reading-navigation .all-messages-link{text-align:left}
+ .detail-header h1{font-size:2.6rem}
+ .footer-content{grid-template-columns:1fr}
+ .footer-content>div:first-child{grid-column:1}
+ .social-section{grid-template-columns:54px 1fr;gap:1rem}
+ .social-symbol{width:50px;height:50px;font-size:2.5rem}
+}
+@media(max-width:370px){
+ .brand{font-size:.78rem;letter-spacing:0}
+ .brand-cross{font-size:1.65rem}
+ .hero-copy h1{font-size:2rem}
+ .hero-actions{flex-direction:column}
+ .hero-actions a{width:100%}
+ .mobile-panel.is-open{grid-template-columns:1fr}
+}
+@media(hover:hover){
+ .mini-card,.season-mini,.theology-mini,.series-card,.season-card,.message-card{will-change:transform}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{animation-duration:.01ms!important;scroll-behavior:auto!important;transition-duration:.01ms!important}
+}

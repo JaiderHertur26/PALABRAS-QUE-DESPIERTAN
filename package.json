@@ -1,13 +1,16 @@
 {
   "name": "palabras-que-despiertan-web",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "sync:editorial": "node scripts/sync-editorial.mjs",
-    "check:editorial": "node scripts/check-editorial.mjs"
+    "check:editorial": "node scripts/check-editorial.mjs",
+    "test": "node --test tests/editorial.test.mjs",
+    "verify": "npm run check:editorial && npm test && npm run build",
+    "smoke": "node scripts/smoke-web.mjs"
   },
   "dependencies": {
     "next": "^16.0.0",

@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "fuente": "PLAN MAESTRO - 12 TEMPORADAS.md + CATALOGO_GENERAL_MENSAJES.csv",
+  "version": 2,
+  "fuente": "PLAN MAESTRO - 12 TEMPORADAS.md + CATALOGO_GENERAL_MENSAJES.csv + lista blanca web",
   "temporadas": [
     {
       "id": "T01",

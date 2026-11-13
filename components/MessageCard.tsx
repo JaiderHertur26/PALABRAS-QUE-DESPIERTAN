@@ -1,16 +1,26 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Mensaje } from "@/lib/editorial";
-export function MessageCard({mensaje,featured=false}: {mensaje:Mensaje; featured?:boolean}) {
-  return <article className={featured?"message-card featured":"message-card"}>
-    <Link href={"/mensajes/"+mensaje.slug} className="cover-link" aria-label={"Leer "+mensaje.titulo}>
-      <Image src={mensaje.imagen} alt={"Tarjeta original del mensaje "+mensaje.id+": "+mensaje.titulo} width={1254} height={1254} className="message-image"/>
+import { fechaDePublicacion, extracto, seriePorId } from "@/lib/editorial";
+
+export function MessageCard({mensaje, featured=false}: {mensaje:Mensaje; featured?:boolean}) {
+  const serie = seriePorId(mensaje.serie);
+  if (featured) {
+    return <Link href={`/mensajes/${mensaje.slug}`} className="featured-message" aria-label={`Leer la reflexión destacada: ${mensaje.titulo}`}>
+      <Image src={mensaje.imagen} alt={`Tarjeta editorial auténtica ${mensaje.id}, ${mensaje.titulo}`} width={1254} height={1254} priority className="featured-message-image" />
+      <span className="featured-message-link">Leer reflexión <span aria-hidden="true">↗</span></span>
+    </Link>;
+  }
+  return <article className="message-card">
+    <Link href={`/mensajes/${mensaje.slug}`} className="message-cover" aria-label={`Leer ${mensaje.titulo}`}>
+      <Image src={mensaje.imagen} alt={`Tarjeta oficial de ${mensaje.titulo}`} width={1254} height={1254} className="message-image" sizes="(max-width: 680px) 90vw, (max-width: 1100px) 46vw, 340px"/>
     </Link>
     <div className="message-card-body">
-      <p className="eyebrow">{mensaje.id} · {mensaje.referencia}</p>
-      <h3><Link href={"/mensajes/"+mensaje.slug}>{mensaje.titulo}</Link></h3>
-      <p className="message-excerpt">{mensaje.texto}</p>
-      <Link className="text-link" href={"/mensajes/"+mensaje.slug}>Leer reflexión</Link>
+      <p className="eyebrow">{mensaje.id} · {serie?.serie.titulo ?? "Reflexión"}</p>
+      <h3><Link href={`/mensajes/${mensaje.slug}`}>{mensaje.titulo}</Link></h3>
+      <p className="message-excerpt">{extracto(mensaje.texto)}</p>
+      <p className="message-date">{fechaDePublicacion(mensaje.fecha)}</p>
+      <Link className="text-link" href={`/mensajes/${mensaje.slug}`}>Leer reflexión <span aria-hidden="true">↗</span></Link>
     </div>
   </article>;
 }
