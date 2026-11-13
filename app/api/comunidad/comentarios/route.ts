@@ -12,6 +12,7 @@ export async function GET(request:NextRequest){
  if(!destino)return NextResponse.json({error:"Conversación no disponible."},{status:404});
  const raw=Number(request.nextUrl.searchParams.get("pagina")??0);
  const pagina=Number.isInteger(raw)&&raw>=0&&raw<100?raw:0;
+ if(!comunidadConfiguradaServidor())return NextResponse.json({enabled:false,entries:[],hasMore:false,page:0,message:"La participación se habilitará cuando el correo de acceso esté disponible."},{headers:{"Cache-Control":"no-store"}});
  const client=clienteLectura();
  if(!client)return NextResponse.json({enabled:false,entries:[],hasMore:false,page:0,message:"La conversación no está disponible en este momento."},{headers:{"Cache-Control":"no-store"}});
  const {data,error,count}=await client.from("discussion_entries")

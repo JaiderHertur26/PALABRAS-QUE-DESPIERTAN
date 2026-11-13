@@ -22,7 +22,7 @@ const rows=[
 const ids=new Set(rows.map(x=>x[0]+":"+x[1]));
 if(ids.size!==rows.length)throw new Error("Temas de discusión duplicados.");
 function sql(s){return "'"+s.replace(/'/g,"''")+"'";}
-const activate=process.env.ACTIVATE_COMMUNITY==="true";
+const activate=process.env.ACTIVATE_COMMUNITY!=="false";
 const values=rows.map(r=>" ("+r.map(sql).join(", ")+", "+(activate?"true":"false")+")").join(",\n");
 const migration=[
  "-- GENERADO AUTOMÁTICAMENTE. Revise antes de ejecutar en Supabase DEDICADO.",

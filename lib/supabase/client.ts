@@ -1,8 +1,9 @@
 "use client";
 import {createBrowserClient} from "@supabase/ssr";
-import {accesoPublicoConfigurado,supabaseProjectUrl} from "./config";
+import {accesoPublicoConfigurado,comunidadDisponible,supabaseProjectUrl} from "./config";
 
-export const comunidadConfigurada=accesoPublicoConfigurado;
+export const comunidadConfigurada=comunidadDisponible;
+export const accesoAutenticacionConfigurado=accesoPublicoConfigurado;
 export function clienteNavegador(){
  if(!accesoPublicoConfigurado())return null;
  return createBrowserClient(

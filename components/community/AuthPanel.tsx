@@ -1,15 +1,15 @@
 "use client";
 import {useEffect,useMemo,useState} from "react";
 import type {User} from "@supabase/supabase-js";
-import {clienteNavegador,comunidadConfigurada} from "@/lib/supabase/client";
+import {clienteNavegador,comunidadConfigurada,accesoAutenticacionConfigurado} from "@/lib/supabase/client";
 
-export function AuthPanel({onUserChange}: {onUserChange?:(logged:boolean)=>void}){
+export function AuthPanel({onUserChange,soloAcceso=false}: {onUserChange?:(logged:boolean)=>void;soloAcceso?:boolean}){
  const [email,setEmail]=useState("");
  const [user,setUser]=useState<User|null>(null);
  const [checking,setChecking]=useState(true);
  const [sending,setSending]=useState(false);
  const [message,setMessage]=useState("");
- const configured=comunidadConfigurada();
+ const configured=soloAcceso?accesoAutenticacionConfigurado():comunidadConfigurada();
  const supabase=useMemo(()=>clienteNavegador(),[]);
 
  useEffect(()=>{
@@ -49,7 +49,7 @@ export function AuthPanel({onUserChange}: {onUserChange?:(logged:boolean)=>void}
  if(checking)return <p className="community-auth-note">Comprobando tu acceso…</p>;
  if(user)return <div className="community-auth community-auth-verified">
   <span>Acceso verificado con <strong>{user.email}</strong></span>
-  <button type="button" onClick={salir}>Cerrar sesión</button>
+  <div>{soloAcceso&&<a className="text-link" href="/moderacion">Centro editorial ↗</a>} <button type="button" onClick={salir}>Cerrar sesión</button></div>
  </div>;
  return <div className="community-auth">
   <strong>Para participar, verifica tu correo</strong>

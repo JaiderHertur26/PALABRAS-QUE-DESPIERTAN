@@ -128,3 +128,12 @@ La cuenta `pquedespiertan@gmail.com` está creada con permiso de moderador princ
 La política de privacidad, aviso legal y contacto ya identifican el canal `pquedespiertan@gmail.com`. Se recomienda revisión jurídica propia antes de recoger datos de terceros.
 
 Toda configuración OAuth, SMTP y credenciales queda excluida del repositorio. El proyecto permite actualizar automáticamente los hilos solo de mensajes y artículos autorizados mediante lista blanca, sin activar manuscritos inéditos.
+
+## 0.4.1 · Acceso editorial separado de participación pública
+
+- La autenticación del administrador puede funcionar con `NEXT_PUBLIC_COMUNIDAD_ACTIVA=false`, permitiendo ingresar a `/participar` y abrir `/moderacion` solo con un usuario verificado y registrado en `discussion_moderators`.
+- La API de comentarios sigue bloqueando escrituras si la bandera está desactivada. No se ha desactivado la verificación de correo ni se ha empleado una cuenta anónima para evitar el servicio SMTP.
+- Los 19 hilos en Supabase están habilitados (1 mensaje, 12 artículos autorizados y 6 temas). El generador de semillas los mantiene sincronizados con el catálogo público.
+- Se verificó la publicación directa mediante pruebas reales con 17 comprobaciones y eliminación completa de los datos de prueba. La cuenta editorial principal existe y tiene rol moderador, aunque todavía exige que el dueño verifique su correo.
+- El dominio `https://palabrasquedespiertan.vercel.app` se publicó con la versión 0.4 y se comprobó que las páginas públicas devuelven HTTP 200 y el panel editorial no autorizado HTTP 404.
+- Bloqueo externo identificado: la entrega a correos de lectores que no pertenecen al equipo de Supabase necesita SMTP propio. No habilitar públicamente la bandera hasta haber probado entrega y acceso de lectores reales.

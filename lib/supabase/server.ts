@@ -2,7 +2,7 @@ import "server-only";
 import {cookies} from "next/headers";
 import {createServerClient} from "@supabase/ssr";
 import {createClient} from "@supabase/supabase-js";
-import {accesoPublicoConfigurado,supabaseProjectUrl} from "./config";
+import {accesoPublicoConfigurado,comunidadDisponible,supabaseProjectUrl} from "./config";
 
 function accesoEditorialConfigurado(){
  const key=process.env.SUPABASE_SECRET_KEY??"";
@@ -10,7 +10,7 @@ function accesoEditorialConfigurado(){
 }
 
 const publishable=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-export const comunidadConfiguradaServidor=accesoPublicoConfigurado;
+export const comunidadConfiguradaServidor=comunidadDisponible;
 
 export async function clienteSesion(){
  if(!accesoPublicoConfigurado()||!publishable)return null;

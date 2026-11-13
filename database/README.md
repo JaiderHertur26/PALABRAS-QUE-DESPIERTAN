@@ -52,7 +52,7 @@ El moderador accede a **`/moderacion`** solo si la cuenta verificada pertenece a
 
 ## Estado actual: límite conocido
 
-El autor ya suministró la URL del proyecto independiente `lwuzkjvolxwkxdyafcjv`. La integración de Supabase disponible en ChatGPT todavía no dispone de permiso sobre ese proyecto (el listado actual solo muestra las dos bases de otros sistemas). **No se han instalado tablas en ese proyecto**. La interfaz sigue desactivada hasta obtener acceso, aplicar el esquema, verificar RLS y registrar al primer moderador. No se han guardado testimonios ni comentarios reales.
+El autor ya suministró la URL del proyecto independiente `lwuzkjvolxwkxdyafcjv`. La integración de Supabase disponible en ChatGPT todavía no dispone de permiso sobre ese proyecto (el listado actual solo muestra las dos bases de otros sistemas). **El esquema ya fue instalado en ese proyecto**. La interfaz sigue desactivada hasta obtener acceso, aplicar el esquema, verificar RLS y registrar al primer moderador. No se han guardado testimonios ni comentarios reales.
 
 **No configurar una clave de un proyecto ajeno para hacer funcionar la interfaz rápidamente.**
 
