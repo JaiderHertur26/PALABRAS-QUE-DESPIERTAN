@@ -1,18 +1,17 @@
 import Link from "next/link";
 import type {Metadata} from "next";
 import {notFound} from "next/navigation";
-import {temaPorSlug,temas} from "@/lib/community/publications";
+import {publicTemas} from "@/lib/editorial-live";
 import {Breadcrumbs} from "@/components/Breadcrumbs";
 import {Discussion} from "@/components/community/Discussion";
 import {avisoTestimonios} from "@/lib/community/rules";
-export const dynamicParams=false;
-export function generateStaticParams(){return temas.map(t=>({slug:t.slug}));}
+export const dynamic="force-dynamic";
 export async function generateMetadata({params}:{params:Promise<{slug:string}>}):Promise<Metadata>{
- const {slug}=await params;const t=temaPorSlug(slug);
+ const {slug}=await params;const t=(await publicTemas()).find(x=>x.slug===slug);
  return {title:t?.titulo??"Tema no disponible",description:t?.subtitulo};
 }
 export default async function Tema({params}:{params:Promise<{slug:string}>}){
- const {slug}=await params;const t=temaPorSlug(slug);if(!t)notFound();
+ const {slug}=await params;const t=(await publicTemas()).find(x=>x.slug===slug);if(!t)notFound();
  return <section className="shell content-page testimony-detail">
   <Breadcrumbs items={[{texto:"Revista",href:"/revista"},{texto:"Testimonios",href:"/testimonios"},{texto:t.titulo}]}/>
   <header className="topic-detail-header">

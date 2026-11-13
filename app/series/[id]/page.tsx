@@ -1,19 +1,19 @@
 import Link from "next/link";
 import {notFound} from "next/navigation";
 import type {Metadata} from "next";
-import {seriePorId,mensajesDeSerie,temporadas,etiquetaEstado} from "@/lib/editorial";
+import {seriePorId,temporadas,etiquetaEstado} from "@/lib/editorial";
+import {publicMensajes} from "@/lib/editorial-live";
 import {Breadcrumbs} from "@/components/Breadcrumbs";
 import {MessageCard} from "@/components/MessageCard";
 
-export const dynamicParams = false;
-export function generateStaticParams(){ return temporadas.flatMap(t=>t.series.map(s=>({id:s.id}))); }
+export const dynamic="force-dynamic";
 export async function generateMetadata({params}:{params:Promise<{id:string}>}):Promise<Metadata>{
  const {id}=await params;const datos=seriePorId(id);
  return {title:datos?.serie.titulo??"Serie no disponible",description:datos? `Serie «${datos.serie.titulo}» de la temporada «${datos.temporada.titulo}».`:undefined};
 }
 export default async function SerieDetalle({params}:{params:Promise<{id:string}>}){
  const {id}=await params;const datos=seriePorId(id);if(!datos)notFound();
- const {temporada,serie}=datos;const disponibles=mensajesDeSerie(serie.id);
+ const {temporada,serie}=datos;const disponibles=(await publicMensajes()).filter(m=>m.serie===serie.id);
  return <section className="shell content-page">
   <Breadcrumbs items={[{texto:"Series",href:"/series"},{texto:serie.titulo}]}/>
   <div className="collection-detail-head">

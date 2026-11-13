@@ -1,5 +1,5 @@
 import {NextRequest,NextResponse} from "next/server";
-import {destinoPublico} from "@/lib/community/publications";
+import {destinoLive} from "@/lib/editorial-live";
 import {validarComentario,validarNombre,esUUID} from "@/lib/community/validation";
 import {clienteLectura,comunidadConfiguradaServidor,usuarioVerificado} from "@/lib/supabase/server";
 export const dynamic="force-dynamic";
@@ -8,7 +8,7 @@ const TAMANIO_PAGINA=60;
 export async function GET(request:NextRequest){
  const tipo=request.nextUrl.searchParams.get("tipo")??"";
  const id=request.nextUrl.searchParams.get("id")??"";
- const destino=destinoPublico(tipo,id);
+ const destino=await destinoLive(tipo,id);
  if(!destino)return NextResponse.json({error:"Conversación no disponible."},{status:404});
  const raw=Number(request.nextUrl.searchParams.get("pagina")??0);
  const pagina=Number.isInteger(raw)&&raw>=0&&raw<100?raw:0;
@@ -35,7 +35,7 @@ export async function POST(request:NextRequest){
  let data:Record<string,unknown>;
  try{data=await request.json();}catch{return NextResponse.json({error:"Datos inválidos."},{status:400});}
  if(typeof data.website==="string"&&data.website.trim())return NextResponse.json({error:"Solicitud rechazada."},{status:400});
- const destino=destinoPublico(String(data.tipo??""),String(data.id??""));
+ const destino=await destinoLive(String(data.tipo??""),String(data.id??""));
  if(!destino)return NextResponse.json({error:"La publicación no está habilitada para comentarios."},{status:404});
  const nombreError=validarNombre(data.nombre);
  const textoError=validarComentario(data.texto);

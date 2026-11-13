@@ -4,14 +4,13 @@ import {notFound} from "next/navigation";
 import {Breadcrumbs} from "@/components/Breadcrumbs";
 import {ArticleBody,articleHeadings} from "@/components/ArticleBody";
 import {Discussion} from "@/components/community/Discussion";
-import {articulos,articuloPorSlug} from "@/lib/community/publications";
+import {publicArticulos} from "@/lib/editorial-live";
 
-export const dynamicParams=false;
-export function generateStaticParams(){return articulos.map(a=>({slug:a.slug}));}
+export const dynamic="force-dynamic";
 
 export async function generateMetadata({params}:{params:Promise<{slug:string}>}):Promise<Metadata>{
  const {slug}=await params;
- const a=articuloPorSlug(slug);
+ const a=(await publicArticulos()).find(item=>item.slug===slug);
  if(!a)return {title:"Artículo no disponible",robots:{index:false}};
  const excerpt=a.resumen.slice(0,160);
  return {
@@ -25,9 +24,9 @@ export async function generateMetadata({params}:{params:Promise<{slug:string}>})
 
 export default async function Articulo({params}:{params:Promise<{slug:string}>}){
  const {slug}=await params;
- const a=articuloPorSlug(slug);
+ const a=(await publicArticulos()).find(item=>item.slug===slug);
  if(!a)notFound();
- const sorted=[...articulos].sort((u,v)=>u.id.localeCompare(v.id));
+ const sorted=[...await publicArticulos()].sort((u,v)=>u.id.localeCompare(v.id));
  const index=sorted.findIndex(item=>item.id===a.id);
  const before=index>0?sorted[index-1]:null;
  const after=index<sorted.length-1?sorted[index+1]:null;

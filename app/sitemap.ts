@@ -1,8 +1,9 @@
 import type {MetadataRoute} from "next";
-import {articulos} from "@/lib/community/publications";
-import {mensajes} from "@/lib/editorial";
+import {publicArticulos,publicMensajes} from "@/lib/editorial-live";
 
-export default function sitemap():MetadataRoute.Sitemap {
+export const dynamic="force-dynamic";
+export default async function sitemap():Promise<MetadataRoute.Sitemap> {
+ const [articulos,mensajes]=await Promise.all([publicArticulos(),publicMensajes()]);
  const base=(process.env.NEXT_PUBLIC_SITE_URL||"https://www.palabrasquedespiertan.online").replace(/\/+$/,"");
  const staticPaths=["/","/revista","/articulos","/teologia","/mensajes","/autor","/series","/temporadas"];
  const created=new Date("2026-11-13T12:00:00Z");

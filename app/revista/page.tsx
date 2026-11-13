@@ -1,15 +1,17 @@
 import Link from "next/link";
 import Image from "next/image";
 import type {Metadata} from "next";
-import {autor,mensajes,temporadas} from "@/lib/editorial";
-import {articulos,temas} from "@/lib/community/publications";
+import {autor,temporadas} from "@/lib/editorial";
+import {publicArticulos,publicTemas,publicMensajes} from "@/lib/editorial-live";
 import {MessageCard} from "@/components/MessageCard";
 import {Breadcrumbs} from "@/components/Breadcrumbs";
 export const metadata:Metadata={
  title:"Revista teológica",description:"Revista de publicación y reflexión teológica: mensajes, investigaciones y testimonios de Palabras que despiertan."
 };
 
-export default function Revista(){
+export const dynamic="force-dynamic";
+export default async function Revista(){
+ const [articulos,temas,mensajes]=await Promise.all([publicArticulos(),publicTemas(),publicMensajes()]);
  const mensaje=mensajes[0];
  const t07=temporadas.find(t=>t.id==="T07");
  return <div className="magazine-page">

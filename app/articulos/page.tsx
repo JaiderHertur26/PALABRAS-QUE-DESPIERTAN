@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type {Metadata} from "next";
 import {Breadcrumbs} from "@/components/Breadcrumbs";
-import {articulos} from "@/lib/community/publications";
+import {publicArticulos} from "@/lib/editorial-live";
 
 export const metadata:Metadata={
  title:"Artículos de investigación teológica",
@@ -10,8 +10,9 @@ export const metadata:Metadata={
  openGraph:{title:"Artículos | Palabras que despiertan",description:"Escritura, Tradición, Magisterio y vida: una colección original de investigación teológica."}
 };
 
-export default function Articulos(){
- const ordenados=[...articulos].sort((a,b)=>a.id.localeCompare(b.id));
+export const dynamic="force-dynamic";
+export default async function Articulos(){
+ const ordenados=[...await publicArticulos()].sort((a,b)=>a.id.localeCompare(b.id));
  return <main className="shell research-library">
   <Breadcrumbs items={[{texto:"Revista",href:"/revista"},{texto:"Artículos"}]}/>
   <header className="research-library-header">

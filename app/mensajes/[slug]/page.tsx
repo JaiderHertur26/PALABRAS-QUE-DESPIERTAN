@@ -5,23 +5,25 @@ import Link from "next/link";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { ReaderTools } from "@/components/ReaderTools";
 import {Discussion} from "@/components/community/Discussion";
-import {encontrarMensaje, mensajes, fechaDePublicacion, seriePorId, siguienteYAnterior} from "@/lib/editorial";
+import {fechaDePublicacion, seriePorId} from "@/lib/editorial";
+import {publicMensajes} from "@/lib/editorial-live";
 
-export const dynamicParams=false;
-export function generateStaticParams(){return mensajes.map(m=>({slug:m.slug}));}
+export const dynamic="force-dynamic";
 export async function generateMetadata({params}:{params:Promise<{slug:string}>}):Promise<Metadata>{
  const {slug}=await params;
- const m=encontrarMensaje(slug);
+ const m=(await publicMensajes()).find(x=>x.slug===slug);
  if(!m)return {title:"Mensaje no disponible",robots:{index:false}};
  return {title:m.titulo,description:m.texto,openGraph:{title:`${m.titulo} | Palabras que despiertan`,description:m.texto,type:"article",images:[{url:m.imagen,width:1254,height:1254,alt:`Tarjeta original ${m.id}`}]},robots:{index:false,follow:false}};
 }
 
 export default async function DetalleMensaje({params}:{params:Promise<{slug:string}>}) {
  const {slug}=await params;
- const m=encontrarMensaje(slug);
+ const m=(await publicMensajes()).find(x=>x.slug===slug);
  if(!m)notFound();
  const grupo=seriePorId(m.serie);
- const vecinos=siguienteYAnterior(m.id);
+ const ordered=[...await publicMensajes()].sort((a,b)=>a.id.localeCompare(b.id));
+ const idx=ordered.findIndex(x=>x.id===m.id);
+ const vecinos={anterior:idx>0?ordered[idx-1]:null,siguiente:idx>=0?ordered[idx+1]??null:null};
  return <article className="shell article-detail">
   <Breadcrumbs items={[{texto:"Mensajes",href:"/mensajes"},...(grupo?[{texto:grupo.serie.titulo,href:`/series/${grupo.serie.id}`}]:[]),{texto:m.titulo}]}/>
   <header className="detail-header">

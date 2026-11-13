@@ -2,10 +2,12 @@ import Link from "next/link";
 import type {Metadata} from "next";
 import {Breadcrumbs} from "@/components/Breadcrumbs";
 import {SectionIntro} from "@/components/SectionIntro";
-import {temas} from "@/lib/community/publications";
+import {publicTemas} from "@/lib/editorial-live";
 import {avisoTestimonios} from "@/lib/community/rules";
 export const metadata:Metadata={title:"Testimonios",description:"Testimonios y diálogo desde la fe católica, en temas de oración, confianza, perdón, esperanza y servicio."};
-export default function Testimonios(){
+export const dynamic="force-dynamic";
+export default async function Testimonios(){
+ const temas=await publicTemas();
  return <section className="shell content-page testimonials-page">
   <Breadcrumbs items={[{texto:"Revista",href:"/revista"},{texto:"Testimonios"}]}/>
   <SectionIntro eyebrow="LA FE QUE SE COMPARTE" title="Testimonios: historias que también despiertan" description="Un espacio para escuchar y compartir experiencias a la luz de la fe católica, con respeto por cada persona y sin confundir la vivencia personal con la enseñanza doctrinal."/>

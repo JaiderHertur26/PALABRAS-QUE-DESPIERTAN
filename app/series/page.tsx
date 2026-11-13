@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import {temporadas, cuentaSeries, etiquetaEstado} from "@/lib/editorial";
+import {publicMensajes} from "@/lib/editorial-live";
 import {Breadcrumbs} from "@/components/Breadcrumbs";
 import {SectionIntro} from "@/components/SectionIntro";
 
 export const metadata:Metadata={title:"Series",description:"Itinerarios temáticos del plan editorial de Palabras que despiertan."};
-export default function Series() {
+export const dynamic="force-dynamic";
+export default async function Series() {
+ const messages=await publicMensajes();
  return <section className="shell content-page inner-main">
  <Breadcrumbs items={[{texto:"Series"}]}/>
  <SectionIntro eyebrow="ITINERARIOS DE REFLEXIÓN" title="Series para recorrer la fe" description={`El proyecto contempla ${cuentaSeries} series agrupadas en doce temporadas. Cada una propone un camino de mensajes conectados, sin sustituir el estudio personal de la Palabra de Dios.`}/>
@@ -20,7 +23,7 @@ export default function Series() {
     <div className="series-cards">
      {t.series.map((s,i)=><Link href={`/series/${s.id}`} className="series-card" key={s.id}>
       <span className="series-card-number">{String(i+1).padStart(2,"0")}</span>
-      <span><strong>{s.titulo}</strong><small>{etiquetaEstado(s.publicaciones)}</small></span>
+      <span><strong>{s.titulo}</strong><small>{etiquetaEstado(messages.filter(m=>m.serie===s.id).length)}</small></span>
       <span className="card-arrow" aria-hidden="true">↗</span>
      </Link>)}
     </div>

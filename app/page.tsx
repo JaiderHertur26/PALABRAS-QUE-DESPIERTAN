@@ -1,11 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
-import {autor,descripcion,etiquetaEstado,mensajes,temporadas} from "@/lib/editorial";
+import {autor,descripcion,etiquetaEstado,temporadas} from "@/lib/editorial";
 import {MessageCard} from "@/components/MessageCard";
-import {articulos} from "@/lib/community/publications";
-import {temas} from "@/lib/community/publications";
+import {publicArticulos,publicTemas,publicMensajes} from "@/lib/editorial-live";
 
-export default function Inicio(){
+export const dynamic="force-dynamic";
+export default async function Inicio(){
+ const [articulos,temas,mensajes]=await Promise.all([publicArticulos(),publicTemas(),publicMensajes()]);
  const destacado=mensajes[0];
  const t07=temporadas.find(t=>t.id==="T07")!;
  const temporadasVisibles=[t07,temporadas.find(t=>t.id==="T01")!,temporadas.find(t=>t.id==="T02")!];
