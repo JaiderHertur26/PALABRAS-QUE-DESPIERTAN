@@ -49,8 +49,9 @@ const blocked=await fetch(base+"/mensajes/pd-002-la-puerta-que-se-abre");
 assert.equal(blocked.status,404,"El mensaje PD-002 programado no debe estar accesible");
 const hiddenArticle=await fetch(base+"/articulos/manuscrito-no-autorizado");
 assert.equal(hiddenArticle.status,404,"Los artículos no publicados deben responder 404");
-const moderator=await fetch(base+"/moderacion");
-assert.equal(moderator.status,404,"El panel no debe estar expuesto sin autorización");
+const moderator=await fetch(base+"/moderacion",{redirect:"manual"});
+assert.ok([307,308].includes(moderator.status),"Sin sesión el panel debe redirigir al acceso, no mostrar 404");
+assert.match(moderator.headers.get("location")??"",/\/participar\?acceso=iniciar/,"La redirección debe explicar cómo identificarse");
 const search=await fetch(base+"/buscar?q=ORACION").then(r=>r.text());
 assert.match(search,/Dios ya lo sabe/,"La búsqueda debe ignorar tildes");
 const comments=await fetch(base+"/api/comunidad/comentarios?tipo=mensaje&id=pd-001-dios-ya-lo-sabe");
@@ -64,5 +65,5 @@ const failedPost=await fetch(base+"/api/comunidad/comentarios",{
  method:"POST",headers:{"Content-Type":"application/json"},
  body:JSON.stringify({tipo:"tema",id:topics[0].slug,nombre:"Anónimo",texto:"Una experiencia de prueba que no debe almacenarse.",consentimiento:false})
 });
-assert.ok([400,503].includes(failedPost.status),"No aceptar envíos sin consentimiento o backend habilitado");
+assert.ok([400,401,503].includes(failedPost.status),"No aceptar envíos sin sesión o consentimiento");
 console.log("SMOKE HTTP APROBADO: "+ok+" rutas 200; contenido no publicado inaccesible; diálogo, privacidad, búsqueda, seguridad y moderación verificados.");

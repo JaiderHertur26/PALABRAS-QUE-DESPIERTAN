@@ -18,7 +18,7 @@ export default function Participar(){
    <div className="participate-steps"><p><strong>1. Identifícate con tu correo.</strong> Recibirás un enlace de acceso que permite verificar que eres una persona real.</p>
    <p><strong>2. Escribe con libertad y cuidado.</strong> Puedes comentar un texto, responder a otro lector o compartir tu experiencia en un tema propuesto.</p>
    <p><strong>3. Publica y dialoga.</strong> La participación aparecerá al enviarla con correo verificado. Puedes responder y reportar contenidos que incumplan las normas; la edición podrá retirarlos.</p></div>
-   <p className="community-auth-note">El inicio de sesión permite identificar al equipo editorial. La publicación de nuevos comentarios para todos los lectores se activará cuando esté operativo el correo de acceso de Supabase.</p>
+   <p className="community-auth-note">El acceso por correo está activo. Los lectores verificados pueden comentar y responder; la moderación editorial tiene un área privada con acceso restringido.</p>
    <AuthPanel soloAcceso/>
    <Link className="button-outline" href="/testimonios">Explorar los testimonios ↗</Link>
   </aside></div>

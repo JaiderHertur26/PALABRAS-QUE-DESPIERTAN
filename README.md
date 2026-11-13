@@ -147,3 +147,8 @@ La autenticación por correo ya está conectada a Resend mediante SMTP privado d
 Los 19 hilos de la revista admiten publicación directa de lectores con correo verificado, controles de frecuencia, reportes y retirada editorial. Se habilitó `NEXT_PUBLIC_COMUNIDAD_ACTIVA=true` en el entorno de producción; cada cambio exige desplegar una nueva versión para actualizar Next.js. Ver `database/SMTP_RESEND_OPERATIVO.md` para la arquitectura, pruebas y mantenimiento.
 
 La cuenta moderadora principal `pquedespiertan@gmail.com` debe entrar desde su propio correo para demostrar la propiedad de su cuenta. La verificación no puede sustituirse automáticamente.
+
+
+## Corrección del inicio de sesión editorial 0.4.3
+
+La autenticación PKCE ahora conserva las cookies en la respuesta HTTP del callback. Las sesiones se actualizan en las rutas protegidas, y un visitante sin sesión es dirigido a `/participar` en lugar de recibir una página 404. El acceso editorial sigue condicionado a cuenta confirmada y rol registrado en Supabase. La cuenta principal `pquedespiertan@gmail.com` ya está verificada; para abrir el panel desde el dominio oficial debe iniciar una sesión nueva mediante el enlace por correo.

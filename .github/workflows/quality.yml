@@ -8,6 +8,7 @@ on:
       - revista-comunidad-v0-3
       - supabase-preparacion-v0-3-1
       - revista-publicacion-v0-4
+      - hotfix-acceso-editorial-v0-4-3
       - main
   pull_request:
 

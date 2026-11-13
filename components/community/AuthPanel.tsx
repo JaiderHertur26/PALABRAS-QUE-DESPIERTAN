@@ -13,6 +13,9 @@ export function AuthPanel({onUserChange,soloAcceso=false}: {onUserChange?:(logge
  const supabase=useMemo(()=>clienteNavegador(),[]);
 
  useEffect(()=>{
+  const access=new URLSearchParams(window.location.search).get("acceso");
+  if(access==="iniciar")setMessage("Para acceder al centro editorial, introduce aquí tu correo verificado y abre el nuevo enlace que recibas.");
+  if(access==="invalido")setMessage("El enlace de acceso no es válido o ha caducado. Solicita uno nuevo para iniciar sesión.");
   if(!supabase){setChecking(false);return;}
   let alive=true;
   supabase.auth.getUser().then(({data})=>{
