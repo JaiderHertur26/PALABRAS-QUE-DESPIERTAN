@@ -28,7 +28,7 @@ test("Imágenes originales futuras requieren elegibilidad pública, incluso opti
  const guard=read("proxy.ts");
  assert.match(guard,/editorial_items/);
  assert.match(guard,/\/_next\/image/);
- assert.match(guard,/if\(error\|\|!data\)return NextResponse\.json/);
+ assert.match(guard,/if\(error\|\|!data\|\|!isVisible\)return NextResponse\.json/);
  assert.match(read("lib/editorial-live.ts"),/scheduled_at/);
  assert.match(read(".vercelignore"),/!proxy\.ts/);
 });
@@ -72,6 +72,9 @@ test("Portadas originales de artículos: biblioteca, ficha, SEO y privacidad seg
  assert.match(guard,/articleCover/);
  assert.match(guard,/\.eq\("cover_url",assetPath\)/);
  assert.match(guard,/\.eq\("code","ART-"\+articleCover\[1\]\)/);
+ assert.match(guard,/process\.env\.SUPABASE_SECRET_KEY/);
+ assert.match(guard,/data\?\.state==="scheduled"/);
+ assert.match(guard,/Date\.now\(\)/);
  assert.match(guard,/"\/articulos\/:path\*"/);
  assert.match(read(".gitignore"),/\/public\/articulos\/art-/);
 });
