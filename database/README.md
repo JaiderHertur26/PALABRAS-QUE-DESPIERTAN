@@ -1,6 +1,6 @@
 # Activación de la comunidad de PALABRAS QUE DESPIERTAN
 
-**Estado:** funcionalidad programada y pruebas locales superadas. **NO CONECTADA NI ABIERTA AL PÚBLICO.**
+**Estado:** URL exclusiva recibida y validada; todavía faltan credenciales, instalación del SQL, pruebas de permisos y moderación. **NO ABIERTA AL PÚBLICO.**
 
 Este módulo pertenece exclusivamente a la revista PALABRAS QUE DESPIERTAN. Nunca usar las bases de datos de Contabilidad HERTUR ni de Registro Sacramental.
 
@@ -23,7 +23,7 @@ Las publicaciones elegibles se toman de `data/site-content.json` (solo mensajes 
 
 ## Activación — orden obligatorio
 
-1. **Elegir una organización Supabase** y crear un **proyecto exclusivamente dedicado** a PALABRAS QUE DESPIERTAN. Verificar su posible costo antes de crearlo. No reutilizar otros proyectos del usuario.
+1. **Proyecto Supabase comunicado por el autor:** `lwuzkjvolxwkxdyafcjv` (`https://lwuzkjvolxwkxdyafcjv.supabase.co`). Verificar que la cuenta conectada tenga permisos sobre él. No crear otro ni reutilizar bases ajenas. No reutilizar otros proyectos del usuario.
 2. Validar y aprobar la **política de privacidad** aplicable en Colombia, su responsable, canal de contacto y procedimientos de consulta, eliminación y conservación de datos; no habilitar captación de testimonios antes de esto.
 3. Configurar autenticación por correo en Supabase, el remitente de mensajes de acceso y los dominios autorizados. Para pruebas, agregar `http://localhost:3192/auth/callback`; para el despliegue final, registrar la URL real de `/auth/callback` sin comodines indiscriminados.
 4. Revisar y ejecutar **`database/schema.sql`** en el SQL Editor del proyecto dedicado. Este archivo crea tablas, índices, funciones de validación, triggers, RLS y permisos por columnas.
@@ -33,6 +33,14 @@ Las publicaciones elegibles se toman de `data/site-content.json` (solo mensajes 
 8. Ejecutar las herramientas de Supabase para comprobar RLS y avisos de seguridad (`get_advisors`). Probar usuarios sin sesión, lectores autenticados, autores maliciosos que intenten cambiar estado, respuestas cruzadas, controles de frecuencia y acceso del moderador.
 9. Revisar reportes, bloqueo de comentarios abusivos y un procedimiento de eliminación de datos personales.
 10. Activar primero una **vista previa real y protegida**, verificando que Vercel no la clasifique como producción, pues ocurrió anteriormente. Solo después de aprobar la experiencia y la legalidad habilitar la participación pública.
+
+## Seguridad ampliada (13/11/2026)
+
+El esquema actualizado incluye bloqueo transaccional por autor para que múltiples solicitudes simultáneas no evadan los límites de envío. Un trigger atómico comprueba la cuenta del moderador, protege los campos originales y registra la decisión de aprobar, rechazar u ocultar. Ocultar un comentario oculta también las respuestas aprobadas anidadas, dejando todas las actuaciones auditadas.
+
+La URL está fijada en `lib/supabase/config.ts`: el código solo admite la referencia Supabase `lwuzkjvolxwkxdyafcjv`; exige claves modernas `sb_publishable_` en navegador y `sb_secret_` exclusivamente en servidor. La función de participación permanece bloqueada por la bandera `NEXT_PUBLIC_COMUNIDAD_ACTIVA=false`, incluso si alguien configura claves antes de aprobar privacidad y seguridad. Cambiarla a `true` únicamente durante pruebas protegidas o después del visto bueno para producción. Nunca usar una clave de una base diferente.
+
+**Al recuperar acceso por ChatGPT:** volver a leer el `schema.sql` actual antes de aplicar; no utilizar copias anteriores a este refuerzo. Instalar el esquema y la semilla solo en el proyecto referenciado; pasar revisiones de advisors y probar la jerarquía de respuestas antes de la activación.
 
 ## Controles técnicos
 
@@ -44,6 +52,6 @@ El moderador accede a **`/moderacion`** solo si la cuenta verificada pertenece a
 
 ## Estado actual: límite conocido
 
-No existe todavía una base de datos Supabase independiente para la revista. La interfaz de comentarios está **construida pero desactivada**, con un mensaje claro para los lectores. No se han guardado testimonios ni comentarios reales.
+El autor ya suministró la URL del proyecto independiente `lwuzkjvolxwkxdyafcjv`. La integración de Supabase disponible en ChatGPT todavía no dispone de permiso sobre ese proyecto (el listado actual solo muestra las dos bases de otros sistemas). **No se han instalado tablas en ese proyecto**. La interfaz sigue desactivada hasta obtener acceso, aplicar el esquema, verificar RLS y registrar al primer moderador. No se han guardado testimonios ni comentarios reales.
 
 **No configurar una clave de un proyecto ajeno para hacer funcionar la interfaz rápidamente.**

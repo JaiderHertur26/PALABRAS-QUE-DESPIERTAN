@@ -2,6 +2,7 @@ import {NextRequest,NextResponse} from "next/server";
 import {clienteModeracion,usuarioVerificado,esModerador} from "@/lib/supabase/server";
 import {esUUID} from "@/lib/community/validation";
 export const dynamic="force-dynamic";
+
 async function acceso(){
  const {user}=await usuarioVerificado();
  const admin=clienteModeracion();
@@ -49,6 +50,7 @@ export async function POST(request:NextRequest){
  try{data=await request.json();}catch{return respuesta({error:"Formato inválido."},400);}
  const {admin,user}=permiso;
  const nota=typeof data.nota==="string"?data.nota.trim().slice(0,500):"";
+
  if(data.tipo==="reporte"){
   if(!esUUID(data.id)||!["dismiss","hide"].includes(String(data.decision)))
    return respuesta({error:"Resolución inválida."},400);
@@ -56,17 +58,19 @@ export async function POST(request:NextRequest){
    .select("id,entry_id,resolved").eq("id",data.id).maybeSingle();
   if(report.error||!report.data)return respuesta({error:"Reporte no encontrado."},404);
   if(report.data.resolved)return respuesta({error:"Este reporte ya fue revisado."},409);
+
   if(data.decision==="hide"){
    const entry=await admin.from("discussion_entries").select("id,status").eq("id",report.data.entry_id).maybeSingle();
-   if(entry.error||!entry.data||entry.data.status!=="approved")
-    return respuesta({error:"La publicación ya no está visible."},409);
-   const updated=await admin.from("discussion_entries")
-    .update({status:"hidden",reviewed_by:user.id,reviewed_at:new Date().toISOString()})
-    .eq("id",report.data.entry_id).eq("status","approved").select("id");
-   if(updated.error||!updated.data?.length)return respuesta({error:"No se pudo ocultar la publicación."},409);
-   await admin.from("discussion_audit").insert({
-    entry_id:report.data.entry_id,moderator_id:user.id,former_status:"approved",new_status:"hidden",note:nota||"Reporte de la comunidad"
-   });
+   if(entry.error||!entry.data)return respuesta({error:"Publicación no encontrada."},404);
+   if(entry.data.status==="approved"){
+    // El trigger PostgreSQL registra atómicamente la decisión y oculta sus respuestas.
+    const updated=await admin.from("discussion_entries")
+     .update({status:"hidden",reviewed_by:user.id,moderation_note:nota||"Ocultada tras reporte"})
+     .eq("id",report.data.entry_id).eq("status","approved").select("id");
+    if(updated.error||!updated.data?.length)return respuesta({error:"No se pudo ocultar la publicación."},409);
+   }else if(entry.data.status!=="hidden"){
+    return respuesta({error:"La participación ya no está publicada."},409);
+   }
   }
   const {error}=await admin.from("discussion_reports")
    .update({resolved:true,resolved_at:new Date().toISOString(),resolved_by:user.id,resolution_note:nota||null})
@@ -74,19 +78,15 @@ export async function POST(request:NextRequest){
   if(error)return respuesta({error:"Revisión aplicada, pero el reporte no se pudo cerrar; comprueba la cola."},503);
   return respuesta({ok:true,message:"Reporte revisado."});
  }
+
  if(!esUUID(data.id)||!["approve","reject"].includes(String(data.decision)))
   return respuesta({error:"Decisión de moderación inválida."},400);
- const old=await admin.from("discussion_entries").select("id,status").eq("id",data.id).maybeSingle();
- if(old.error||!old.data)return respuesta({error:"Publicación no encontrada."},404);
- if(old.data.status!=="pending")return respuesta({error:"La publicación ya fue revisada."},409);
  const destino=data.decision==="approve"?"approved":"rejected";
+ // El trigger valida al moderador y registra la auditoría en la misma transacción.
  const resultado=await admin.from("discussion_entries")
-  .update({status:destino,reviewed_by:user.id,reviewed_at:new Date().toISOString()})
+  .update({status:destino,reviewed_by:user.id,moderation_note:nota||null})
   .eq("id",data.id).eq("status","pending").select("id");
- if(resultado.error||!resultado.data?.length)return respuesta({error:"La publicación cambió durante la revisión."},409);
- const audit=await admin.from("discussion_audit").insert({
-  entry_id:data.id,moderator_id:user.id,former_status:"pending",new_status:destino,note:nota||null
- });
- if(audit.error)return respuesta({ok:true,warning:"Decisión aplicada; es necesario revisar el historial de auditoría."});
- return respuesta({ok:true,message:"Decisión editorial registrada."});
+ if(resultado.error)return respuesta({error:"El sistema rechazó la operación de moderación."},409);
+ if(!resultado.data?.length)return respuesta({error:"La publicación no está pendiente o ya fue revisada."},409);
+ return respuesta({ok:true,message:"Decisión editorial registrada con auditoría."});
 }

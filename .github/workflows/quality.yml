@@ -6,6 +6,7 @@ on:
       - desarrollo-web-v0-1
       - mejoras-web-v0-2
       - revista-comunidad-v0-3
+      - supabase-preparacion-v0-3-1
       - main
   pull_request:
 

@@ -88,3 +88,14 @@ El sitio incluye revista de investigación teológica, diez artículos originale
 - `npm run verify` y `npm run smoke`: pruebas y compilación.
 
 **Estado editorial:** el contenido publicado de mensajes y artículos se controla mediante listas blancas independientes; un manuscrito que no haya sido autorizado no se muestra. Las imágenes originales se mantienen inalteradas. No se activó ningún despliegue de producción en esta entrega.
+
+
+## Supabase recibido — preparación segura 0.3.1
+
+**Proyecto indicado:** `https://lwuzkjvolxwkxdyafcjv.supabase.co` (referencia pública `lwuzkjvolxwkxdyafcjv`).
+
+El acceso de Supabase conectado a ChatGPT no tiene todavía permisos sobre este proyecto; por tanto **ninguna tabla ni política fue instalada**. La configuración de la URL local se encuentra en `.env.local`, excluido de Git; no se añadió ninguna clave. La comunidad permanece cerrada por la bandera `NEXT_PUBLIC_COMUNIDAD_ACTIVA=false` hasta autorizar una activación expresa después de pruebas y política de privacidad.
+
+El esquema `database/schema.sql` incluye control de identidad, RLS, límites de frecuencia, moderación previa, auditoría atómica de cambios y ocultación en cascada de respuestas. El script `npm run community:seed` debe ejecutarse después de cada incorporación de mensajes o artículos autorizados para actualizar únicamente los hilos permitidos. Instrucciones completas en `database/README.md`.
+
+**No compartir claves `sb_secret_` en el chat ni guardarlas en el repositorio.** Para terminar la conexión, autorizar el proyecto nuevo en el plugin Supabase conectado a ChatGPT o configurar las credenciales directamente y con seguridad en el entorno del sitio.

@@ -28,6 +28,7 @@ create table if not exists public.discussion_entries (
   created_at timestamptz not null default now(),
   reviewed_at timestamptz,
   reviewed_by uuid references auth.users(id) on delete set null,
+  moderation_note text check (moderation_note is null or char_length(moderation_note) <= 500),
   constraint valid_subject foreign key(subject_type,subject_id)
     references public.discussion_subjects(kind,subject_id) on delete restrict
 );
@@ -108,6 +109,8 @@ begin
   else
     new.depth:=0;
   end if;
+  -- Serializa envíos concurrentes por autor antes de comprobar límites.
+  perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(new.author_id::text,0));
   select count(*) into recent_count from public.discussion_entries
     where author_id=new.author_id and created_at>now()-interval '60 seconds';
   if recent_count>0 then raise exception 'Espera antes de enviar otro mensaje'; end if;
@@ -130,6 +133,7 @@ begin
  end if;
  select (e.status='approved') into approved from public.discussion_entries e where e.id=new.entry_id;
  if coalesce(approved,false)=false then raise exception 'Solo se pueden reportar publicaciones visibles'; end if;
+ perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(new.reporter_id::text,0));
  select count(*) into recent from public.discussion_reports
   where reporter_id=new.reporter_id and created_at>now()-interval '1 minute';
  if recent>0 then raise exception 'Espera antes de enviar otro reporte'; end if;
@@ -149,6 +153,90 @@ drop trigger if exists before_discussion_entry_insert on public.discussion_entri
 create trigger before_discussion_entry_insert
 before insert on public.discussion_entries
 for each row execute function private.validate_discussion_submission();
+
+-- La auditoría forma parte de la MISMA transacción que la decisión editorial.
+-- El trigger no concede permisos de escritura a lectores.
+create or replace function private.audit_discussion_decision()
+returns trigger language plpgsql security definer
+set search_path = ''
+as $$
+begin
+  if new.author_id is distinct from old.author_id
+    or new.subject_type is distinct from old.subject_type
+    or new.subject_id is distinct from old.subject_id
+    or new.parent_id is distinct from old.parent_id
+    or new.display_name is distinct from old.display_name
+    or new.body is distinct from old.body
+    or new.depth is distinct from old.depth
+    or new.consent_confirmed is distinct from old.consent_confirmed
+    or new.consent_version is distinct from old.consent_version
+    or new.consent_at is distinct from old.consent_at
+    or new.created_at is distinct from old.created_at then
+    raise exception 'Los campos originales de la publicación son inmutables';
+  end if;
+
+  if new.status is not distinct from old.status then
+    raise exception 'La revisión requiere una transición de estado';
+  end if;
+  if not ((old.status='pending' and new.status in ('approved','rejected'))
+           or (old.status='approved' and new.status='hidden')) then
+    raise exception 'Transición editorial no permitida';
+  end if;
+  if new.reviewed_by is null or not exists (
+    select 1 from public.discussion_moderators
+    where user_id=new.reviewed_by
+  ) then
+    raise exception 'La revisión exige un moderador habilitado';
+  end if;
+  if new.status='approved' then
+    if not exists(
+      select 1 from public.discussion_subjects
+      where kind=new.subject_type and subject_id=new.subject_id and enabled
+    ) then
+      raise exception 'No se pueden aprobar mensajes de una publicación deshabilitada';
+    end if;
+    if new.parent_id is not null and not exists(
+      select 1 from public.discussion_entries
+      where id=new.parent_id and status='approved'
+    ) then
+      raise exception 'No se pueden aprobar respuestas si el comentario principal está oculto';
+    end if;
+  end if;
+  new.reviewed_at:=now();
+  insert into public.discussion_audit
+    (entry_id,moderator_id,former_status,new_status,note,created_at)
+  values
+    (new.id,new.reviewed_by,old.status,new.status,new.moderation_note,now());
+  return new;
+end;
+$$;
+revoke all on function private.audit_discussion_decision() from public,anon,authenticated;
+drop trigger if exists before_discussion_entry_moderation on public.discussion_entries;
+create trigger before_discussion_entry_moderation
+before update on public.discussion_entries
+for each row execute function private.audit_discussion_decision();
+
+-- Al ocultar una intervención, ocultar sus respuestas aprobadas en cascada.
+-- La modificación de cada respuesta queda a su vez registrada en la auditoría.
+create or replace function private.hide_approved_replies()
+returns trigger language plpgsql security definer
+set search_path = ''
+as $$
+begin
+  if old.status='approved' and new.status='hidden' then
+    update public.discussion_entries
+    set status='hidden', reviewed_by=new.reviewed_by,
+        moderation_note='Ocultada por moderación del comentario original'
+    where parent_id=new.id and status='approved';
+  end if;
+  return null;
+end;
+$$;
+revoke all on function private.hide_approved_replies() from public,anon,authenticated;
+drop trigger if exists after_discussion_hide on public.discussion_entries;
+create trigger after_discussion_hide
+after update of status on public.discussion_entries
+for each row execute function private.hide_approved_replies();
 
 -- Denegar todo por defecto y habilitar solo las acciones y columnas necesarias.
 revoke all on public.discussion_subjects from public,anon,authenticated;
@@ -205,8 +293,8 @@ insert into public.discussion_subjects(kind,subject_id,title,enabled) values
 on conflict (kind,subject_id) do update
   set title=excluded.title,enabled=excluded.enabled;
 
--- NOTA: ningún ART todavía aprobado. Deben añadirse a discussion_subjects
--- únicamente al publicarse oficialmente en data/public-articles.json.
+-- Los ART-001 a ART-010 aprobados se habilitan únicamente al ejecutar
+-- database/community-seed.sql, generado con las listas blancas vigentes.
 -- NOTA: asignar al primer moderador después de crear y verificar su cuenta:
 -- insert into public.discussion_moderators(user_id) values ('<UUID DE auth.users>');
 
