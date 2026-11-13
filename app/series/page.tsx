@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import {temporadas, cuentaSeries, etiquetaEstado} from "@/lib/editorial";
+import {temporadas, etiquetaEstado} from "@/lib/editorial";
 import {publicMensajes} from "@/lib/editorial-live";
 import {Breadcrumbs} from "@/components/Breadcrumbs";
 import {SectionIntro} from "@/components/SectionIntro";
@@ -9,11 +9,12 @@ export const metadata:Metadata={title:"Series",description:"Itinerarios temátic
 export const dynamic="force-dynamic";
 export default async function Series() {
  const messages=await publicMensajes();
+ const visibles=temporadas.filter(t=>t.series.some(s=>messages.some(m=>m.serie===s.id)));
  return <section className="shell content-page inner-main">
  <Breadcrumbs items={[{texto:"Series"}]}/>
- <SectionIntro eyebrow="ITINERARIOS DE REFLEXIÓN" title="Series para recorrer la fe" description={`El proyecto contempla ${cuentaSeries} series agrupadas en doce temporadas. Cada una propone un camino de mensajes conectados, sin sustituir el estudio personal de la Palabra de Dios.`}/>
+ <SectionIntro eyebrow="ITINERARIOS DE REFLEXIÓN" title="Series para recorrer la fe" description="Aquí encontrarás únicamente los itinerarios con mensajes ya publicados. Las próximas series aparecerán cuando se publique su primera reflexión."/>
  <div className="series-sections">
-  {[...temporadas].sort((a,b)=>a.id==="T07"?-1:b.id==="T07"?1:a.numero-b.numero).map(t=>
+  {[...visibles].sort((a,b)=>a.id==="T07"?-1:b.id==="T07"?1:a.numero-b.numero).map(t=>
    <section className="series-section" key={t.id} aria-labelledby={`titulo-${t.id}`}>
     <div className="collection-heading">
       <span className="season-number">{String(t.numero).padStart(2,"0")}</span>
@@ -21,7 +22,7 @@ export default async function Series() {
       <Link href={`/temporadas/${t.id}`} className="text-link">Ver temporada ↗</Link>
     </div>
     <div className="series-cards">
-     {t.series.map((s,i)=><Link href={`/series/${s.id}`} className="series-card" key={s.id}>
+     {t.series.filter(s=>messages.some(m=>m.serie===s.id)).map((s,i)=><Link href={`/series/${s.id}`} className="series-card" key={s.id}>
       <span className="series-card-number">{String(i+1).padStart(2,"0")}</span>
       <span><strong>{s.titulo}</strong><small>{etiquetaEstado(messages.filter(m=>m.serie===s.id).length)}</small></span>
       <span className="card-arrow" aria-hidden="true">↗</span>

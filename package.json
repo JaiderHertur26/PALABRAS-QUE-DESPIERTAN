@@ -1,6 +1,6 @@
 {
   "name": "palabras-que-despiertan-web",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -11,7 +11,7 @@
     "community:seed": "node scripts/generate-community-seed.mjs",
     "check:editorial": "node scripts/check-editorial.mjs",
     "check:articles": "node scripts/check-articles.mjs",
-    "test": "node --test tests/editorial.test.mjs tests/community.test.mjs tests/articles.test.mjs tests/supabase-setup.test.mjs tests/auth-callback.test.mjs tests/social-links.test.mjs tests/live-visibility.test.mjs",
+    "test": "node --test tests/editorial.test.mjs tests/community.test.mjs tests/articles.test.mjs tests/supabase-setup.test.mjs tests/auth-callback.test.mjs tests/social-links.test.mjs tests/live-visibility.test.mjs tests/public-only-scheduled.test.mjs",
     "verify": "npm run check:editorial && npm run check:articles && npm test && npm run build",
     "smoke": "node scripts/smoke-web.mjs"
   },

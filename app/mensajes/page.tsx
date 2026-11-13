@@ -22,7 +22,7 @@ export default async function Mensajes({searchParams}: {searchParams: Promise<Pa
  return <div className="shell content-page">
   <Breadcrumbs items={[{texto:"Mensajes"}]}/>
   <SectionIntro eyebrow="ARCHIVO DE REFLEXIONES" title="Mensajes que despiertan" description="Palabras breves para leer despacio, contemplar y llevar a la vida. Este archivo muestra únicamente los pensamientos publicados y verificados."/>
-  <ArchiveFilters q={q} temporada={temporada} serie={serie} orden={orden}/>
+  <ArchiveFilters q={q} temporada={temporada} serie={serie} orden={orden} published={publicados}/>
   <div className="archive-result-header"><p role="status">{resultado.length} {resultado.length===1?"reflexión disponible":"reflexiones disponibles"}{filtrado?" con estos filtros":""}</p>
    <span className="archive-note">{publicados.length} {publicados.length===1?"mensaje publicado":"mensajes publicados"} en el archivo</span>
   </div>

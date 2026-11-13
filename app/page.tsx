@@ -8,8 +8,8 @@ export const dynamic="force-dynamic";
 export default async function Inicio(){
  const [articulos,temas,mensajes]=await Promise.all([publicArticulos(),publicTemas(),publicMensajes()]);
  const destacado=mensajes[0];
- const t07=temporadas.find(t=>t.id==="T07")!;
- const temporadasVisibles=[t07,temporadas.find(t=>t.id==="T01")!,temporadas.find(t=>t.id==="T02")!];
+ const temporadasVisibles=temporadas.filter(t=>mensajes.some(m=>m.temporada===t.id)).slice(0,3);
+ const seriesVisibles=temporadasVisibles.flatMap(t=>t.series).filter(s=>mensajes.some(m=>m.serie===s.id));
  return <>
  <section className="home-hero" aria-labelledby="home-title">
   <div className="shell hero-content">
@@ -31,27 +31,27 @@ export default async function Inicio(){
 
  <section className="shell discover" aria-label="Descubrir los contenidos">
    <div className="discover-grid">
-    <article className="discovery-panel">
+    {seriesVisibles.length>0&&<article className="discovery-panel">
      <div className="panel-heading"><h2><span aria-hidden="true">◇</span> SERIES</h2><Link href="/series">Ver todas ↗</Link></div>
      <p className="panel-desc">Itinerarios de mensajes con un mismo hilo de vida y fe.</p>
      <div className="mini-card-grid">
-      {t07.series.slice(0,2).map((s,i)=><Link className="mini-card" href={`/series/${s.id}`} key={s.id}>
+      {seriesVisibles.slice(0,2).map((s,i)=><Link className="mini-card" href={`/series/${s.id}`} key={s.id}>
        <span className="mini-art" aria-hidden="true"><Image src={i===0?"/identidad/cruz-fondo.png":"/identidad/portada-oficial.png"} width={140} height={140} alt="" sizes="120px"/></span>
-       <span><strong>{s.titulo}</strong><small>{s.publicaciones?etiquetaEstado(s.publicaciones):"Planificada"}</small></span>
+       <span><strong>{s.titulo}</strong><small>{etiquetaEstado(mensajes.filter(m=>m.serie===s.id).length)}</small></span>
       </Link>)}
      </div>
-    </article>
-    <article className="discovery-panel">
+    </article>}
+    {temporadasVisibles.length>0&&<article className="discovery-panel">
      <div className="panel-heading"><h2><span aria-hidden="true">▤</span> TEMPORADAS</h2><Link href="/temporadas">Ver todas ↗</Link></div>
-     <p className="panel-desc">Doce grandes etapas, una propuesta de formación interior.</p>
+     <p className="panel-desc">Etapas del camino que ya cuentan con reflexiones publicadas.</p>
      <div className="season-mini-list">
       {temporadasVisibles.map(t=><Link href={`/temporadas/${t.id}`} className="season-mini" key={t.id}>
        <span className="mini-index">{String(t.numero).padStart(2,"0")}</span>
-       <span><strong>{t.titulo}</strong><small>{t.publicaciones?etiquetaEstado(t.publicaciones):"Sin publicaciones aún"}</small></span>
+       <span><strong>{t.titulo}</strong><small>{etiquetaEstado(mensajes.filter(m=>m.temporada===t.id).length)}</small></span>
        <span className="mini-arrow" aria-hidden="true">›</span>
       </Link>)}
      </div>
-    </article>
+    </article>}
     <article className="discovery-panel">
      <div className="panel-heading"><h2><span aria-hidden="true">✧</span> TEOLOGÍA</h2><Link href="/teologia">Conocer ↗</Link></div>
      <p className="panel-desc">Investigación y reflexión para comprender, vivir y amar la fe.</p>

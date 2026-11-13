@@ -227,3 +227,12 @@
  .discussion-entry{padding:.8rem}
  .participate-aside{padding:1.2rem}
 }
+
+/* La barra lateral horizontal del móvil provenía del footer:
+ * esta hoja se importa después de responsive.css y anulaba su columna única. */
+@media (max-width:700px){
+ .footer-content{grid-template-columns:minmax(0,1fr);gap:1.7rem}
+ .footer-content>div,.footer-content nav{min-width:0;max-width:100%}
+ .footer-content>div:first-child,.footer-content>div:last-child{grid-column:1}
+ .footer-brand,.footer-bottom{min-width:0;overflow-wrap:anywhere}
+}

@@ -1,5 +1,6 @@
 import {NextResponse,type NextRequest} from "next/server";
 import {createServerClient} from "@supabase/ssr";
+import {createClient} from "@supabase/supabase-js";
 import {accesoPublicoConfigurado,supabaseProjectUrl} from "@/lib/supabase/config";
 
 /** Actualiza las sesiones de las rutas que usan autenticación SSR. */
@@ -10,6 +11,27 @@ export async function proxy(request:NextRequest){
   const target=new URL(request.nextUrl.pathname+request.nextUrl.search,"https://www.palabrasquedespiertan.online");
   return NextResponse.redirect(target,{status:307});
  }
+ // Las tarjetas futuras no se entregan ni por su URL directa ni por la optimización de Next.
+ // Una obra programada solo se vuelve accesible cuando la política RLS de Supabase
+ // confirma que su fecha y hora de publicación ya han llegado.
+ const assetPath=request.nextUrl.pathname==="/_next/image"
+   ?request.nextUrl.searchParams.get("url")||""
+   :request.nextUrl.pathname;
+ const planned=/^\/mensajes\/(pd-\d{3}-[a-z0-9-]+)\.png$/.exec(assetPath);
+ if(planned){
+  const key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  if(!accesoPublicoConfigurado()||!key)
+   return NextResponse.json({error:"Imagen no disponible"},{status:404,headers:{"Cache-Control":"no-store"}});
+  const publicClient=createClient(supabaseProjectUrl,key,{auth:{persistSession:false,autoRefreshToken:false}});
+  const {data,error}=await publicClient.from("editorial_items").select("slug")
+   .eq("kind","mensaje").eq("slug",planned[1]).maybeSingle();
+  if(error||!data)return NextResponse.json({error:"Imagen no disponible"},{status:404,headers:{"Cache-Control":"no-store"}});
+  const ready=NextResponse.next();
+  ready.headers.set("Cache-Control","private, no-store");
+  return ready;
+ }
+ if(request.nextUrl.pathname.startsWith("/mensajes/")||request.nextUrl.pathname==="/_next/image")
+  return NextResponse.next();
  let response=NextResponse.next({request});
  if(!accesoPublicoConfigurado()||!process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)
   return response;
@@ -37,6 +59,8 @@ export const config={
   "/participar",
   "/moderacion/:path*",
   "/api/moderacion/:path*",
-  "/api/comunidad/:path*"
+  "/api/comunidad/:path*",
+  "/mensajes/:path*",
+  "/_next/image"
  ]
 };

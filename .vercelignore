@@ -11,3 +11,4 @@
 !next-env.d.ts
 !next.config.ts
 !vercel.json
+!proxy.ts

@@ -8,12 +8,13 @@ import {MessageCard} from "@/components/MessageCard";
 
 export const dynamic="force-dynamic";
 export async function generateMetadata({params}:{params:Promise<{id:string}>}):Promise<Metadata>{
- const {id}=await params;const datos=seriePorId(id);
- return {title:datos?.serie.titulo??"Serie no disponible",description:datos? `Serie «${datos.serie.titulo}» de la temporada «${datos.temporada.titulo}».`:undefined};
+ const {id}=await params;const datos=seriePorId(id);const exists=(await publicMensajes()).some(m=>m.serie===id);
+ return {title:exists?datos?.serie.titulo??"Serie no disponible":"Serie no disponible",description:exists&&datos? `Serie «${datos.serie.titulo}» de la temporada «${datos.temporada.titulo}».`:undefined};
 }
 export default async function SerieDetalle({params}:{params:Promise<{id:string}>}){
  const {id}=await params;const datos=seriePorId(id);if(!datos)notFound();
  const {temporada,serie}=datos;const disponibles=(await publicMensajes()).filter(m=>m.serie===serie.id);
+ if(disponibles.length===0)notFound();
  return <section className="shell content-page">
   <Breadcrumbs items={[{texto:"Series",href:"/series"},{texto:serie.titulo}]}/>
   <div className="collection-detail-head">
