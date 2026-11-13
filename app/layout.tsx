@@ -9,7 +9,7 @@ import {Footer} from "@/components/Footer";
 import {autor,descripcion,lema,nombreProyecto} from "@/lib/editorial";
 
 export const metadata:Metadata = {
- metadataBase:new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://palabrasquedespiertan.vercel.app"),
+ metadataBase:new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://www.palabrasquedespiertan.online"),
  title:{default:nombreProyecto,template:`%s | ${nombreProyecto}`},
  applicationName:nombreProyecto,
  description:descripcion,

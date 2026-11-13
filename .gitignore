@@ -12,6 +12,7 @@ tsconfig.tsbuildinfo
 .vercel/
 /supabase/.temp/
 /supabase/config.toml
+/supabase/.gitignore
 /supabase/.branches/
 .DS_Store
 

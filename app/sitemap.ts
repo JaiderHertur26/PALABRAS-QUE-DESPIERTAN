@@ -3,7 +3,7 @@ import {articulos} from "@/lib/community/publications";
 import {mensajes} from "@/lib/editorial";
 
 export default function sitemap():MetadataRoute.Sitemap {
- const base=(process.env.NEXT_PUBLIC_SITE_URL||"https://palabrasquedespiertan.vercel.app").replace(/\/+$/,"");
+ const base=(process.env.NEXT_PUBLIC_SITE_URL||"https://www.palabrasquedespiertan.online").replace(/\/+$/,"");
  const staticPaths=["/","/revista","/articulos","/teologia","/mensajes","/autor","/series","/temporadas"];
  const created=new Date("2026-11-13T12:00:00Z");
  return [

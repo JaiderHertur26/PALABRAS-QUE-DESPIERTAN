@@ -137,3 +137,13 @@ Toda configuración OAuth, SMTP y credenciales queda excluida del repositorio. E
 - Se verificó la publicación directa mediante pruebas reales con 17 comprobaciones y eliminación completa de los datos de prueba. La cuenta editorial principal existe y tiene rol moderador, aunque todavía exige que el dueño verifique su correo.
 - El dominio `https://palabrasquedespiertan.vercel.app` se publicó con la versión 0.4 y se comprobó que las páginas públicas devuelven HTTP 200 y el panel editorial no autorizado HTTP 404.
 - Bloqueo externo identificado: la entrega a correos de lectores que no pertenecen al equipo de Supabase necesita SMTP propio. No habilitar públicamente la bandera hasta haber probado entrega y acceso de lectores reales.
+
+## Actualización 0.4.2 · SMTP Resend operativo
+
+La revista utiliza el dominio `https://www.palabrasquedespiertan.online` como dirección canónica y mantiene `https://palabrasquedespiertan.vercel.app` como enlace de compatibilidad.
+
+La autenticación por correo ya está conectada a Resend mediante SMTP privado de Supabase. El dominio de envío fue verificado, y dos mensajes reales de prueba fueron registrados como entregados: el correo editorial y un alias externo del mismo Gmail. El SMTP ya no depende del emisor limitado de pruebas de Supabase. Los secretos se administran exclusivamente en Resend/Vercel/Supabase.
+
+Los 19 hilos de la revista admiten publicación directa de lectores con correo verificado, controles de frecuencia, reportes y retirada editorial. Se habilitó `NEXT_PUBLIC_COMUNIDAD_ACTIVA=true` en el entorno de producción; cada cambio exige desplegar una nueva versión para actualizar Next.js. Ver `database/SMTP_RESEND_OPERATIVO.md` para la arquitectura, pruebas y mantenimiento.
+
+La cuenta moderadora principal `pquedespiertan@gmail.com` debe entrar desde su propio correo para demostrar la propiedad de su cuenta. La verificación no puede sustituirse automáticamente.
