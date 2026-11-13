@@ -1,0 +1,11 @@
+import fs from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+const base=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"..");
+const json=JSON.parse(await fs.readFile(path.join(base,"data","site-content.json"),"utf8"));
+if(json.temporadas.length !== 12 || json.temporadas.flatMap(x=>x.series).length !== 36) throw new Error("Temporadas o series incompletas");
+if(json.articulos.length) throw new Error("Artículos no autorizados expuestos");
+if(json.mensajes.some(m=> !/^PD-\d{3}$/.test(m.id) || !m.texto || !m.imagen)) throw new Error("Mensaje público inconsistente");
+if(json.mensajes.length !== 1 || json.mensajes[0].id !== "PD-001") throw new Error("Auditar nuevas publicaciones antes de ampliar el sitio");
+for (const file of ["public/identidad/cruz-fondo.png","public/identidad/portada-oficial.png","public/mensajes/pd-001.png"]) await fs.access(path.join(base,file));
+console.log("CONTROL APROBADO: 12 temporadas, 36 series, PD-001 público, 0 artículos expuestos y tres imágenes auténticas.");

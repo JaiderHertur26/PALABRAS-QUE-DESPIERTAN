@@ -1,0 +1,27 @@
+# Dependencias y salidas de compilación
+node_modules/
+.next/
+out/
+*.log
+tsconfig.tsbuildinfo
+
+# Credenciales y vinculaciones privadas
+.env
+.env.*
+!.env.example
+.vercel/
+.DS_Store
+
+# Documentación y material de trabajo SOLO LOCAL
+/00_DOCUMENTO_MAESTRO_CONTINUIDAD_WEB.md
+/01_INSTRUCCION_PARA_ABRIR_EL_NUEVO_CHAT.md
+/CONTRATO_EDITORIAL_WEB.md
+/ACTA_*.md
+/GITHUB/
+/VERCEL/
+/Maqueta Técnica/
+/VISTA_PREVIA*.png
+
+# Archivos de sistema
+Thumbs.db
+desktop.ini
