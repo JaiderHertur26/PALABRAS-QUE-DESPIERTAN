@@ -22,10 +22,12 @@ const rows=[
 const ids=new Set(rows.map(x=>x[0]+":"+x[1]));
 if(ids.size!==rows.length)throw new Error("Temas de discusión duplicados.");
 function sql(s){return "'"+s.replace(/'/g,"''")+"'";}
-const values=rows.map(r=>" ("+r.map(sql).join(", ")+", true)").join(",\n");
+const activate=process.env.ACTIVATE_COMMUNITY==="true";
+const values=rows.map(r=>" ("+r.map(sql).join(", ")+", "+(activate?"true":"false")+")").join(",\n");
 const migration=[
  "-- GENERADO AUTOMÁTICAMENTE. Revise antes de ejecutar en Supabase DEDICADO.",
- "-- Sólo habilita hilos para mensajes publicados, artículos autorizados y temas aprobados.",
+ "-- Sólo registra hilos para publicaciones aprobadas y temas propuestos.",
+ "-- Estado habilitado: "+(activate?"SÍ (revisar aprobación antes de aplicar)":"NO, protección previa al lanzamiento"),
  "begin;",
  "update public.discussion_subjects set enabled=false;",
  "insert into public.discussion_subjects(kind,subject_id,title,enabled) values",
@@ -36,4 +38,4 @@ const migration=[
 ].join("\n");
 const out=path.join(root,"database","community-seed.sql");
 await fs.writeFile(out,migration,"utf8");
-console.log("SEMILLA DE COMUNIDAD: "+mensajes.length+" mensajes, "+articles.length+" artículos, "+temas.length+" temas = "+rows.length+" hilos habilitables. No se aplicó a ninguna base de datos.");
+console.log("SEMILLA DE COMUNIDAD: "+mensajes.length+" mensajes, "+articles.length+" artículos, "+temas.length+" temas = "+rows.length+" hilos. Habilitados: "+(activate?"SÍ":"NO")+". No se aplicó a ninguna base de datos.");

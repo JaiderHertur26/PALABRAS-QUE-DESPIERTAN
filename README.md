@@ -99,3 +99,18 @@ El acceso de Supabase conectado a ChatGPT no tiene todavía permisos sobre este 
 El esquema `database/schema.sql` incluye control de identidad, RLS, límites de frecuencia, moderación previa, auditoría atómica de cambios y ocultación en cascada de respuestas. El script `npm run community:seed` debe ejecutarse después de cada incorporación de mensajes o artículos autorizados para actualizar únicamente los hilos permitidos. Instrucciones completas en `database/README.md`.
 
 **No compartir claves `sb_secret_` en el chat ni guardarlas en el repositorio.** Para terminar la conexión, autorizar el proyecto nuevo en el plugin Supabase conectado a ChatGPT o configurar las credenciales directamente y con seguridad en el entorno del sitio.
+
+## ACTUALIZACIÓN CONFIRMADA · INSTALACIÓN EN SUPABASE · 13/11/2026
+
+La información de «preparación» anterior queda actualizada por los siguientes hechos comprobados:
+
+- **Conexión por CLI operativa**: proyecto `lwuzkjvolxwkxdyafcjv` enlazado desde la carpeta correcta de la web, con consulta SQL real exitosa mediante `supabase db query --linked --project-ref`.
+- **Base instalada:** cinco tablas de comunidad; las cinco con RLS activo; cuatro políticas, cuatro funciones y cuatro triggers; las tablas inicialmente vacías.
+- **Semilla de conversaciones instalada:** 18 temas (1 PD, 11 ART y 6 temas de testimonios), todos con `enabled=false`; los lectores no pueden participar aún.
+- **Verificación real:** 0 comentarios, 0 moderadores, acceso público a reportes y auditoría bloqueado, no se permiten envíos anónimos.
+- **Seguridad:** se detectó una función preexistente `public.rls_auto_enable()` ejecutable por usuarios anónimos; se revocó su acceso público sin eliminar la función. `supabase db advisors --type security --level warn`: **No issues found**.
+- **Claves:** clave `sb_publishable_` y clave de servidor `sb_secret_` del proyecto correcto configuradas en `.env.local`, excluido de GitHub. **No se imprimieron ni publicaron.**
+- **Cierre editorial:** `NEXT_PUBLIC_COMUNIDAD_ACTIVA=false` en el entorno local; el generador de hilos produce `enabled=false` por defecto. La apertura requiere autorización expresa, correo de moderador y política de privacidad aprobada.
+- **Precaución:** CMD necesita `cd /d "D:\01 PALABRAS QUE DESPIERTAN\PÁGINA WEB"` para cambiar de unidad. El enlace ejecutado inicialmente desde C: quedó en el perfil del usuario; utilizar siempre la carpeta correcta de la web.
+
+Los cambios de ART-011 aparecieron simultáneamente en otra tarea editorial. La base real usa 11 artículos aprobados. Para el commit actual de preparación, el archivo de semilla en Git se mantiene coherente con los 10 artículos de la rama base (17 hilos, cerrados); al integrar el siguiente artículo, regenerar la semilla desde el catálogo oficial y revisarla antes de aplicar cambios.

@@ -40,6 +40,8 @@ test("la semilla contiene solamente hilos vigentes y autorizados",()=>{
  assert.equal(new Set(ids).size,ids.length);
  assert.deepEqual(new Set(ids),new Set(expected));
  assert.match(seed,/update public\.discussion_subjects set enabled=false/);
+ assert.equal((seed.match(/,\s*false\)/g)??[]).length,expected.length,"Todos los hilos nacen cerrados");
+ assert.equal((seed.match(/,\s*true\)/g)??[]).length,0,"Ningún hilo queda abierto por defecto");
 });
 
 test("la auditoría PostgreSQL se registra con la decisión en la misma transacción",()=>{

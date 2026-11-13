@@ -281,17 +281,9 @@ grant all on public.discussion_subjects, public.discussion_entries,
  public.discussion_reports,public.discussion_moderators,public.discussion_audit to service_role;
 grant usage,select on sequence public.discussion_audit_id_seq to service_role;
 
--- SOLO los temas expresamente propuestos y el mensaje publicado PD-001 se activan.
-insert into public.discussion_subjects(kind,subject_id,title,enabled) values
- ('mensaje','pd-001-dios-ya-lo-sabe','Dios ya lo sabe',true),
- ('tema','orar-cuando-cuesta','Orar cuando cuesta',true),
- ('tema','confiar-en-la-sequia','Confiar en medio de la sequía',true),
- ('tema','perdon-y-camino','El perdón como camino',true),
- ('tema','esperanza-ante-la-perdida','Esperanza ante la pérdida',true),
- ('tema','dios-en-lo-cotidiano','Dios en la vida cotidiana',true),
- ('tema','servir-al-projimo','Servir al prójimo',true)
-on conflict (kind,subject_id) do update
-  set title=excluded.title,enabled=excluded.enabled;
+-- Los hilos se importan desde database/community-seed.sql DESPUÉS de
+-- instalar la estructura y revisar los artículos aprobados.
+-- Ningún hilo debe abrirse a usuarios hasta aprobar privacidad y moderación.
 
 -- Los ART-001 a ART-010 aprobados se habilitan únicamente al ejecutar
 -- database/community-seed.sql, generado con las listas blancas vigentes.

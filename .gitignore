@@ -10,6 +10,8 @@ tsconfig.tsbuildinfo
 .env.*
 !.env.example
 .vercel/
+/supabase/.temp/
+/supabase/.branches/
 .DS_Store
 
 # Documentación y material de trabajo SOLO LOCAL
