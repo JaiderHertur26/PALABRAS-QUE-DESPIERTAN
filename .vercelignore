@@ -1,0 +1,13 @@
+# Lista positiva: nunca cargar documentación interna ni credenciales en un despliegue por CLI.
+/*
+!app
+!components
+!lib
+!data
+!public
+!package.json
+!package-lock.json
+!tsconfig.json
+!next-env.d.ts
+!next.config.ts
+!vercel.json
