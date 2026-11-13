@@ -34,11 +34,22 @@ export function AuthPanel({onUserChange,soloAcceso=false}: {onUserChange?:(logge
    setMessage("Comprueba la dirección de correo.");return;
   }
   setSending(true);setMessage("");
-  const {error}=await supabase.auth.signInWithOtp({
-   email:email.trim(),options:{emailRedirectTo:window.location.origin+"/auth/callback",shouldCreateUser:true}
-  });
-  setMessage(error?"No fue posible enviar el correo. Comprueba la dirección e inténtalo después.":"Revisa tu correo y abre el enlace de acceso. Por seguridad, comprueba también la carpeta de no deseados.");
-  setSending(false);
+  try{
+   const {error}=await supabase.auth.signInWithOtp({
+    email:email.trim(),options:{emailRedirectTo:window.location.origin+"/auth/callback",shouldCreateUser:true}
+   });
+   if(!error){
+    setMessage("Enlace enviado. Revisa tu bandeja de entrada y el correo no deseado. Utiliza el enlace más reciente.");
+   }else if(error.code==="over_email_send_rate_limit"){
+    setMessage("Se alcanzó temporalmente el límite de correos del servicio. Inténtalo más tarde; no es un problema con tu dirección.");
+   }else if(error.code==="over_request_rate_limit"||error.code==="otp_disabled"||error.status===429){
+    setMessage("Has solicitado un enlace hace poco. Revisa tu correo y espera al menos un minuto antes de solicitar otro.");
+   }else{
+    setMessage("No pudimos enviar el enlace en este momento. Inténtalo más tarde o escribe a pquedespiertan@gmail.com.");
+   }
+  }catch{
+   setMessage("No fue posible comunicarse con el servicio de correo. Comprueba tu conexión e inténtalo nuevamente.");
+  }finally{setSending(false);}
  }
  async function salir(){
   if(!supabase)return;

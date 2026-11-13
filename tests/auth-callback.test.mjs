@@ -38,3 +38,14 @@ test("el proxy de Next actualiza cookies y evita cachés en rutas autenticadas",
  assert.match(src,/palabrasquedespiertan\.vercel\.app/);
  assert.match(src,/www\.palabrasquedespiertan\.online/);
 });
+
+
+test("el formulario de acceso distingue límites de correo y fallos de conexión",()=>{
+ const src=read("components/community/AuthPanel.tsx");
+ assert.match(src,/error\.code==="over_email_send_rate_limit"/);
+ assert.match(src,/error\.code==="over_request_rate_limit"/);
+ assert.match(src,/error\.status===429/);
+ assert.match(src,/no es un problema con tu dirección/);
+ assert.match(src,/finally\{setSending\(false\);\}/);
+ assert.match(src,/Enlace enviado/);
+});

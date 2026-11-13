@@ -152,3 +152,8 @@ La cuenta moderadora principal `pquedespiertan@gmail.com` debe entrar desde su p
 ## Corrección del inicio de sesión editorial 0.4.3
 
 La autenticación PKCE ahora conserva las cookies en la respuesta HTTP del callback. Las sesiones se actualizan en las rutas protegidas, y un visitante sin sesión es dirigido a `/participar` en lugar de recibir una página 404. El acceso editorial sigue condicionado a cuenta confirmada y rol registrado en Supabase. La cuenta principal `pquedespiertan@gmail.com` ya está verificada; para abrir el panel desde el dominio oficial debe iniciar una sesión nueva mediante el enlace por correo.
+
+
+## Corrección del correo — límite de envíos (13/11/2026)
+
+El error visible "No fue posible enviar el correo" fue diagnosticado directamente en Supabase como `429 over_email_send_rate_limit`. A pesar de tener el SMTP de Resend operativo, el proyecto `lwuzkjvolxwkxdyafcjv` seguía limitado a **2 correos por hora**. Se ajustó `auth.rate_limit.email_sent` a **30 correos por hora** en la configuración privada de Supabase y se verificó que no quedan diferencias entre configuración local y remota. Una prueba posterior con el correo editorial fue aceptada por Supabase y Resend registró el mensaje como entregado. La dirección sigue verificada y con rol de moderador. El formulario ahora distingue los errores por límite de cuota, por solicitudes demasiado frecuentes y por problemas de conectividad sin mostrar secretos. Las claves no se almacenan en el repositorio.
