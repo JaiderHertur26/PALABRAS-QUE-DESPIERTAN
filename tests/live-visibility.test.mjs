@@ -22,3 +22,10 @@ test("Los comentarios no aceptan hilos invisibles",()=>{
  assert.match(read("lib/editorial-live.ts"),/scheduled_at/);
  assert.match(read("lib/editorial-live.ts"),/server-only/);
 });
+
+test("los artículos programados muestran la fecha real de su publicación",()=>{
+ const live=read("lib/editorial-live.ts");
+ assert.match(live,/row\.published_at\?\.slice\(0,10\)\|\|row\.scheduled_at\?\.slice\(0,10\)/);
+ assert.match(live,/contenido:body,referencias:original\?\.referencias\|\|\[\],fecha,/);
+ assert.match(read("app/articulos/[slug]/page.tsx"),/Publicado el/);
+});

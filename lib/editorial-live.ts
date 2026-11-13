@@ -38,11 +38,11 @@ export async function publicArticulos():Promise<ArticuloPublico[]>{
  return list.map(row=>{
   const original=originals.get(row.slug);
   const body=row.body.trim()||original?.contenido||"";
-  const fecha=row.published_at?.slice(0,10)||"2026-11-13";
+  const fecha=row.published_at?.slice(0,10)||row.scheduled_at?.slice(0,10)||original?.fecha||"2026-11-13";
   return {
    id:row.code,slug:row.slug,titulo:row.title,subtitulo:row.subtitle,
    resumen:row.summary||original?.resumen||"",abstract:original?.abstract||"",
-   contenido:body,referencias:original?.referencias||[],fecha:original?.fecha||fecha,
+   contenido:body,referencias:original?.referencias||[],fecha,
    fechaEdicion:original?.fechaEdicion||fecha,autor:original?.autor||"P. Jaider Herrera Turizo",
    integridad:original?.integridad||"",palabras:body.trim().split(/\s+/).length,
    estado:"PUBLICADO EN REVISTA PROPIA",imagen:row.cover_url||original?.imagen||undefined

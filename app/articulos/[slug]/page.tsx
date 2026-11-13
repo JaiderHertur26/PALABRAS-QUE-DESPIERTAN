@@ -48,7 +48,7 @@ export default async function Articulo({params}:{params:Promise<{slug:string}>})
     <p className="eyebrow">PALABRAS QUE DESPIERTAN · {a.id} · INVESTIGACIÓN TEOLÓGICA</p>
     <h1>{a.titulo}</h1>
     {a.subtitulo && <p className="research-subtitle">{a.subtitulo}</p>}
-    <div className="research-byline"><span>{a.autor}</span><span>Edición 2026</span><span>{Math.max(1,Math.round((a.palabras||0)/230))} min de lectura</span></div>
+    <div className="research-byline"><span>{a.autor}</span><span>Publicado el {new Date(a.fecha+"T12:00:00Z").toLocaleDateString("es-CO",{day:"numeric",month:"long",year:"numeric",timeZone:"UTC"})}</span><span>{Math.max(1,Math.round((a.palabras||0)/230))} min de lectura</span></div>
    </header>
    <div className="research-article-grid">
     <aside className="research-aside" aria-label="Navegación por el artículo">
