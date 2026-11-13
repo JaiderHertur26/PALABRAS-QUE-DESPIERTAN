@@ -5,18 +5,14 @@ export const metadata:Metadata={title:"Privacidad",robots:{index:false,follow:fa
 export default function Privacidad(){
  return <section className="shell content-page narrow">
   <Breadcrumbs items={[{texto:"Privacidad"}]}/>
-  <SectionIntro eyebrow="INFORMACIÓN DEL SITIO" title="Privacidad y tratamiento de datos" description="Información provisional sobre las funciones de esta primera versión. Se revisará antes del lanzamiento público definitivo."/>
+  <SectionIntro eyebrow="INFORMACIÓN PROVISIONAL" title="Privacidad y tratamiento de datos" description="Estas medidas describen el sistema previsto para comentarios y testimonios. La política definitiva, los responsables y los canales para ejercer derechos deberán aprobarse antes de habilitar la participación pública."/>
   <div className="policy-content">
-   <h2>Lectura sin registro</h2>
-   <p>En la versión actual puedes consultar los mensajes públicos sin crear una cuenta. No existe un formulario de registro ni se solicitan datos personales mediante el sitio.</p>
-   <h2>Contacto</h2>
-   <p>El formulario de contacto no está habilitado porque aún no hay un canal de recepción aprobado ni un proceso definido para gestionar los mensajes de los lectores.</p>
-   <h2>Servicios técnicos</h2>
-   <p>Cuando el sitio se aloje en una plataforma, el proveedor de infraestructura podrá procesar datos técnicos indispensables para servir las páginas, como solicitudes y registros operativos, de acuerdo con sus políticas. Esta versión no incorpora herramientas propias de analítica publicitaria ni rastreadores de mercadeo.</p>
-   <h2>Enlaces externos</h2>
-   <p>Al visitar un enlace hacia Instagram u otra plataforma, se aplican las condiciones de privacidad del servicio de destino.</p>
-   <h2>Antes del lanzamiento</h2>
-   <p>Se completará esta información con los datos de contacto autorizados, los servicios efectivamente utilizados y los procedimientos que correspondan. Este texto no sustituye una política jurídica revisada para un despliegue público definitivo.</p>
+   <h2>Lectura sin crear una cuenta</h2><p>La lectura pública no requiere registro. Para dejar comentarios, responder o enviar testimonios se prevé la verificación mediante un enlace enviado al correo electrónico.</p>
+   <h2>Datos que se tratarían al participar</h2><p>El proveedor de autenticación conservaría los datos necesarios para verificar la cuenta. La revista registraría el nombre público elegido, el texto enviado, su tema, fecha, estado editorial y referencia técnica de la cuenta. El correo y las referencias de cuenta no aparecerían en las publicaciones visibles.</p>
+   <h2>Revisión antes de publicar</h2><p>Ninguna aportación se mostraría públicamente sin revisión. Los moderadores autorizados podrían leer el contenido pendiente, atender reportes, aprobar o rechazar publicaciones y conservar un historial de decisiones para seguridad editorial.</p>
+   <h2>Información que no debes publicar</h2><p>No compartas datos de menores, información médica o íntima, situaciones personales identificables de terceros, datos de contacto privados ni confidencias sacramentales. Un testimonio es una experiencia personal que se comparte voluntariamente.</p>
+   <h2>Derechos, conservación y contacto</h2><p>Antes del lanzamiento se definirán el responsable del tratamiento, la base jurídica aplicable, el tiempo de conservación, los procedimientos para solicitudes de consulta o eliminación y un canal de contacto verificado. Hasta que esto ocurra, el envío de participaciones permanecerá cerrado.</p>
+   <h2>Servicios técnicos y enlaces</h2><p>El alojamiento y la autenticación pueden procesar datos técnicos indispensables para el funcionamiento. Los enlaces externos se rigen por las condiciones del servicio de destino. La versión actual no incorpora analítica publicitaria propia.</p>
   </div>
  </section>;
 }

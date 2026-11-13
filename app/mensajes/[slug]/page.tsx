@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { ReaderTools } from "@/components/ReaderTools";
+import {Discussion} from "@/components/community/Discussion";
 import {encontrarMensaje, mensajes, fechaDePublicacion, seriePorId, siguienteYAnterior} from "@/lib/editorial";
 
 export const dynamicParams=false;
@@ -44,6 +45,7 @@ export default async function DetalleMensaje({params}:{params:Promise<{slug:stri
     </div>
    </div>
   </div>
+  <Discussion tipo="mensaje" id={m.slug} titulo={m.titulo}/>
   <nav className="reading-navigation" aria-label="Navegar entre mensajes publicados">
     {vecinos.anterior ? <Link href={`/mensajes/${vecinos.anterior.slug}`}>← Anterior <strong>{vecinos.anterior.titulo}</strong></Link> : <span/>}
     <Link className="all-messages-link" href="/mensajes">Todos los mensajes</Link>

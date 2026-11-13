@@ -71,3 +71,20 @@ Ambos mantienen sus SHA256 oficiales. La tarjeta PD-001 es un contenido editoria
 Validación final de diseño en teléfono real; autorización de textos legales y canal de contacto; comprobación de redes oficiales; elección de dominio; revisión SEO para habilitar indexación solo al publicarse; definir rama `main` de producción; decidir y autorizar integración del Centro Editorial.
 
 **No publicar automáticamente las piezas programadas ni promocionar una compilación sin consentimiento editorial.**
+
+
+## Revista y comunidad 0.3 (13/11/2026)
+
+El sitio incluye revista de investigación teológica, diez artículos originales autorizados, seis temas de testimonios y módulos de comentarios para mensajes, artículos y debates temáticos.
+
+**Participación aún no activa:** se necesita un proyecto Supabase específico para esta revista, autenticación por correo, cuenta moderadora y política de privacidad definitiva. Nunca utilizar bases de otros proyectos.
+
+- `npm run check:articles`: revisión de los ART autorizados.
+- `npm run community:seed`: genera SQL de hilos habilitables solo de piezas publicadas y temas aprobados.
+- `database/schema.sql` y `database/community-seed.sql`: preparar únicamente en Supabase dedicado.
+- `database/README.md`: despliegue, RLS, privacidad, moderación, reportes y procedimiento de seguridad.
+- `/revista`, `/articulos`, `/testimonios`, `/participar`: secciones públicas de lectura.
+- `/moderacion`: acceso restringido a la cuenta editorial previamente autorizada.
+- `npm run verify` y `npm run smoke`: pruebas y compilación.
+
+**Estado editorial:** el contenido publicado de mensajes y artículos se controla mediante listas blancas independientes; un manuscrito que no haya sido autorizado no se muestra. Las imágenes originales se mantienen inalteradas. No se activó ningún despliegue de producción en esta entrega.

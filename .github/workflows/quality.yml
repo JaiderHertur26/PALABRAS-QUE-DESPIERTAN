@@ -5,6 +5,7 @@ on:
     branches:
       - desarrollo-web-v0-1
       - mejoras-web-v0-2
+      - revista-comunidad-v0-3
       - main
   pull_request:
 
@@ -30,6 +31,8 @@ jobs:
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Verificar integridad editorial
         run: npm run check:editorial
+      - name: Verificar artículos teológicos autorizados
+        run: npm run check:articles
       - name: Ejecutar pruebas unitarias
         run: npm test
       - name: Compilar el sitio

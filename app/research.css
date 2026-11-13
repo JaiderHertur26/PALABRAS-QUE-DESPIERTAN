@@ -1,0 +1,103 @@
+/* PALABRAS QUE DESPIERTAN · Revista de investigación teológica */
+.research-library{padding-top:2.7rem;padding-bottom:6rem;min-height:75vh}
+.research-library-header{max-width:1100px;margin:2rem 0 2.8rem;border-bottom:1px solid var(--line-soft);padding-bottom:2.7rem}
+.research-library-header h1{font-size:clamp(2.8rem,5vw,5rem);max-width:18ch;color:var(--gold-bright);letter-spacing:-.03em}
+.research-library-header .lead{max-width:850px;color:#e5d3b9}
+.research-library-stats{display:flex;flex-wrap:wrap;gap:1.3rem;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);margin-top:2rem}
+.research-library-stats span:not(:last-child){padding-right:1.3rem;border-right:1px solid var(--line)}
+.research-library-intro{display:flex;gap:2rem;align-items:center;justify-content:space-between;max-width:1200px;margin-bottom:2.6rem}
+.research-library-intro p{font-family:var(--serif);color:var(--muted);font-size:1.04rem;line-height:1.7;margin:0}
+.research-library-intro a{flex-shrink:0}
+.research-section-top{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;border-bottom:1px solid var(--line-soft);margin:0 0 1.5rem}
+.research-section-top h2{font-size:clamp(1.6rem,2.5vw,2.4rem);color:var(--cream);margin-bottom:.7rem}
+.research-section-top>span{font-size:.74rem;color:var(--gold);letter-spacing:.1em;white-space:nowrap}
+.research-library-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem 1.2rem}
+.research-card{display:grid;grid-template-columns:70px minmax(0,1fr);gap:1.2rem;min-width:0;padding:1.65rem;background:linear-gradient(137deg,#20160e,#0f0b08);border:1px solid #70523388;transition:border-color .2s,transform .2s}
+.research-card:hover{border-color:#c3995c;transform:translateY(-2px)}
+.research-card-number{font-family:var(--serif);font-size:3.65rem;line-height:1;color:#b78c55;padding-top:.2rem;font-variant-numeric:tabular-nums}
+.research-card .eyebrow{margin:0 0 .5rem;font-size:.66rem}
+.research-card h3{font-size:clamp(1.35rem,1.8vw,1.88rem);line-height:1.22;margin:0 0 .5rem;color:var(--gold-bright)}
+.research-card-subtitle{font-family:var(--serif);font-size:1.03rem;color:#d4bea0;margin:0 0 .9rem}
+.research-card-excerpt{font-family:var(--serif);line-height:1.62;color:var(--muted);font-size:.97rem;margin:0 0 1.1rem}
+.research-card-footer{border-top:1px solid var(--line-soft);padding-top:.9rem;display:flex;gap:.5rem;flex-wrap:wrap;justify-content:space-between;align-items:center}
+.research-card-footer span{color:var(--muted-dark);font-size:.75rem}
+.research-card-footer a{font-size:.79rem;font-weight:600;color:var(--gold-bright)}
+.research-library-note{padding-top:1.5rem;margin-top:2.2rem;border-top:1px solid var(--line-soft);color:var(--muted-dark)}
+.research-library-note p{font-family:var(--serif);font-style:italic;margin:0}
+.research-article{padding:2.5rem 0 5rem}
+.research-article-header{max-width:1150px;padding:1.4rem 0 2.5rem;margin-bottom:2.3rem;border-bottom:1px solid var(--line)}
+.research-article-header h1{color:var(--gold-bright);font-size:clamp(2.45rem,4.9vw,5.4rem);line-height:1.13;margin:.45rem 0 1rem;max-width:22ch}
+.research-subtitle{font-family:var(--serif);font-size:clamp(1.25rem,2.15vw,1.85rem);line-height:1.45;max-width:40ch;color:#e3d1b6}
+.research-byline{display:flex;flex-wrap:wrap;gap:1rem;color:var(--muted-dark);font-size:.8rem;letter-spacing:.035em}
+.research-byline span:not(:last-child){padding-right:1rem;border-right:1px solid var(--line)}
+.research-article-grid{display:grid;grid-template-columns:minmax(220px,280px) minmax(0,850px);gap:clamp(2rem,5vw,5rem);align-items:start}
+.research-aside{position:relative;min-width:0}
+.research-toc{position:sticky;top:1rem;max-height:calc(100vh - 2.5rem);overflow-y:auto;scrollbar-width:thin;border-top:2px solid var(--gold);padding:1.1rem 1rem 1rem 0}
+.research-toc .eyebrow{font-size:.65rem;margin-bottom:1rem}
+.research-toc ol{margin:0;padding-left:1.1rem;display:grid;gap:.62rem}
+.research-toc li{font-size:.77rem;color:var(--muted-dark);line-height:1.36;padding-left:.15rem}
+.research-toc li a{color:#d5c5b0}
+.research-toc li a:hover{color:var(--gold-bright)}
+.research-return{display:inline-block;margin-top:1.5rem;color:var(--gold-bright);font-size:.75rem;letter-spacing:.05em}
+.research-reading{min-width:0}
+.research-abstract{padding:1.4rem 1.8rem;margin:0 0 3rem;background:linear-gradient(120deg,#271b10,#171008);border-left:3px solid #d5aa6c}
+.research-abstract .eyebrow{margin-bottom:.9rem}
+.research-abstract p:not(.eyebrow){font-family:var(--serif);font-size:1.14rem;line-height:1.82;color:#e9dcc8;margin:0;max-width:none}
+.research-prose{font-family:var(--serif);font-size:clamp(1.04rem,1.35vw,1.23rem);line-height:1.93;color:#ece0cd}
+.research-prose h2{scroll-margin-top:2rem;font-size:clamp(1.6rem,2.4vw,2.2rem);line-height:1.28;color:var(--gold-bright);border-top:1px solid var(--line-soft);padding-top:2.4rem;margin:3.2rem 0 1.15rem}
+.research-prose h3{scroll-margin-top:2rem;font-size:clamp(1.3rem,1.8vw,1.6rem);color:#e2c6a0;margin:2rem 0 .8rem}
+.research-prose p{margin:0 0 1.6rem;max-width:unset;overflow-wrap:anywhere}
+.research-prose strong{color:#fff3d7;font-weight:600}
+.research-prose em{color:#e7cda2}
+.research-prose ul,.research-prose ol{margin:.6rem 0 1.7rem;padding-left:1.5rem}
+.research-prose li{padding-left:.35rem;margin:.25rem 0;overflow-wrap:anywhere}
+.research-prose li::marker{color:var(--gold)}
+.research-prose .article-external{font-size:.89em;word-break:break-word}
+.research-prose hr{height:1px;border:0;background:var(--line-soft);margin:2rem 0}
+.research-editorial-footnote{margin-top:3rem;border-top:1px solid var(--line-soft);padding:1.5rem;background:#170f09}
+.research-editorial-footnote p{font-family:var(--sans);font-size:.82rem;line-height:1.8;color:var(--muted);max-width:none;margin:0}
+.research-pagination{margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--line-soft);display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+.research-pagination>a{padding:1.3rem 1.5rem;border:1px solid var(--line-soft);background:linear-gradient(125deg,#21170e,#100c08);display:block;min-width:0}
+.research-pagination>a:hover{border-color:var(--gold);color:var(--gold-bright)}
+.research-pagination>a:last-child{text-align:right}
+.research-pagination small{display:block;font-size:.66rem;letter-spacing:.12em;color:var(--gold);margin-bottom:.7rem}
+.research-pagination strong{font-family:var(--serif);font-size:1.16rem;font-weight:500;line-height:1.3}
+.research-bottom{display:flex;justify-content:center;margin:2.5rem 0 0}
+@media(max-width:1020px){
+ .research-library-grid{grid-template-columns:1fr}
+ .research-article-grid{grid-template-columns:minmax(180px,240px) minmax(0,1fr);gap:1.4rem}
+}
+@media(max-width:760px){
+ .research-library{padding-top:1.5rem}
+ .research-library-intro{flex-direction:column;align-items:start}
+ .research-article-grid{grid-template-columns:1fr}
+ .research-aside{order:0}
+ .research-toc{position:relative;max-height:none;padding:.9rem 0 1.1rem;border-top:1px solid var(--gold);border-bottom:1px solid var(--line-soft)}
+ .research-toc ol{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.45rem 1rem}
+ .research-article-header{padding-top:0}
+ .research-card{grid-template-columns:50px minmax(0,1fr);padding:1.1rem;gap:.7rem}
+ .research-card-number{font-size:2.8rem}
+}
+@media(max-width:510px){
+ .research-toc ol{grid-template-columns:1fr}
+ .research-article-header h1{font-size:2.35rem}
+ .research-library-stats{display:grid;gap:.4rem}
+ .research-library-stats span:not(:last-child){border-right:0}
+ .research-abstract{padding:1.2rem}
+ .research-prose{font-size:1.07rem;line-height:1.77}
+ .research-pagination{grid-template-columns:1fr}
+ .research-pagination>a:last-child{text-align:left}
+}
+@media print{
+ body{background:white!important;color:#222!important}
+ .site-header,.site-footer,.research-aside,.research-pagination,.research-bottom,.research-toc,.breadcrumbs{display:none!important}
+ .research-article{padding:0}
+ .research-article-grid{display:block}
+ .research-prose{color:#222;font-size:11pt;line-height:1.6}
+ .research-prose h2,.research-prose h3,.research-article-header h1{color:#222}
+ .research-abstract{background:#f2f2f2;color:#222;border-color:#999}
+ .research-abstract p:not(.eyebrow){color:#222}
+ .research-prose p{orphans:3;widows:3}
+ .research-prose h2,.research-prose h3{break-after:avoid}
+ a{color:#222!important;text-decoration:underline}
+}

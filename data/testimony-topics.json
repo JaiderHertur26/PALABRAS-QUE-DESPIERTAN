@@ -1,0 +1,68 @@
+[
+  {
+    "slug":"orar-cuando-cuesta",
+    "titulo":"Orar cuando cuesta",
+    "subtitulo":"Cuando las palabras no llegan, la relación permanece.",
+    "pregunta":"¿Qué te ha ayudado a permanecer en la oración durante un tiempo difícil?",
+    "introduccion":"La oración no existe para informar a Dios de lo que ya conoce. Es una relación que nos abre a su presencia, incluso cuando el corazón no encuentra palabras. Compartamos experiencias concretas, sin pretender que todos viven la fe de la misma manera.",
+    "referencia":"Mateo 6,8 · Romanos 8,26",
+    "categoria":"Oración",
+    "numero":"01",
+    "destacado":true
+  },
+  {
+    "slug":"confiar-en-la-sequia",
+    "titulo":"Confiar en medio de la sequía",
+    "subtitulo":"La raíz puede alcanzar el agua aunque el paisaje no cambie.",
+    "pregunta":"¿De qué manera has descubierto un sostén en Dios sin que desaparecieran las dificultades?",
+    "introduccion":"Jeremías presenta la confianza como unas raíces que alcanzan el agua. No promete ausencia de problemas; invita a reconocer en Dios la fuente que sostiene. Este espacio acoge relatos de perseverancia, ayuda recibida y esperanza realista.",
+    "referencia":"Jeremías 17,7-8",
+    "categoria":"Confianza",
+    "numero":"02",
+    "destacado":true
+  },
+  {
+    "slug":"perdon-y-camino",
+    "titulo":"El perdón como camino",
+    "subtitulo":"Un proceso que reconoce la verdad y busca la libertad interior.",
+    "pregunta":"¿Qué has aprendido acerca del perdón, los límites sanos y la reconciliación?",
+    "introduccion":"El Evangelio nos llama al perdón. Eso no significa negar el daño, renunciar a la justicia ni obligar a una persona a retomar una relación insegura. Compartamos lo aprendido con prudencia, respeto y sin relatar datos íntimos de terceros.",
+    "referencia":"Mateo 18,21-22 · Efesios 4,32",
+    "categoria":"Relaciones",
+    "numero":"03",
+    "destacado":false
+  },
+  {
+    "slug":"esperanza-ante-la-perdida",
+    "titulo":"Esperanza ante la pérdida",
+    "subtitulo":"La fe acompaña las lágrimas, no las prohíbe.",
+    "pregunta":"¿Qué palabra, gesto o compañía te ayudó a sostener la esperanza en una experiencia de duelo?",
+    "introduccion":"La esperanza cristiana mira a la Resurrección sin pedirnos que neguemos el dolor. Este diálogo recibe testimonios respetuosos; no sustituye acompañamiento pastoral ni profesional cuando se necesita.",
+    "referencia":"Juan 11,25-26 · 1 Tesalonicenses 4,13-14",
+    "categoria":"Esperanza",
+    "numero":"04",
+    "destacado":false
+  },
+  {
+    "slug":"dios-en-lo-cotidiano",
+    "titulo":"Dios en la vida cotidiana",
+    "subtitulo":"La gracia también se reconoce en lo pequeño.",
+    "pregunta":"¿En qué gesto sencillo de tu vida has reconocido una invitación a amar o servir mejor?",
+    "introduccion":"No todo encuentro con Dios ocurre en momentos extraordinarios. Nuestra familia, el trabajo, el cuidado de los demás y las decisiones pequeñas pueden ser lugares para responder a su amor con libertad.",
+    "referencia":"Colosenses 3,17 · Lucas 24,13-35",
+    "categoria":"Vida y fe",
+    "numero":"05",
+    "destacado":false
+  },
+  {
+    "slug":"servir-al-projimo",
+    "titulo":"Servir al prójimo",
+    "subtitulo":"La fe que se vuelve un gesto concreto.",
+    "pregunta":"¿Qué experiencia de servicio transformó tu manera de mirar al otro?",
+    "introduccion":"Jesús une el amor a gestos reales. Un testimonio no tiene que describir grandes obras: también cuentan la escucha, la cercanía y el cuidado silencioso, vividos sin buscar reconocimiento personal.",
+    "referencia":"Juan 13,14-15 · 1 Corintios 13,4-7",
+    "categoria":"Caridad",
+    "numero":"06",
+    "destacado":false
+  }
+]

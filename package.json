@@ -1,18 +1,23 @@
 {
   "name": "palabras-que-despiertan-web",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "sync:editorial": "node scripts/sync-editorial.mjs",
+    "sync:articles": "node scripts/sync-articles.mjs",
+    "community:seed": "node scripts/generate-community-seed.mjs",
     "check:editorial": "node scripts/check-editorial.mjs",
-    "test": "node --test tests/editorial.test.mjs",
-    "verify": "npm run check:editorial && npm test && npm run build",
+    "check:articles": "node scripts/check-articles.mjs",
+    "test": "node --test tests/editorial.test.mjs tests/community.test.mjs tests/articles.test.mjs",
+    "verify": "npm run check:editorial && npm run check:articles && npm test && npm run build",
     "smoke": "node scripts/smoke-web.mjs"
   },
   "dependencies": {
+    "@supabase/ssr": "0.12.7",
+    "@supabase/supabase-js": "2.119.0",
     "next": "^16.0.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"

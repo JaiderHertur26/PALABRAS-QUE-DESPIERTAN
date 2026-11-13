@@ -7,19 +7,14 @@ export const metadata:Metadata={title:"Aviso legal",robots:{index:false,follow:f
 export default function AvisoLegal(){
  return <section className="shell content-page narrow">
   <Breadcrumbs items={[{texto:"Aviso legal"}]}/>
-  <SectionIntro eyebrow="RESPONSABILIDAD EDITORIAL" title="Aviso legal" description="Criterios de autoría, lectura y uso responsable de los contenidos de Palabras que despiertan."/>
+  <SectionIntro eyebrow="RESPONSABILIDAD EDITORIAL" title="Aviso legal" description="Criterios de autoría, participación y respeto a la identidad doctrinal de PALABRAS QUE DESPIERTAN."/>
   <div className="policy-content">
-   <h2>Identidad editorial</h2>
-   <p>El proyecto Palabras que despiertan identifica sus pensamientos y reflexiones con la firma <strong>{autor}</strong>.</p>
-   <h2>Contenido y autoría</h2>
-   <p>Los pensamientos originales y las imágenes editoriales identificadas pertenecen a sus respectivos titulares. La reproducción o adaptación fuera de los permisos otorgados requiere autorización.</p>
-   <h2>Referencias bíblicas</h2>
-   <p>Una referencia a la Sagrada Escritura señala el fundamento o la inspiración de una reflexión, pero no significa que el pensamiento del autor sea una transcripción literal del texto bíblico.</p>
-   <h2>Finalidad de este espacio</h2>
-   <p>Los contenidos buscan formar y suscitar reflexión personal desde la fe católica. No sustituyen asesoramiento profesional médico, psicológico, jurídico ni otras intervenciones especializadas cuando sean necesarias.</p>
-   <h2>Estado del sitio</h2>
-   <p>Esta versión está en desarrollo editorial. La información operativa y los canales de contacto se completarán antes de la publicación definitiva.</p>
-   <p><Link href="/contacto" className="text-link">Consultar la sección de contacto ↗</Link></p>
+   <h2>Identidad y obra editorial</h2><p>El proyecto PALABRAS QUE DESPIERTAN identifica sus pensamientos y reflexiones con la firma <strong>{autor}</strong>. Su orientación expresa es católica, fiel a la Sagrada Escritura, la Tradición y el Magisterio de la Iglesia.</p>
+   <h2>Autoría y reproducción</h2><p>La reproducción o adaptación de los pensamientos, artículos e imágenes originales fuera de los permisos aplicables requiere autorización. Los testimonios y comentarios pertenecen a sus autores, quienes conservan su responsabilidad sobre lo que compartan.</p>
+   <h2>Diferenciar las voces</h2><p>La enseñanza de la Iglesia, el trabajo teológico del autor y las experiencias personales de los lectores no tienen el mismo nivel de autoridad. Los testimonios no constituyen declaraciones doctrinales ni acreditan por sí solos hechos sobrenaturales.</p>
+   <h2>Moderación editorial</h2><p>La edición se reserva la revisión previa, rechazo o retirada razonada de comentarios y testimonios por motivos de dignidad, privacidad, respeto, seguridad, pertinencia o fidelidad a la línea editorial. Se permite expresar dudas y perspectivas distintas con respeto.</p>
+   <h2>Finalidad y límites</h2><p>Los textos buscan suscitar reflexión y acompañamiento espiritual; no reemplazan la atención clínica, psicológica, legal ni la orientación pastoral personal cuando sean necesarias.</p>
+   <p><Link href="/participar" className="text-link">Consultar normas de participación ↗</Link></p>
   </div>
  </section>;
 }

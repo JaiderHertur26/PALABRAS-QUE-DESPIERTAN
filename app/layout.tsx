@@ -2,6 +2,8 @@ import type {Metadata, Viewport} from "next";
 import "./globals.css";
 import "./site.css";
 import "./responsive.css";
+import "./research.css";
+import "./magazine-community.css";
 import {Header} from "@/components/Header";
 import {Footer} from "@/components/Footer";
 import {autor,descripcion,lema,nombreProyecto} from "@/lib/editorial";
@@ -24,7 +26,7 @@ export const metadata:Metadata = {
   images:[{url:"/identidad/portada-oficial.png",width:1024,height:1536,alt:"Portada original de Palabras que despiertan"}]
  },
  twitter:{card:"summary_large_image",title:nombreProyecto,description:descripcion,images:["/identidad/portada-oficial.png"]},
- robots:{index:false,follow:false,noarchive:true,nosnippet:false},
+ robots:{index:true,follow:true,noarchive:false,nosnippet:false},
  formatDetection:{email:false,address:false,telephone:false}
 };
 

@@ -7,16 +7,22 @@ export function Footer(){
     <span className="footer-cross" aria-hidden="true">✝</span>
     <div><p className="footer-name">{nombreProyecto}</p><p>{descripcion}</p><span className="footer-author">{autor}</span></div>
    </div>
-   <div><h2>Explorar</h2><nav aria-label="Enlaces de contenido">
-    <Link href="/mensajes">Mensajes publicados</Link>
-    <Link href="/series">Series temáticas</Link>
+   <div><h2>La revista</h2><nav aria-label="Lectura de la revista">
+    <Link href="/revista">Portada editorial</Link>
+    <Link href="/mensajes">Mensajes</Link>
+    <Link href="/articulos">Artículos teológicos</Link>
+    <Link href="/series">Series</Link>
     <Link href="/temporadas">Temporadas</Link>
-    <Link href="/teologia">Teología</Link>
    </nav></div>
-   <div><h2>El proyecto</h2><nav aria-label="Información del sitio">
+   <div><h2>Comunidad</h2><nav aria-label="Participación de la comunidad">
+    <Link href="/testimonios">Testimonios</Link>
+    <Link href="/participar">Normas de participación</Link>
+    <Link href="/teologia">Fundamento teológico</Link>
     <Link href="/autor">Sobre el autor</Link>
-    <Link href="/redes">Redes</Link>
     <Link href="/contacto">Contacto</Link>
+   </nav></div>
+   <div><h2>Información</h2><nav aria-label="Información del sitio">
+    <Link href="/redes">Redes sociales</Link>
     <Link href="/privacidad">Privacidad</Link>
     <Link href="/aviso-legal">Aviso legal</Link>
    </nav></div>

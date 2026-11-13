@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "autorizacion": "Autorización editorial expresa del autor para publicar ART-001 a ART-010 en la revista web propia, 13-11-2026",
+  "articulos": [
+    {
+      "id": "ART-001",
+      "autorizaWeb": true
+    },
+    {
+      "id": "ART-002",
+      "autorizaWeb": true
+    },
+    {
+      "id": "ART-003",
+      "autorizaWeb": true
+    },
+    {
+      "id": "ART-004",
+      "autorizaWeb": true
+    },
+    {
+      "id": "ART-005",
+      "autorizaWeb": true
+    },
+    {
+      "id": "ART-006",
+      "autorizaWeb": true
+    },
+    {
+      "id": "ART-007",
+      "autorizaWeb": true
+    },
+    {
+      "id": "ART-008",
+      "autorizaWeb": true
+    },
+    {
+      "id": "ART-009",
+      "autorizaWeb": true
+    },
+    {
+      "id": "ART-010",
+      "autorizaWeb": true
+    }
+  ]
+}

@@ -21,6 +21,8 @@ tsconfig.tsbuildinfo
 /VERCEL/
 /Maqueta Técnica/
 /VISTA_PREVIA*.png
+/VISTA_V03_*.png
+/VISTA_*.png
 
 # Archivos de sistema
 Thumbs.db
