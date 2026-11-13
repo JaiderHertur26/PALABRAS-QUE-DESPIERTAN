@@ -15,7 +15,7 @@ const allow=JSON.parse(await fs.readFile(path.join(web,"data","article-publicati
 const allowed=new Set(allow.articulos.filter(x=>x.autorizaWeb===true).map(x=>x.id));
 const bad=m=>{throw new Error("CONTROL DE ARTÍCULOS: "+m)};
 if(data.version!==2||!Array.isArray(data.articulos)||!Array.isArray(allow.articulos))bad("formatos no reconocidos");
-if(allowed.size!==10||data.articulos.length!==10)bad("se esperaban 10 aprobados y autorizados");
+if(allowed.size<1||data.articulos.length!==allowed.size)bad("cantidad de aprobados no coincide con lista blanca");
 const slugs=new Set();
 for(const a of data.articulos){
  if(!allowed.has(a.id)||!/^ART-\d{3}$/.test(a.id))bad("no autorizado "+a.id);

@@ -1,18 +1,30 @@
 import type {Metadata} from "next";
 import {Breadcrumbs} from "@/components/Breadcrumbs";
 import {SectionIntro} from "@/components/SectionIntro";
-export const metadata:Metadata={title:"Privacidad",robots:{index:false,follow:false}};
+
+export const metadata:Metadata={title:"Privacidad y protección de datos",description:"Tratamiento de datos y derechos de los lectores de Palabras que despiertan."};
 export default function Privacidad(){
  return <section className="shell content-page narrow">
   <Breadcrumbs items={[{texto:"Privacidad"}]}/>
-  <SectionIntro eyebrow="INFORMACIÓN PROVISIONAL" title="Privacidad y tratamiento de datos" description="Estas medidas describen el sistema previsto para comentarios y testimonios. La política definitiva, los responsables y los canales para ejercer derechos deberán aprobarse antes de habilitar la participación pública."/>
+  <SectionIntro eyebrow="PRIVACIDAD DE LOS LECTORES" title="Política de tratamiento de datos personales" description="Información clara sobre el acceso, las conversaciones, los testimonios y el ejercicio de tus derechos."/>
   <div className="policy-content">
-   <h2>Lectura sin crear una cuenta</h2><p>La lectura pública no requiere registro. Para dejar comentarios, responder o enviar testimonios se prevé la verificación mediante un enlace enviado al correo electrónico.</p>
-   <h2>Datos que se tratarían al participar</h2><p>El proveedor de autenticación conservaría los datos necesarios para verificar la cuenta. La revista registraría el nombre público elegido, el texto enviado, su tema, fecha, estado editorial y referencia técnica de la cuenta. El correo y las referencias de cuenta no aparecerían en las publicaciones visibles.</p>
-   <h2>Revisión antes de publicar</h2><p>Ninguna aportación se mostraría públicamente sin revisión. Los moderadores autorizados podrían leer el contenido pendiente, atender reportes, aprobar o rechazar publicaciones y conservar un historial de decisiones para seguridad editorial.</p>
-   <h2>Información que no debes publicar</h2><p>No compartas datos de menores, información médica o íntima, situaciones personales identificables de terceros, datos de contacto privados ni confidencias sacramentales. Un testimonio es una experiencia personal que se comparte voluntariamente.</p>
-   <h2>Derechos, conservación y contacto</h2><p>Antes del lanzamiento se definirán el responsable del tratamiento, la base jurídica aplicable, el tiempo de conservación, los procedimientos para solicitudes de consulta o eliminación y un canal de contacto verificado. Hasta que esto ocurra, el envío de participaciones permanecerá cerrado.</p>
-   <h2>Servicios técnicos y enlaces</h2><p>El alojamiento y la autenticación pueden procesar datos técnicos indispensables para el funcionamiento. Los enlaces externos se rigen por las condiciones del servicio de destino. La versión actual no incorpora analítica publicitaria propia.</p>
+   <h2>Responsable y contacto</h2>
+   <p>El proyecto editorial PALABRAS QUE DESPIERTAN, dirigido por el P. Jaider Herrera Turizo, administra los contenidos y la participación de la revista. Para consultas y solicitudes relacionadas con tus datos, escribe a <a href="mailto:pquedespiertan@gmail.com">pquedespiertan@gmail.com</a>.</p>
+   <h2>¿Qué información recogemos?</h2>
+   <p>Leer la revista no exige registrarse. Si decides participar, usamos tu correo electrónico para verificar el acceso y conservar la cuenta; recogemos el seudónimo o nombre público que elijas, el texto de comentarios y testimonios, su tema, la fecha, los reportes de seguridad y los registros imprescindibles para administrar la comunidad. Tu correo, el identificador interno de usuario y los reportes no se publican.</p>
+   <h2>Finalidad y autorización</h2>
+   <p>Estos datos se usan exclusivamente para permitir el acceso, publicar tus participaciones, organizar respuestas, prevenir abusos, atender denuncias y gestionar solicitudes sobre tu información. Antes de publicar debes aceptar expresamente las normas de participación y el tratamiento aquí descrito. La participación es voluntaria y no condiciona la lectura.</p>
+   <h2>Publicación de comentarios y testimonios</h2>
+   <p>Los comentarios de usuarios con correo verificado se hacen públicos después de superar comprobaciones automáticas de seguridad, sin aprobación editorial previa. Se muestra el nombre público elegido y el texto. La dirección editorial podrá retirar contenidos abusivos, improcedentes o que expongan datos personales, y conservar registros de actuaciones para seguridad y atención de reclamaciones.</p>
+   <h2>Servicios y transferencias</h2>
+   <p>El sitio emplea Vercel para el alojamiento y Supabase para autenticación y datos de la comunidad. Estos proveedores pueden tratar información técnica en otras jurisdicciones conforme a sus condiciones. No vendemos datos de lectores ni habilitamos publicidad personalizada propia.</p>
+   <h2>Seguridad y conservación</h2>
+   <p>Aplicamos acceso restringido por funciones, verificación de correo, límites contra envíos excesivos y mecanismos de denuncia. Conservamos los datos mientras la cuenta y las participaciones sean necesarias para las finalidades indicadas o para gestionar solicitudes legítimas. Las solicitudes de eliminación se estudiarán atendiendo a las obligaciones legales y la integridad de las conversaciones.</p>
+   <h2>Tus derechos</h2>
+   <p>Puedes solicitar información, consulta, corrección, actualización, supresión o revocación del consentimiento escribiendo a <a href="mailto:pquedespiertan@gmail.com">pquedespiertan@gmail.com</a>, indicando desde el mismo correo de tu cuenta la petición y, si corresponde, el enlace a la publicación. Responderemos conforme a las normas colombianas de protección de datos personales, especialmente la Ley 1581 de 2012 y sus disposiciones aplicables.</p>
+   <h2>Cuidado de la privacidad de terceros</h2>
+   <p>No publiques datos de niños, niñas o adolescentes, información médica identificable, datos de contacto privados de otras personas, ni revelaciones protegidas por secreto pastoral o sacramental. Si identificas una publicación problemática, utiliza «Reportar» o escribe al correo editorial.</p>
+   <p><strong>Actualizada:</strong> 13 de noviembre de 2026.</p>
   </div>
  </section>;
 }

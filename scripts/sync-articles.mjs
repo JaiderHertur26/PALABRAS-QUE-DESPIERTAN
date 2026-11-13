@@ -89,7 +89,8 @@ for(const entry of allow.articulos){
  });
 }
 articles.sort((a,b)=>a.id.localeCompare(b.id));
-if(articles.length!==10)throw Error('Cantidad inesperada ART '+articles.length);
+const permitidos=allow.articulos.filter(x=>x.autorizaWeb===true).length;
+if(articles.length!==permitidos)throw Error('Cantidad inesperada ART '+articles.length+' en lugar de '+permitidos);
 const dest=path.join(web,'data','public-articles.json');
 const tmp=dest+'.tmp';
 await fs.writeFile(tmp,JSON.stringify({version:2,fuente:'Derivado verificable de ARTÍCULOS; solo aprobados y autorizados',articulos:articles},null,2)+'\n','utf8');

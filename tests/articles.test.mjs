@@ -9,11 +9,11 @@ const data=JSON.parse(fs.readFileSync(path.join(root,"data","public-articles.jso
 const allow=JSON.parse(fs.readFileSync(path.join(root,"data","article-publication-allowlist.json"),"utf8"));
 const ids=new Set(allow.articulos.filter(x=>x.autorizaWeb===true).map(x=>x.id));
 
-test("revista contiene exactamente las 10 investigaciones aprobadas",()=>{
+test("revista contiene las 12 investigaciones aprobadas",()=>{
  assert.equal(data.version,2);
- assert.equal(data.articulos.length,10);
- assert.deepEqual(data.articulos.map(x=>x.id),Array.from({length:10},(_,i)=>"ART-"+String(i+1).padStart(3,"0")));
- assert.equal(new Set(data.articulos.map(x=>x.slug)).size,10);
+ assert.equal(data.articulos.length,12);
+ assert.deepEqual(data.articulos.map(x=>x.id),Array.from({length:12},(_,i)=>"ART-"+String(i+1).padStart(3,"0")));
+ assert.equal(new Set(data.articulos.map(x=>x.slug)).size,12);
  for(const a of data.articulos){
   assert.ok(ids.has(a.id));
   assert.equal(a.autor,"P. Jaider Herrera Turizo");

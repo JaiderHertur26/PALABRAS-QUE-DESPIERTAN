@@ -20,6 +20,8 @@ insert into public.discussion_subjects(kind,subject_id,title,enabled) values
  ('articulo', 'art-007-hijos-en-el-hijo', 'Hijos en el Hijo', false),
  ('articulo', 'art-008-del-primer-aliento-al-espiritu-de-la-nueva-creacion', 'Del primer aliento al Espíritu de la nueva creación', false),
  ('articulo', 'art-009-la-confianza-como-reconocimiento-del-origen-y-del-destino-del-hombre', 'La confianza como reconocimiento del origen y del destino del hombre', false),
- ('articulo', 'art-010-orar-no-para-informar-a-dios-sino-para-abrir-el-corazon-a-su-presencia', 'Orar no para informar a Dios, sino para abrir el corazón a su presencia', false)
+ ('articulo', 'art-010-orar-no-para-informar-a-dios-sino-para-abrir-el-corazon-a-su-presencia', 'Orar no para informar a Dios, sino para abrir el corazón a su presencia', false),
+ ('articulo', 'art-011-el-rio-la-luz-y-los-frutos', 'El río, la luz y los frutos', false),
+ ('articulo', 'art-012-del-paraiso-perdido-a-la-jerusalen-celestial', 'Del paraíso perdido a la Jerusalén celestial', false)
 on conflict(kind,subject_id) do update set title=excluded.title, enabled=excluded.enabled;
 commit;

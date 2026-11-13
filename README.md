@@ -114,3 +114,17 @@ La información de «preparación» anterior queda actualizada por los siguiente
 - **Precaución:** CMD necesita `cd /d "D:\01 PALABRAS QUE DESPIERTAN\PÁGINA WEB"` para cambiar de unidad. El enlace ejecutado inicialmente desde C: quedó en el perfil del usuario; utilizar siempre la carpeta correcta de la web.
 
 Los cambios de ART-011 aparecieron simultáneamente en otra tarea editorial. La base real usa 11 artículos aprobados. Para el commit actual de preparación, el archivo de semilla en Git se mantiene coherente con los 10 artículos de la rama base (17 hilos, cerrados); al integrar el siguiente artículo, regenerar la semilla desde el catálogo oficial y revisarla antes de aplicar cambios.
+
+## 0.4.0 · Publicación directa, comunicación y seguridad
+
+**Correo editorial principal:** pquedespiertan@gmail.com. El proyecto Supabase conectado es exclusivamente `lwuzkjvolxwkxdyafcjv`.
+
+La base de datos instaló `database/community-live-publishing.sql`. Los comentarios y respuestas de lectores con correo confirmado y consentimiento se publican al enviarse (estado `approved`), sin espera de aprobación editorial. Los límites, la protección contra enlaces y correos ajenos, el bloqueo de respuestas cruzadas, la auditoría y la retirada por moderador se validaron mediante 17 pruebas contra la base real. Tras la prueba, los usuarios de test, mensajes y reportes fueron eliminados.
+
+La cuenta `pquedespiertan@gmail.com` está creada con permiso de moderador principal **pero no se ha comprobado todavía su acceso por correo**. Se requiere que el propietario abra un enlace de inicio de sesión; no se marcará la dirección como confirmada artificialmente.
+
+**Límite de servicio externo**: Supabase restringe su emisor SMTP predeterminado a correos de miembros del equipo y 2 mensajes/hora. Para que cualquier lector pueda iniciar sesión con enlace necesita un SMTP transaccional configurado (Resend, SendGrid, Brevo u otro proveedor). No se desactiva la confirmación de correo como atajo inseguro. Hasta completar ese envío y probar un lector externo, `NEXT_PUBLIC_COMUNIDAD_ACTIVA=false` mantiene la recepción de comentarios cerrada en producción, aunque el código y la base ya están listos. El despliegue de la revista puede publicar la lectura sin habilitar participaciones.
+
+La política de privacidad, aviso legal y contacto ya identifican el canal `pquedespiertan@gmail.com`. Se recomienda revisión jurídica propia antes de recoger datos de terceros.
+
+Toda configuración OAuth, SMTP y credenciales queda excluida del repositorio. El proyecto permite actualizar automáticamente los hilos solo de mensajes y artículos autorizados mediante lista blanca, sin activar manuscritos inéditos.

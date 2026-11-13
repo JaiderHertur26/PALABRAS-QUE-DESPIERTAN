@@ -71,6 +71,7 @@ export function Discussion({tipo,id,titulo}: {tipo:TipoConversacion;id:string;ti
    if(!resp.ok){setSendMessage(result.error??"No fue posible enviar tu participación.");return;}
    setSendMessage(result.message??avisoModeracion);
    setBody("");setConsent(false);setReplyTo(null);
+   await cargar(0);
   }catch{setSendMessage("No se pudo establecer conexión para enviar tu participación.");}
   finally{setSubmitting(false);}
  }
@@ -125,7 +126,7 @@ export function Discussion({tipo,id,titulo}: {tipo:TipoConversacion;id:string;ti
 
  return <section className="discussion-shell" aria-labelledby={`discussion-title-${id}`}>
    <div className="discussion-title-row"><div><p className="eyebrow">CONVERSACIÓN DE LA COMUNIDAD</p><h2 id={`discussion-title-${id}`}>{tipo==="tema"?"Testimonios y respuestas":"Una lectura que continúa en diálogo"}</h2>
-     <p>Participa con respeto, caridad y libertad. Las aportaciones se revisan antes de publicarse.</p></div>
+     <p>Participa con respeto, caridad y libertad. Tu comentario se publica al verificar tu correo y cumplir las normas; puede retirarse si se reporta una infracción.</p></div>
      <span className="discussion-number">{entradas.length} <small>{entradas.length===1?"aporte visible":"aportes visibles"}</small></span>
    </div>
 
@@ -133,7 +134,7 @@ export function Discussion({tipo,id,titulo}: {tipo:TipoConversacion;id:string;ti
    {loadError&&<div className="discussion-state" role="alert">{loadError}<button type="button" onClick={()=>void cargar(0)}>Reintentar</button></div>}
    {!loadError&&!loading&&enabled&&entradas.length===0&&<div className="discussion-empty">
      <span aria-hidden="true">✦</span><h3>Una conversación por comenzar</h3>
-     <p>Todavía no hay participaciones aprobadas en «{titulo}». Tu aporte puede ayudar a otros lectores a pensar y orar con mayor profundidad.</p>
+     <p>Todavía no hay participaciones en «{titulo}». Tu aporte puede ayudar a otros lectores a pensar y orar con mayor profundidad.</p>
    </div>}
    {entradas.length>0&&<div className="discussion-list">{armarArbol(entradas).map(comment)}</div>}
    {more&&<button type="button" className="button-outline" disabled={loading} onClick={()=>void cargar(pagina+1)}>{loading?"Cargando…":"Leer más participaciones"}</button>}
@@ -152,10 +153,10 @@ export function Discussion({tipo,id,titulo}: {tipo:TipoConversacion;id:string;ti
       <div className="counter-line">{body.length} / {maxCaracteres} caracteres</div>
       <div className="honeypot" aria-hidden="true"><label>Website <input value={website} onChange={e=>setWebsite(e.target.value)} tabIndex={-1} autoComplete="off"/></label></div>
       <label className="consent-row"><input type="checkbox" checked={consent} onChange={e=>setConsent(e.target.checked)} required/>
-       <span>He leído las <Link href="/participar">normas de participación y privacidad</Link> y acepto que mi nombre público y texto puedan mostrarse si la edición lo aprueba.</span>
+       <span>He leído las <Link href="/participar">normas de participación</Link> y la <Link href="/privacidad">política de privacidad</Link>. Acepto que mi nombre público y texto se publiquen al enviarlos.</span>
       </label>
       <p className="review-note">{avisoModeracion}</p>
-      <button className="button-gold" type="submit" disabled={submitting||!consent}>{submitting?"Enviando…":replyTo?"Enviar respuesta a revisión":"Enviar a revisión editorial"}</button>
+      <button className="button-gold" type="submit" disabled={submitting||!consent}>{submitting?"Publicando…":replyTo?"Publicar respuesta":"Publicar participación"}</button>
     </form>}
     {sendMessage&&<p className="community-feedback" role="status">{sendMessage}</p>}
    </div>

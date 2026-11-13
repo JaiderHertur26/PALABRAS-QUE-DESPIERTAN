@@ -6,7 +6,7 @@ export const dynamic="force-dynamic";
 async function acceso(){
  const {user}=await usuarioVerificado();
  const admin=clienteModeracion();
- if(!user||!admin||!await esModerador(user.id))return null;
+ if(!user?.email_confirmed_at||!admin||!await esModerador(user.id))return null;
  return {user,admin};
 }
 const respuesta=(data:object,status=200)=>NextResponse.json(data,{status,headers:{"Cache-Control":"no-store"}});
@@ -15,15 +15,18 @@ export async function GET(){
  const permiso=await acceso();
  if(!permiso)return respuesta({error:"Área editorial restringida."},403);
  const {admin}=permiso;
- const [pending,reports]=await Promise.all([
+ const [pending,reports,recent]=await Promise.all([
   admin.from("discussion_entries")
    .select("id,subject_type,subject_id,parent_id,display_name,body,depth,created_at,status")
    .eq("status","pending").order("created_at",{ascending:true}).limit(100),
   admin.from("discussion_reports")
    .select("id,entry_id,motive,details,created_at")
-   .eq("resolved",false).order("created_at",{ascending:true}).limit(80)
+   .eq("resolved",false).order("created_at",{ascending:true}).limit(80),
+  admin.from("discussion_entries")
+   .select("id,subject_type,subject_id,display_name,body,created_at,status")
+   .eq("status","approved").order("created_at",{ascending:false}).limit(80)
  ]);
- if(pending.error||reports.error)return respuesta({error:"No se pudo consultar la cola editorial."},503);
+ if(pending.error||reports.error||recent.error)return respuesta({error:"No se pudo consultar el centro editorial."},503);
  const reportEntries=(reports.data??[]).map(x=>x.entry_id);
  let byId=new Map<string,{id:string;status:string;display_name:string;body:string;subject_type:string;subject_id:string}>();
  if(reportEntries.length){
@@ -35,6 +38,7 @@ export async function GET(){
  }
  return respuesta({
   pending:pending.data??[],
+  recent:recent.data??[],
   reports:(reports.data??[]).map(r=>({...r,entry:byId.get(r.entry_id)??null}))
  });
 }
@@ -79,14 +83,15 @@ export async function POST(request:NextRequest){
   return respuesta({ok:true,message:"Reporte revisado."});
  }
 
- if(!esUUID(data.id)||!["approve","reject"].includes(String(data.decision)))
+ if(!esUUID(data.id)||!["approve","reject","hide"].includes(String(data.decision)))
   return respuesta({error:"Decisión de moderación inválida."},400);
- const destino=data.decision==="approve"?"approved":"rejected";
+ const destino=data.decision==="approve"?"approved":data.decision==="reject"?"rejected":"hidden";
+ const origen=destino==="hidden"?"approved":"pending";
  // El trigger valida al moderador y registra la auditoría en la misma transacción.
  const resultado=await admin.from("discussion_entries")
   .update({status:destino,reviewed_by:user.id,moderation_note:nota||null})
-  .eq("id",data.id).eq("status","pending").select("id");
+  .eq("id",data.id).eq("status",origen).select("id");
  if(resultado.error)return respuesta({error:"El sistema rechazó la operación de moderación."},409);
- if(!resultado.data?.length)return respuesta({error:"La publicación no está pendiente o ya fue revisada."},409);
+ if(!resultado.data?.length)return respuesta({error:"La publicación no tiene un estado válido para esta decisión."},409);
  return respuesta({ok:true,message:"Decisión editorial registrada con auditoría."});
 }

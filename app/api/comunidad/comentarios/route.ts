@@ -13,7 +13,7 @@ export async function GET(request:NextRequest){
  const raw=Number(request.nextUrl.searchParams.get("pagina")??0);
  const pagina=Number.isInteger(raw)&&raw>=0&&raw<100?raw:0;
  const client=clienteLectura();
- if(!client)return NextResponse.json({enabled:false,entries:[],hasMore:false,page:0,message:"El espacio de participación está pendiente de conectar su base de datos independiente."},{headers:{"Cache-Control":"no-store"}});
+ if(!client)return NextResponse.json({enabled:false,entries:[],hasMore:false,page:0,message:"La conversación no está disponible en este momento."},{headers:{"Cache-Control":"no-store"}});
  const {data,error,count}=await client.from("discussion_entries")
   .select("id,subject_type,subject_id,parent_id,display_name,body,depth,created_at,status",{count:"exact"})
   .eq("subject_type",destino.tipo).eq("subject_id",destino.id)
@@ -51,9 +51,10 @@ export async function POST(request:NextRequest){
  });
  if(error){
   if(error.code==="23505")return NextResponse.json({error:"La participación ya existe."},{status:409});
-  if(error.code==="23514")return NextResponse.json({error:"La participación no supera las validaciones editoriales."},{status:400});
+  if(error.code==="23514")return NextResponse.json({error:"La participación no supera las normas de publicación."},{status:400});
+  if(error.code==="P0001")return NextResponse.json({error:"No se pudo publicar: comprueba que el texto no incluya enlaces ni datos personales y respete las normas."},{status:400});
   if(error.message.includes("Espera")||error.message.includes("límite diario")||error.message.includes("máximo"))return NextResponse.json({error:error.message},{status:429});
   return NextResponse.json({error:"No fue posible registrar tu participación. Inténtalo más tarde."},{status:503});
  }
- return NextResponse.json({ok:true,message:"Recibimos tu participación. Quedará pendiente de revisión editorial antes de aparecer públicamente."},{status:202});
+ return NextResponse.json({ok:true,message:"Tu participación se publicó correctamente. Puedes verla en esta conversación."},{status:201});
 }

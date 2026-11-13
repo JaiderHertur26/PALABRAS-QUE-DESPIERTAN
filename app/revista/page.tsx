@@ -72,7 +72,7 @@ export default function Revista(){
      <span className="topic-number">{t.numero}</span><span className="eyebrow">{t.categoria}</span><h3>{t.titulo}</h3><p>{t.pregunta}</p><span className="topic-cta">Entrar en la conversación ↗</span>
     </Link>)}
    </div>
-   <div className="magazine-endnote"><p>Una revista es también un encuentro. Los comentarios y testimonios se publicarán bajo revisión editorial para proteger el respeto, la privacidad y la fidelidad al propósito del proyecto.</p><Link href="/participar" className="button-outline">Normas de participación ↗</Link></div>
+   <div className="magazine-endnote"><p>Una revista es también un encuentro. Los comentarios y testimonios se publican con correo verificado y controles de seguridad para proteger el respeto, la privacidad y la fidelidad al propósito del proyecto.</p><Link href="/participar" className="button-outline">Normas de participación ↗</Link></div>
   </section>
  </div>;
 }

@@ -4,11 +4,11 @@ export const reglasParticipacion=[
  "No publicar datos personales de terceros, confesiones sacramentales, situaciones íntimas identificables ni información de menores.",
  "Evitar consejos médicos o psicológicos categóricos, promesas de curación y mensajes que culpabilicen a quien sufre.",
  "Dialogar con caridad y con verdad. Se puede preguntar, disentir y responder con respeto, procurando la fidelidad a la fe católica del proyecto.",
- "Todos los testimonios, comentarios y respuestas se revisan antes de hacerse públicos. La edición podrá rechazar o retirar contribuciones que incumplan estas normas."
+ "Con correo verificado y aceptación de la privacidad, las participaciones se publican inmediatamente si cumplen las comprobaciones automáticas. La edición puede ocultar contenidos denunciados o contrarios a las normas."
 ] as const;
 
 export const avisoTestimonios="Un testimonio es una experiencia personal, no una afirmación doctrinal de la Iglesia ni una prueba de causalidad sobrenatural. Evita compartir datos sensibles o identificables de otras personas.";
-export const avisoModeracion="Tu participación se enviará a revisión editorial. No será visible públicamente hasta recibir aprobación.";
+export const avisoModeracion="Tu participación se mostrará públicamente al enviarla si cumples los controles de seguridad y tienes el correo verificado. Puedes reportar contenidos que vulneren estas normas.";
 export const maxCaracteres=2200;
 export const minCaracteres=20;
 export const maxRespuestas=3;

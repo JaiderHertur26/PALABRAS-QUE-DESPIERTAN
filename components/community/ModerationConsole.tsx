@@ -4,6 +4,7 @@ type Pendiente={id:string;subject_type:string;subject_id:string;display_name:str
 type Reporte={id:string;entry_id:string;motive:string;details:string|null;created_at:string;entry:{id:string;subject_type:string;subject_id:string;display_name:string;body:string;status:string}|null};
 export function ModerationConsole(){
  const [pendientes,setPendientes]=useState<Pendiente[]>([]);
+ const [recientes,setRecientes]=useState<Pendiente[]>([]);
  const [reportes,setReportes]=useState<Reporte[]>([]);
  const [loading,setLoading]=useState(true);
  const [busy,setBusy]=useState<string|null>(null);
@@ -15,7 +16,7 @@ export function ModerationConsole(){
    const r=await fetch("/api/moderacion",{cache:"no-store"});
    const j=await r.json();
    if(!r.ok)throw new Error(j.error??"Acceso denegado");
-   setPendientes(j.pending??[]);setReportes(j.reports??[]);
+   setPendientes(j.pending??[]);setRecientes(j.recent??[]);setReportes(j.reports??[]);
   }catch(e){setMessage(e instanceof Error?e.message:"No fue posible consultar la cola.");}
   finally{setLoading(false);}
  },[]);
@@ -34,7 +35,7 @@ export function ModerationConsole(){
   finally{setBusy(null);}
  }
  return <div className="moderation-console">
-  <div className="moderation-toolbar"><h2>Pendientes de revisión ({pendientes.length})</h2><button type="button" onClick={()=>void actualizar()}>Actualizar</button></div>
+  <div className="moderation-toolbar"><h2>Centro de convivencia editorial</h2><button type="button" onClick={()=>void actualizar()}>Actualizar</button></div>
   {message&&<p role="status" className="community-feedback">{message}</p>}
   {loading&&<p>Consultando la cola editorial…</p>}
   {!loading&&pendientes.length===0&&<p>No hay participaciones pendientes.</p>}
@@ -49,7 +50,13 @@ export function ModerationConsole(){
     <button type="button" disabled={busy===p.id} onClick={()=>void decidir(p.id,"reject","entrada")}>Rechazar</button>
    </div>
   </article>)}</div>
-  <div className="section-divider"><h2>Reportes pendientes</h2><span>{reportes.length}</span></div>
+  <div className="section-divider"><h2>Participaciones publicadas recientemente</h2><span>{recientes.length}</span></div>
+  <div className="pending-grid">{recientes.map(p=><article key={p.id} className="moderation-card">
+   <p className="eyebrow">{p.subject_type} · {p.subject_id}</p><h3>{p.display_name}</h3><blockquote>{p.body}</blockquote>
+   <p className="community-auth-note">{new Date(p.created_at).toLocaleString("es-CO")}</p>
+   <div className="moderation-buttons"><button type="button" disabled={busy===p.id} onClick={()=>void decidir(p.id,"hide","entrada")}>Ocultar publicación</button></div>
+  </article>)}</div>
+  <div className="section-divider"><h2>Reportes recibidos</h2><span>{reportes.length}</span></div>
   {reportes.length===0?<p>No hay reportes sin resolver.</p>:
   <div className="pending-grid">{reportes.map(r=><article className="moderation-card" key={r.id}>
    <p className="eyebrow">{r.motive} · {r.entry?.subject_type??"Contenido"} · {r.entry?.subject_id??r.entry_id}</p>

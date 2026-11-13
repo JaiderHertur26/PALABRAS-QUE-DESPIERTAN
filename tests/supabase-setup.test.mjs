@@ -54,6 +54,7 @@ test("la auditoría PostgreSQL se registra con la decisión en la misma transacc
  const api=source("app/api/moderacion/route.ts");
  assert.doesNotMatch(api,/\.from\("discussion_audit"\)\.insert/);
  assert.match(api,/\.eq\("status","pending"\)/);
+ assert.match(api,/\.eq\("status",origen\)/);
  assert.match(api,/moderation_note:nota/);
 });
 

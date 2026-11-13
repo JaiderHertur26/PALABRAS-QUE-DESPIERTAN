@@ -17,7 +17,7 @@ export default function Participar(){
    <p className="eyebrow">CÓMO FUNCIONA</p><h2>Tres pasos para participar</h2>
    <div className="participate-steps"><p><strong>1. Identifícate con tu correo.</strong> Recibirás un enlace de acceso que permite verificar que eres una persona real.</p>
    <p><strong>2. Escribe con libertad y cuidado.</strong> Puedes comentar un texto, responder a otro lector o compartir tu experiencia en un tema propuesto.</p>
-   <p><strong>3. Espera la revisión.</strong> La edición estudiará la participación antes de hacerla visible públicamente. Nunca aparecen automáticamente mensajes sin revisar.</p></div>
+   <p><strong>3. Publica y dialoga.</strong> La participación aparecerá al enviarla con correo verificado. Puedes responder y reportar contenidos que incumplan las normas; la edición podrá retirarlos.</p></div>
    <AuthPanel/>
    <Link className="button-outline" href="/testimonios">Explorar los testimonios ↗</Link>
   </aside></div>

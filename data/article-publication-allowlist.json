@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "autorizacion": "Autorización editorial expresa del autor para publicar ART-001 a ART-010 en la revista web propia, 13-11-2026",
+  "autorizacion": "Autorización editorial general del autor de publicar todos los artículos aprobados en su propia revista web; ART-001 a ART-012, 13-11-2026.",
   "articulos": [
     {
       "id": "ART-001",
@@ -40,6 +40,14 @@
     },
     {
       "id": "ART-010",
+      "autorizaWeb": true
+    },
+    {
+      "id": "ART-011",
+      "autorizaWeb": true
+    },
+    {
+      "id": "ART-012",
       "autorizaWeb": true
     }
   ]

@@ -44,7 +44,7 @@ export function AuthPanel({onUserChange}: {onUserChange?:(logged:boolean)=>void}
  }
  if(!configured)return <div className="community-auth is-pending">
   <strong>Participación en preparación</strong>
-  <p>La revista ya permite explorar los temas y sus fundamentos. Los envíos se habilitarán después de conectar una base de datos exclusiva, verificar el acceso por correo y activar la moderación.</p>
+  <p>La revista permite explorar sus temas. El acceso a las conversaciones se encuentra temporalmente cerrado.</p>
  </div>;
  if(checking)return <p className="community-auth-note">Comprobando tu acceso…</p>;
  if(user)return <div className="community-auth community-auth-verified">

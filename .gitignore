@@ -11,6 +11,7 @@ tsconfig.tsbuildinfo
 !.env.example
 .vercel/
 /supabase/.temp/
+/supabase/config.toml
 /supabase/.branches/
 .DS_Store
 
