@@ -2,21 +2,37 @@ import type {Metadata} from "next";
 import Link from "next/link";
 import {Breadcrumbs} from "@/components/Breadcrumbs";
 import {SectionIntro} from "@/components/SectionIntro";
-import {mensajes} from "@/lib/editorial";
-export const metadata:Metadata={title:"Redes"};
+import {SocialIcon} from "@/components/SocialLinks";
+import {socialAccounts} from "@/lib/social";
+
+export const metadata: Metadata = {
+  title: "Redes sociales",
+  description: "Accede a las cuentas oficiales de Palabras que despiertan en Facebook e Instagram."
+};
+
 export default function Redes(){
- const enlace=mensajes[0]?.instagram;
- return <section className="shell content-page narrow">
-  <Breadcrumbs items={[{texto:"Redes"}]}/>
-  <SectionIntro eyebrow="COMUNIDAD Y DIFUSIÓN" title="Compartir una palabra que haga bien" description="Las redes sociales acercan cada pensamiento a los lectores. Esta página reúne el archivo permanente de las reflexiones cuya publicación ha sido confirmada."/>
-  <div className="social-section"><span className="social-symbol" aria-hidden="true">◎</span><div><h2>Instagram</h2>
-   <p>El primer mensaje de la obra, «Dios ya lo sabe», fue registrado como publicado en Instagram. Accede a su publicación desde el enlace documentado.</p>
-   {enlace && <a className="button-outline" href={enlace} target="_blank" rel="noopener noreferrer">Ver la publicación PD-001 ↗</a>}
-  </div></div>
-  <div className="social-section"><span className="social-symbol" aria-hidden="true">f</span><div><h2>Facebook</h2>
-   <p>«Palabras que despiertan» también se difunde en Facebook. El enlace directo a la página se incorporará cuando haya sido verificado.</p>
-  </div></div>
-  <p className="social-note">El proyecto no publica cifras de seguidores ni enlaza perfiles no confirmados.</p>
-  <div className="end-link"><Link href="/mensajes" className="text-link">Ir al archivo de mensajes ↗</Link></div>
- </section>;
+  return <section className="shell content-page narrow">
+    <Breadcrumbs items={[{texto:"Redes"}]}/>
+    <SectionIntro eyebrow="COMUNIDAD Y DIFUSIÓN" title="Síguenos y comparte la fe"
+      description="Continúa la lectura y acompaña nuestras reflexiones en los perfiles oficiales de Facebook e Instagram."/>
+
+    <div className="social-directory">
+      {socialAccounts.map(account=><article className="social-section" key={account.id}>
+        <span className="social-symbol" aria-hidden="true"><SocialIcon id={account.id}/></span>
+        <div>
+          <h2>{account.nombre}</h2>
+          <p>{account.descripcion}</p>
+          <p className="social-profile-name">{account.usuario}</p>
+          <a className="button-outline" href={account.url}
+            target="_blank" rel="noopener noreferrer"
+            aria-label={"Abrir nuestra cuenta oficial de "+account.nombre+" en una pestaña nueva"}>
+            Visitar {account.nombre} <span aria-hidden="true">↗</span>
+          </a>
+        </div>
+      </article>)}
+    </div>
+
+    <p className="social-note">Los enlaces conducen directamente a las cuentas oficiales. Se abrirán en una pestaña nueva.</p>
+    <div className="end-link"><Link href="/mensajes" className="text-link">Ir al archivo de mensajes ↗</Link></div>
+  </section>;
 }

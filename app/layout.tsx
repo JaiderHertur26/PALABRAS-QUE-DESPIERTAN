@@ -2,6 +2,7 @@ import type {Metadata, Viewport} from "next";
 import "./globals.css";
 import "./site.css";
 import "./responsive.css";
+import "./social.css";
 import "./research.css";
 import "./magazine-community.css";
 import {Header} from "@/components/Header";

@@ -1,0 +1,27 @@
+/* Accesos a redes oficiales, siguiendo la identidad oscura y dorada */
+.social-links{display:flex;align-items:center;flex-wrap:wrap;gap:.55rem}
+.social-link{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
+ min-height:42px;padding:.5rem .75rem;white-space:nowrap;border-radius:6px;
+ border:1px solid #81613d;background:rgba(38,25,14,.65);color:var(--gold-bright);
+ font-family:var(--sans);font-size:.84rem;line-height:1.15}
+.social-link:hover{color:#fff;background:#3c2916;border-color:var(--gold-bright)}
+.social-link svg{display:block;flex-shrink:0}
+.social-links--compact .social-link{width:40px;height:40px;min-height:40px;padding:0}
+.header-social{flex:0 0 auto;margin-left:.2rem}
+.menu-social{display:none}
+.footer-social{margin-top:1.15rem}
+.social-profile-name{color:var(--gold-bright)!important;font-size:.9rem;margin:-.25rem 0 .9rem}
+.social-section .social-symbol svg{width:44px;height:44px;display:block}
+.social-directory{margin-top:1rem}
+@media(min-width:1100px){
+  .footer-content{grid-template-columns:minmax(0,1.6fr) repeat(3,minmax(0,1fr));gap:clamp(1.1rem,2vw,3rem)}
+}
+@media(max-width:1350px){
+  .header-social{margin-left:auto}
+  .mobile-panel.is-open .menu-social{display:flex;grid-column:1/-1;border-top:1px solid var(--line-soft);padding-top:.75rem;margin-top:.25rem}
+  .mobile-panel.is-open .menu-social .social-link{padding:0;display:inline-flex;width:44px;height:44px;
+    min-height:44px;align-items:center;justify-content:center;border:1px solid #81613d}
+}
+@media(max-width:560px){
+  .header-social{display:none}
+}

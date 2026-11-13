@@ -2,6 +2,7 @@
 import {useState} from "react";
 import Link from "next/link";
 import {usePathname} from "next/navigation";
+import {SocialLinks} from "@/components/SocialLinks";
 
 const principal=[
  {titulo:"Inicio",href:"/"},
@@ -35,6 +36,7 @@ export function Header(){
      <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg>
     </Link>
    </nav>
+   <SocialLinks compact className="header-social"/>
    <button className="mobile-toggle" type="button" onClick={()=>setAbierto(v=>!v)}
      aria-expanded={abierto} aria-controls="mobile-site-menu" aria-label={abierto?"Cerrar menú":"Abrir menú"}>
     <span/><span/><span/>
@@ -43,6 +45,7 @@ export function Header(){
   <nav id="mobile-site-menu" className={`mobile-panel ${abierto?"is-open":""}`} aria-label="Navegación móvil" aria-hidden={!abierto}>
    {movil.map(item=><Link key={item.href} href={item.href} onClick={()=>setAbierto(false)} tabIndex={abierto?0:-1} aria-current={activo(item.href)?"page":undefined}>{item.titulo}</Link>)}
    <Link href="/buscar" onClick={()=>setAbierto(false)} tabIndex={abierto?0:-1}>Buscar en el archivo</Link>
+   <SocialLinks compact className="menu-social"/>
   </nav>
  </header>;
 }

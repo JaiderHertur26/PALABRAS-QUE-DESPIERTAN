@@ -1,4 +1,5 @@
 import Link from "next/link";
+import {SocialLinks} from "@/components/SocialLinks";
 import {autor,descripcion,nombreProyecto} from "@/lib/editorial";
 export function Footer(){
  return <footer className="site-footer">
@@ -25,7 +26,7 @@ export function Footer(){
     <Link href="/redes">Redes sociales</Link>
     <Link href="/privacidad">Privacidad</Link>
     <Link href="/aviso-legal">Aviso legal</Link>
-   </nav></div>
+   </nav><SocialLinks className="footer-social"/></div>
   </div>
   <div className="shell footer-bottom">
    <span>© {new Date().getUTCFullYear()} {nombreProyecto} · {autor}. Todos los derechos reservados.</span>
