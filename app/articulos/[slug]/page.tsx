@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type {Metadata} from "next";
 import {notFound} from "next/navigation";
 import {Breadcrumbs} from "@/components/Breadcrumbs";
@@ -17,7 +18,7 @@ export async function generateMetadata({params}:{params:Promise<{slug:string}>})
   title:a.titulo,description:excerpt,
   alternates:{canonical:"/articulos/"+a.slug},
   openGraph:{type:"article",title:a.titulo,description:excerpt,locale:"es_CO",
-   authors:[a.autor],publishedTime:a.fecha,images:[{url:"/identidad/cruz-fondo.png",width:1024,height:1536}]},
+   authors:[a.autor],publishedTime:a.fecha,images:[a.imagen?{url:a.imagen,width:1254,height:1254,alt:a.titulo}:{url:"/identidad/cruz-fondo.png",width:1024,height:1536}]},
   robots:{index:true,follow:true}
  };
 }
@@ -38,6 +39,7 @@ export default async function Articulo({params}:{params:Promise<{slug:string}>})
   publisher:{"@type":"Organization",name:"Palabras que despiertan"},
   datePublished:a.fecha,dateModified:a.fecha,
   mainEntityOfPage:{"@type":"WebPage","@id":"/articulos/"+a.slug},
+  image:a.imagen||"/identidad/cruz-fondo.png",
   isAccessibleForFree:true
  };
  return <article className="research-article">
@@ -45,10 +47,18 @@ export default async function Articulo({params}:{params:Promise<{slug:string}>})
   <div className="shell">
    <Breadcrumbs items={[{texto:"Revista",href:"/revista"},{texto:"Artículos",href:"/articulos"},{texto:a.titulo}]}/>
    <header className="research-article-header">
-    <p className="eyebrow">PALABRAS QUE DESPIERTAN · {a.id} · INVESTIGACIÓN TEOLÓGICA</p>
-    <h1>{a.titulo}</h1>
-    {a.subtitulo && <p className="research-subtitle">{a.subtitulo}</p>}
-    <div className="research-byline"><span>{a.autor}</span><span>Publicado el {new Date(a.fecha+"T12:00:00Z").toLocaleDateString("es-CO",{day:"numeric",month:"long",year:"numeric",timeZone:"UTC"})}</span><span>{Math.max(1,Math.round((a.palabras||0)/230))} min de lectura</span></div>
+    <div className="research-article-cover-grid">
+     <div className="research-article-intro">
+      <p className="eyebrow">PALABRAS QUE DESPIERTAN · {a.id} · INVESTIGACIÓN TEOLÓGICA</p>
+      <h1>{a.titulo}</h1>
+      {a.subtitulo && <p className="research-subtitle">{a.subtitulo}</p>}
+      <div className="research-byline"><span>{a.autor}</span><span>Publicado el {new Date(a.fecha+"T12:00:00Z").toLocaleDateString("es-CO",{day:"numeric",month:"long",year:"numeric",timeZone:"UTC"})}</span><span>{Math.max(1,Math.round((a.palabras||0)/230))} min de lectura</span></div>
+     </div>
+     {a.imagen&&<figure className="research-article-cover">
+      <Image src={a.imagen} alt={"Imagen editorial original del artículo "+a.titulo} width={1254} height={1254} priority sizes="(max-width:760px) min(100vw - 3.5rem, 450px), 35vw"/>
+      <figcaption>Tarjeta gráfica original · {a.id}</figcaption>
+     </figure>}
+    </div>
    </header>
    <div className="research-article-grid">
     <aside className="research-aside" aria-label="Navegación por el artículo">

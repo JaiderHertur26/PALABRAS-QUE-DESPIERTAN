@@ -18,19 +18,22 @@ export async function proxy(request:NextRequest){
    ?request.nextUrl.searchParams.get("url")||""
    :request.nextUrl.pathname;
  const planned=/^\/mensajes\/(pd-\d{3}-[a-z0-9-]+)\.png$/.exec(assetPath);
- if(planned){
+ const articleCover=/^\/articulos\/art-(\d{3})\.png$/.exec(assetPath);
+ if(planned||articleCover){
   const key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   if(!accesoPublicoConfigurado()||!key)
    return NextResponse.json({error:"Imagen no disponible"},{status:404,headers:{"Cache-Control":"no-store"}});
   const publicClient=createClient(supabaseProjectUrl,key,{auth:{persistSession:false,autoRefreshToken:false}});
-  const {data,error}=await publicClient.from("editorial_items").select("slug")
-   .eq("kind","mensaje").eq("slug",planned[1]).maybeSingle();
+  let eligible=publicClient.from("editorial_items").select("cover_url")
+   .eq("cover_url",assetPath).eq("kind",articleCover?"articulo":"mensaje");
+  eligible=articleCover?eligible.eq("code","ART-"+articleCover[1]):eligible.eq("slug",planned![1]);
+  const {data,error}=await eligible.maybeSingle();
   if(error||!data)return NextResponse.json({error:"Imagen no disponible"},{status:404,headers:{"Cache-Control":"no-store"}});
   const ready=NextResponse.next();
   ready.headers.set("Cache-Control","private, no-store");
   return ready;
  }
- if(request.nextUrl.pathname.startsWith("/mensajes/")||request.nextUrl.pathname==="/_next/image")
+ if(request.nextUrl.pathname.startsWith("/mensajes/")||request.nextUrl.pathname.startsWith("/articulos/")||request.nextUrl.pathname==="/_next/image")
   return NextResponse.next();
  let response=NextResponse.next({request});
  if(!accesoPublicoConfigurado()||!process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)
@@ -61,6 +64,7 @@ export const config={
   "/api/moderacion/:path*",
   "/api/comunidad/:path*",
   "/mensajes/:path*",
+  "/articulos/:path*",
   "/_next/image"
  ]
 };

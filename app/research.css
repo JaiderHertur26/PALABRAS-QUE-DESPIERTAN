@@ -101,3 +101,29 @@
  .research-prose h2,.research-prose h3{break-after:avoid}
  a{color:#222!important;text-decoration:underline}
 }
+
+/* Portadas originales de las investigaciones: integración editorial sin recortes. */
+.research-card{grid-template-columns:minmax(130px,34%) minmax(0,1fr);gap:1.25rem;align-items:start;padding:1.2rem}
+.research-card-cover{display:block;min-width:0;aspect-ratio:1;border:1px solid #a77e4d88;padding:.3rem;background:#0e0a07;overflow:hidden;box-shadow:0 14px 36px #0007}
+.research-card-cover:hover{border-color:var(--gold-bright)}
+.research-card-cover img{display:block;width:100%;height:100%;object-fit:contain}
+.research-card-content{min-width:0}
+.research-card-number{display:block;font-size:1.22rem;letter-spacing:.14em;line-height:1.2;margin:0 0 .68rem;padding:0}
+.research-article-cover-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(245px,.8fr);align-items:center;gap:clamp(1.5rem,4vw,4rem)}
+.research-article-intro{min-width:0}
+.research-article-cover{width:min(100%,440px);min-width:0;margin:0;justify-self:end;padding:.7rem;border:1px solid #c69a6099;background:linear-gradient(145deg,#24180e,#0e0a07);box-shadow:0 26px 70px #0008}
+.research-article-cover img{display:block;width:100%;height:auto;aspect-ratio:1;object-fit:contain}
+.research-article-cover figcaption{margin-top:.7rem;font-size:.71rem;letter-spacing:.08em;text-transform:uppercase;text-align:center;color:var(--gold)}
+@media(max-width:760px){
+ .research-article-cover-grid{grid-template-columns:minmax(0,1fr)}
+ .research-article-cover{justify-self:center;width:min(100%,420px)}
+}
+@media(max-width:540px){
+ .research-card{grid-template-columns:minmax(0,1fr);padding:1rem}
+ .research-card-cover{width:min(100%,430px);justify-self:center}
+ .research-card-content{width:100%}
+}
+@media print{
+ .research-article-cover{max-width:175px;box-shadow:none;break-inside:avoid}
+ .research-article-cover figcaption{color:#333}
+}

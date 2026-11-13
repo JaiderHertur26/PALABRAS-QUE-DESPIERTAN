@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type {Metadata} from "next";
 import {Breadcrumbs} from "@/components/Breadcrumbs";
 import {publicArticulos} from "@/lib/editorial-live";
@@ -29,8 +30,11 @@ export default async function Articulos(){
    <div className="research-section-top"><h2 id="library-title">Cuadernos de investigación</h2><span>ART-001 — ART-{String(ordenados.length).padStart(3,"0")}</span></div>
    <div className="research-library-grid">
     {ordenados.map((a,i)=><article className="research-card" key={a.slug}>
-     <span className="research-card-number">{String(i+1).padStart(2,"0")}</span>
-     <div>
+     {a.imagen&&<Link className="research-card-cover" href={"/articulos/"+a.slug} aria-label={"Ver el artículo "+a.titulo}>
+      <Image src={a.imagen} alt={"Tarjeta gráfica original de "+a.titulo} width={1254} height={1254} sizes="(max-width:510px) calc(100vw - 5rem), (max-width:1020px) 28vw, 15vw" loading="lazy"/>
+     </Link>}
+     <div className="research-card-content">
+      <span className="research-card-number">{String(i+1).padStart(2,"0")}</span>
       <p className="eyebrow">{a.id} · INVESTIGACIÓN TEOLÓGICA</p>
       <h3><Link href={"/articulos/"+a.slug}>{a.titulo}</Link></h3>
       {a.subtitulo && <p className="research-card-subtitle">{a.subtitulo}</p>}

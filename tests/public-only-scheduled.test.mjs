@@ -48,3 +48,30 @@ test("Los estilos de móvil corrigen la sobrescritura del pie de página",()=>{
  const css=read("app/magazine-community.css");
  assert.match(css,/@media \(max-width:700px\)\{[\s\S]*?footer-content\{grid-template-columns:minmax\(0,1fr\)/);
 });
+
+test("Las doce tarjetas de los artículos conservan el archivo original sin modificaciones",(t)=>{
+ const file=path.join(root,"data/article-graphic-integrity.json");
+ if(!fs.existsSync(file)){t.skip("Los archivos privados se comprueban en el equipo editorial, no en GitHub");return;}
+ const data=JSON.parse(fs.readFileSync(file,"utf8").replace(/^\uFEFF/,""));
+ assert.equal(data.items.length,12);
+ for(let i=0;i<12;i++){
+  const item=data.items[i];
+  assert.equal(item.code,"ART-"+String(i+1).padStart(3,"0"));
+  assert.ok(fs.existsSync(path.join(root,item.file)));
+  const sha=crypto.createHash("sha256").update(fs.readFileSync(path.join(root,item.file))).digest("hex");
+  assert.equal(sha,item.sha256,item.code+" debe mantener su arte original");
+ }
+});
+test("Portadas originales de artículos: biblioteca, ficha, SEO y privacidad según programación",()=>{
+ const library=read("app/articulos/page.tsx");
+ const article=read("app/articulos/[slug]/page.tsx");
+ const guard=read("proxy.ts");
+ assert.match(library,/research-card-cover/);
+ assert.match(article,/research-article-cover/);
+ assert.match(article,/a\.imagen\?\{url:a\.imagen,width:1254,height:1254/);
+ assert.match(guard,/articleCover/);
+ assert.match(guard,/\.eq\("cover_url",assetPath\)/);
+ assert.match(guard,/\.eq\("code","ART-"\+articleCover\[1\]\)/);
+ assert.match(guard,/"\/articulos\/:path\*"/);
+ assert.match(read(".gitignore"),/\/public\/articulos\/art-/);
+});

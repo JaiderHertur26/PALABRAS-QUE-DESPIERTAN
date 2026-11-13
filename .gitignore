@@ -35,3 +35,7 @@ desktop.ini
 # Gráficos de mensajes futuros: originales privados, solo se distribuyen por despliegue controlado.
 /public/mensajes/pd-0[0-9][0-9]-*.png
 /data/graphic-integrity.json
+
+# Tarjetas originales de artículos, almacenadas localmente y desplegadas sin publicarlas en GitHub.
+/public/articulos/art-[0-9][0-9][0-9].png
+/data/article-graphic-integrity.json
