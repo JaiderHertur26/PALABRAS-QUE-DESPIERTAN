@@ -1,6 +1,7 @@
 import {NextRequest,NextResponse} from "next/server";
 import {createClient} from "@supabase/supabase-js";
 import {createCipheriv,randomBytes,timingSafeEqual} from "node:crypto";
+import {verifySavedInstagram,type MetaVaultRecord} from "@/lib/meta-account-verification";
 
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
@@ -38,7 +39,7 @@ function cipherKey(){
  if(!/^[a-f0-9]{64}$/i.test(raw))throw Error("Encryption not configured");
  return Buffer.from(raw,"hex");
 }
-type Stored={version:1;at:string;appId:string;scopes:string[];expiresAt:number|null;verifiedAccount:boolean;iv:string;tag:string;encrypted:string};
+type Stored=MetaVaultRecord;
 export async function GET(request:NextRequest){
  try{
   if(!await authorized(request))return reply({error:"Acceso no autorizado"},403);
@@ -46,7 +47,38 @@ export async function GET(request:NextRequest){
   if(error||!data)return reply({connected:false,scopes:[],verifiedAccount:false});
   const item=JSON.parse(await data.text()) as Stored;
   if(item.version!==1||item.appId!=="2572239026621118")throw Error("Invalid connection");
-  return reply({connected:true,at:item.at,scopes:item.scopes,expiresAt:item.expiresAt,verifiedAccount:item.verifiedAccount});
+  const now=Date.now();
+  const latest=item.lastVerificationAttemptAt?Date.parse(item.lastVerificationAttemptAt):0;
+  // A confirmed account is checked daily; a pending match at most every 15 minutes.
+  const minDelay=item.verifiedAccount?86_400_000:900_000;
+  const appAuth=request.headers.get("x-pqd-meta-app-authorization")||"";
+  if(now-latest>minDelay&&/^2572239026621118\|[a-fA-F0-9]{32}$/.test(appAuth)){
+   try{
+    const verification=await verifySavedInstagram(item,appAuth);
+    item.lastVerificationAttemptAt=new Date(now).toISOString();
+    item.verificationState=verification.state;
+    item.verifiedAccount=verification.verified;
+    item.accountId=verification.verified?verification.accountId:null;
+    item.username=verification.verified?verification.username:null;
+    if(verification.verified)item.lastVerifiedAt=item.lastVerificationAttemptAt;
+    item.expiresAt=verification.expiresAt;
+    // Only metadata changes. The token ciphertext and encryption key are untouched.
+    const {error:saveError}=await store().upload(keyPath,
+      new Blob([JSON.stringify(item)],{type:"application/json"}),
+      {contentType:"application/json",upsert:true,cacheControl:"0"});
+    if(saveError)throw Error("Verification metadata not saved");
+   }catch{
+    // An external Meta outage must not erase the existing encrypted authorization.
+    item.verificationState=item.verifiedAccount?"confirmed":"meta_unavailable";
+   }
+  }
+  return reply({
+   connected:true,at:item.at,scopes:item.scopes,
+   expiresAt:item.expiresAt,verifiedAccount:item.verifiedAccount===true,
+   username:item.verifiedAccount?item.username:null,
+   verificationState:item.verificationState||"unverified",
+   lastVerifiedAt:item.lastVerifiedAt||null
+  });
  }catch{return reply({error:"No se pudo verificar la conexión"},503);}
 }
 export async function POST(request:NextRequest){
@@ -67,7 +99,7 @@ export async function POST(request:NextRequest){
   const payload:Stored={
     version:1,appId:"2572239026621118",at:new Date().toISOString(),
     scopes:body.scopes,expiresAt:typeof body.expiresAt==="number"?body.expiresAt:null,
-    verifiedAccount:body.verifiedAccount===true,
+    verifiedAccount:false,
     iv:iv.toString("base64"),tag:cipher.getAuthTag().toString("base64"),
     encrypted:encrypted.toString("base64"),
   };

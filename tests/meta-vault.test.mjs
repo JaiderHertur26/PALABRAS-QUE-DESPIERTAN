@@ -19,3 +19,21 @@ test("Almacén privado de tokens Meta cifra con AES-256-GCM y exige dirección y
  assert.match(src,/instagram_content_publish/);
  assert.doesNotMatch(src,/NEXT_PUBLIC_SUPABASE_SECRET_KEY|console\.log\(body\.token/);
 });
+
+test("Verificación de Instagram sin exponer ni inferir la identidad",()=>{
+ const verifier=read("lib/meta-account-verification.ts");
+ const vault=read("app/api/editorial/meta/vault/route.ts");
+ assert.match(verifier,/createDecipheriv\("aes-256-gcm"/);
+ assert.match(verifier,/setAuthTag/);
+ assert.match(verifier,/setAAD/);
+ assert.match(verifier,/debug_token/);
+ assert.match(verifier,/instagram_basic/);
+ assert.match(verifier,/instagram_content_publish/);
+ assert.match(verifier,/candidates\.find\(x=>x\.username==="palabrasquedespiertan"\)/);
+ assert.match(verifier,/awaiting_account_permission/);
+ assert.match(vault,/verifiedAccount:false/);
+ assert.match(vault,/await verifySavedInstagram/);
+ assert.match(vault,/item\.verifiedAccount=verification\.verified/);
+ assert.match(vault,/username:item\.verifiedAccount\?item\.username:null/);
+ assert.doesNotMatch(vault,/return reply\(\{.*token[,:]/);
+});
