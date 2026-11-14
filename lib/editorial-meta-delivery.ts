@@ -10,6 +10,7 @@ const vault="pqd-meta-credentials-v1";
 const eventRoot="deliveries/v1";
 const approvedTestId="8077d038-98eb-4729-abe5-425a26267460";
 const approvedFeedHash="8bbecb856e6b5816896b3d58a7457bbe2be7d4fea2c28cad21c3ffb8530cc0c5";
+const preparedStoryHash="3512a4733e0d24dcf1b1e01056f015a77259312337d44869dd85c497c9544036";
 const approvedCaptionHashes={
  facebook_feed:"fbc1c73983c52c280fbe6f11ea959b54755d6b2d64c3ad98d2911e7635d7d21f",
  instagram_feed:"96d75c6c6e78b18154a8a97baccd0e9ee1ffd0536313459715cac936cc115495"
@@ -138,7 +139,10 @@ export async function readReceipts(id:string){
 function isTest(draft:Draft,channel:ChannelName){
  // Fase inicial: no se abre el envío automático a contenidos PD ni ART.
  if(draft.id!==approvedTestId||draft.reference!=="TEST-001"||
-  draft.media.feed?.sha256!==approvedFeedHash||!(channel in approvedCaptionHashes))return false;
+  draft.media.feed?.sha256!==approvedFeedHash)return false;
+ if(channel.endsWith("_story"))
+  return draft.media.story?.sha256===preparedStoryHash;
+ if(!(channel in approvedCaptionHashes))return false;
  const copy=draft.channels[channel].copy;
  return createHash("sha256").update(copy).digest("hex")===
   approvedCaptionHashes[channel as keyof typeof approvedCaptionHashes];
@@ -150,22 +154,25 @@ export async function checkChannelEligibility(draft:Draft,channel:ChannelName):P
   return {ready:false,reason:"CONTENT_NOT_APPROVED"};
  if(draft.channels[channel].mode!=="manual"||draft.channels[channel].scheduledAt!==null)
   return {ready:false,reason:"SCHEDULED_ITEM_NOT_ELIGIBLE"};
- if(draft.channels[channel].copy.trim().length<30||draft.channels[channel].copy.length>2200)
+ if(channel.endsWith("_feed")&&(draft.channels[channel].copy.trim().length<30||draft.channels[channel].copy.length>2200))
   return {ready:false,reason:"INVALID_CAPTION"};
  if(await readReceipt(draft.id,channel))return {ready:false,reason:"DELIVERY_ALREADY_RESERVED"};
  try{
-  await loadPicture(draft,"feed");
+  const slot:Slot=channel.endsWith("_story")?"story":"feed";
+  await loadPicture(draft,slot);
   const {record,token}=await credential();
-  if(channel==="facebook_feed"){
+  if(channel.startsWith("facebook_")){
    if(["pages_show_list","pages_read_engagement","pages_manage_posts"].some(x=>!record.scopes.includes(x)))
     throw new DeliveryError("FACEBOOK_SCOPES_MISSING",424);
    await pageToken(record,token);
+   if(channel==="facebook_story"&&!record.scopes.includes("business_management"))
+    throw new DeliveryError("FACEBOOK_STORY_BUSINESS_PERMISSION_REQUIRED",424);
   }else{
    if(["instagram_basic","instagram_content_publish"].some(x=>!record.scopes.includes(x)))
     throw new DeliveryError("INSTAGRAM_SCOPES_MISSING",424);
-   await instagramIdentity(record,token,false);
+   await instagramIdentity(record,token,channel==="instagram_story");
    // Garantizar que Meta pueda recuperar la imagen antes de reservar un intento.
-   await signedImage(draft,"feed");
+   await signedImage(draft,slot);
   }
   return {ready:true,reason:"READY",instagramAccountType:record.instagramAccountType||null};
  }catch(e){
@@ -176,7 +183,7 @@ export async function publicationReadiness(id:string){
  const draft=await loadDraft(id);
  if(!draft||draft.id!==approvedTestId)return null;
  const channels=await Promise.all(
-  (["facebook_feed","instagram_feed"] as const).map(async c=>[c,await checkChannelEligibility(draft,c)] as const)
+  channelNames.map(async c=>[c,await checkChannelEligibility(draft,c)] as const)
  );
  return {revision:draft.updatedAt,channels:Object.fromEntries(channels)};
 }
@@ -189,8 +196,9 @@ export async function publishTestOnce(id:string,channel:ChannelName,revision:str
   throw new DeliveryError("CONTENT_NOT_APPROVED",409);
  const setting=draft.channels[channel];
  if(setting.mode!=="manual"||setting.scheduledAt!==null)throw new DeliveryError("SCHEDULED_CONTENT_NOT_ALLOWED",409);
- if(setting.copy.trim().length<30||setting.copy.length>2200)throw new DeliveryError("INVALID_COPY");
- const slot:Slot="feed";
+ if(channel.endsWith("_feed")&&(setting.copy.trim().length<30||setting.copy.length>2200))
+  throw new DeliveryError("INVALID_COPY");
+ const slot:Slot=channel.endsWith("_story")?"story":"feed";
  await loadPicture(draft,slot);
  const present=await readReceipt(id,channel);
  if(present)return {receipt:present,duplicatePrevented:true};
@@ -212,30 +220,45 @@ export async function publishTestOnce(id:string,channel:ChannelName,revision:str
  // All retries now encounter the receipt, even if the Meta request times out.
  try{
   const {record,token}=await credential();
-  if(!record.scopes.includes("instagram_content_publish")||!record.scopes.includes("instagram_basic"))
+  if(channel.startsWith("instagram_")&&
+   (!record.scopes.includes("instagram_content_publish")||!record.scopes.includes("instagram_basic")))
    throw new DeliveryError("INSTAGRAM_SCOPE_MISSING",424);
   let mediaId:string,postId:string,permalink:string|null=null;
-  if(channel==="facebook_feed"){
+  if(channel.startsWith("facebook_")){
    for(const scope of ["pages_show_list","pages_read_engagement","pages_manage_posts"]){
     if(!record.scopes.includes(scope))throw new DeliveryError("FACEBOOK_SCOPE_MISSING",424);
    }
    const pageAccess=await pageToken(record,token);
-   const image=await loadPicture(draft,"feed");
+   const image=await loadPicture(draft,slot);
    const form=new FormData();
-   form.set("source",new Blob([new Uint8Array(image)],{type:"image/jpeg"}),"test001.jpg");
-   form.set("caption",setting.copy);
-   form.set("published","true");
+   form.set("source",new Blob([new Uint8Array(image)],{type:"image/jpeg"}),"test001-"+slot+".jpg");
+   if(channel==="facebook_feed")form.set("caption",setting.copy);
+   form.set("published",channel==="facebook_story"?"false":"true");
    state=await updateReceipt(state,{status:"publishing"});
    const output=await postGraph(record.facebookPageId!+"/photos",pageAccess,form);
    mediaId=String(output.id||"");postId=String(output.post_id||"");
    if(!/^\d{8,25}$/.test(mediaId))throw new DeliveryError("FACEBOOK_RESULT_UNVERIFIED",424);
-   const details=await getGraph(mediaId,pageAccess,"id,link").catch(()=>null);
-   permalink=typeof details?.link==="string"?details.link:null;
-   if(!postId&&typeof output.id==="string")postId=output.id;
+   if(channel==="facebook_story"){
+    // Primero se guarda una foto NO publicada; solo la segunda llamada
+    // crea la historia. Nunca se usa una foto ya publicada en el feed.
+    state=await updateReceipt(state,{status:"media_prepared",metaMediaId:mediaId});
+    state=await updateReceipt(state,{status:"publishing"});
+    const result=await postGraph(record.facebookPageId!+"/photo_stories",pageAccess,
+     new URLSearchParams({photo_id:mediaId}));
+    if(result.success!==true||typeof result.post_id!=="string"||!/^\d+(?:_\d+)?$/.test(result.post_id))
+     throw new DeliveryError("FACEBOOK_STORY_RESULT_UNVERIFIED",424);
+    postId=result.post_id;
+   }else{
+    const details=await getGraph(mediaId,pageAccess,"id,link").catch(()=>null);
+    permalink=typeof details?.link==="string"?details.link:null;
+    if(!postId&&typeof output.id==="string")postId=output.id;
+   }
   }else{
-   const igId=await instagramIdentity(record,token,false);
-   const url=await signedImage(draft,"feed");
-   const form=new URLSearchParams({image_url:url,caption:setting.copy});
+   const igId=await instagramIdentity(record,token,channel==="instagram_story");
+   const url=await signedImage(draft,slot);
+   const form=new URLSearchParams({image_url:url});
+   if(channel==="instagram_story")form.set("media_type","STORIES");
+   else form.set("caption",setting.copy);
    state=await updateReceipt(state,{status:"publishing"});
    const creation=await postGraph(igId+"/media",token,form);
    const container=String(creation.id||"");

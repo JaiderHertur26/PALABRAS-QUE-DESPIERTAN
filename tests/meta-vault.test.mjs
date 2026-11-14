@@ -110,7 +110,7 @@ test("Publicación Meta sólo en TEST-001 aprobado y con bloqueo atómico por re
  assert.match(model,/mediaSha256/);
  assert.match(model,/sha256/);
  assert.match(model,/INSTAGRAM_STORIES_BUSINESS_REQUIRED/);
- assert.match(model,/instagramIdentity\(record,token,false\)/);
+ assert.match(model,/instagramIdentity\(record,token,channel==="instagram_story"\)/);
  assert.match(route,/authorizedDraftRequest\(request\)/);
  assert.match(route,/PUBLICAR_TEST001_UNA_VEZ/);
  assert.match(route,/facebook_feed","instagram_feed/);
@@ -128,8 +128,24 @@ test("Meta preflight comprueba permisos y página antes de reservar o publicar",
  assert.match(src,/if\(!preflight.ready\)throw/);
  assert.match(src,/DRAFT_CHANGED_DURING_PREFLIGHT/);
  assert.match(src,/await pageToken\(record,token\)/);
- assert.match(src,/await signedImage\(draft,"feed"\)/);
+ assert.match(src,/await signedImage\(draft,slot\)/);
  assert.match(endpoint,/request.nextUrl.searchParams.get\("preflight"\)==="1"/);
  assert.match(endpoint,/publicationReadiness\(id\)/);
+ assert.match(src,/upsert:false/);
+});
+
+test("Historias sólo para TEST-001 con imagen aprobada, permisos y doble fase",()=>{
+ const src=read("lib/editorial-meta-delivery.ts");
+ const route=read("app/api/editorial/meta/publish/route.ts");
+ assert.match(src,/preparedStoryHash=/);
+ assert.match(src,/draft.media.story\?\.sha256===preparedStoryHash/);
+ assert.match(src,/FACEBOOK_STORY_BUSINESS_PERMISSION_REQUIRED/);
+ assert.match(src,/INSTAGRAM_STORIES_BUSINESS_REQUIRED/);
+ assert.match(src,/photo_stories/);
+ assert.match(src,/photo_id:mediaId/);
+ assert.match(src,/form.set\("media_type","STORIES"\)/);
+ assert.match(src,/published",channel==="facebook_story"\?"false":"true"/);
+ assert.match(src,/state=await updateReceipt\(state,\{status:"media_prepared"/);
+ assert.match(route,/facebook_story","instagram_story/);
  assert.match(src,/upsert:false/);
 });
