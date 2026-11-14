@@ -1,6 +1,12 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "git": {
-    "deploymentEnabled": false
+  "$schema":"https://openapi.vercel.sh/vercel.json",
+  "git":{"deploymentEnabled":false},
+  "schedules":{
+    "pqd-meta-editorial-15m":{
+      "schedule":"*/15 * * * *",
+      "timezone":"America/Bogota",
+      "path":"/api/cron/pqd-auto",
+      "requestMethod":"GET"
+    }
   }
 }

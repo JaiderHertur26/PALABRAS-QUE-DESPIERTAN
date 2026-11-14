@@ -27,7 +27,7 @@ export class DeliveryError extends Error{constructor(public code:string,public s
 const path=(id:string,channel:ChannelName)=>eventRoot+"/"+id+"/"+channel+".json";
 function isChannel(x:string):x is ChannelName{return channelNames.includes(x as ChannelName)}
 function safeId(id:unknown){return typeof id==="string"&&validId(id)}
-async function credential(){
+export async function credential(){
  const key=process.env.SUPABASE_SECRET_KEY||"";
  if(process.env.NEXT_PUBLIC_SUPABASE_URL!==project||!key.startsWith("sb_secret_"))throw new DeliveryError("CONFIGURATION_UNAVAILABLE",503);
  const s=createClient(project,key,{auth:{persistSession:false,autoRefreshToken:false}}).storage.from(vault);
@@ -38,7 +38,7 @@ async function credential(){
   throw new DeliveryError("META_AUTHORIZATION_INVALID",424);
  return {record,token:decryptMetaAccessToken(record)};
 }
-async function getGraph(endpoint:string,accessToken:string,fields?:string){
+export async function getGraph(endpoint:string,accessToken:string,fields?:string){
  const url=new URL(graphRoot+"/"+endpoint.replace(/^\//,""));
  if(fields)url.searchParams.set("fields",fields);
  const r=await fetch(url,{headers:{Authorization:"Bearer "+accessToken},cache:"no-store",signal:AbortSignal.timeout(15000)});
@@ -46,14 +46,14 @@ async function getGraph(endpoint:string,accessToken:string,fields?:string){
  if(!r.ok||!json||json.error)throw new DeliveryError("META_READ_ERROR_"+r.status,424);
  return json;
 }
-async function postGraph(endpoint:string,accessToken:string,body:FormData|URLSearchParams){
+export async function postGraph(endpoint:string,accessToken:string,body:FormData|URLSearchParams){
  const r=await fetch(graphRoot+"/"+endpoint.replace(/^\//,""),{
   method:"POST",headers:{Authorization:"Bearer "+accessToken},body,cache:"no-store",signal:AbortSignal.timeout(25000)});
  const json=await r.json().catch(()=>null) as Record<string,unknown>|null;
  if(!r.ok||!json||json.error)throw new DeliveryError("META_WRITE_ERROR_"+r.status,424);
  return json;
 }
-async function pageToken(record:MetaVaultRecord,token:string){
+export async function pageToken(record:MetaVaultRecord,token:string){
  if(!record.facebookPageVerified||!record.facebookCanCreateContent||!/^\d{8,25}$/.test(record.facebookPageId||""))
   throw new DeliveryError("FACEBOOK_PAGE_NOT_VERIFIED",424);
  const list=await getGraph("me/accounts",token,"id,name,username,access_token,tasks").catch(()=>null);
@@ -74,7 +74,7 @@ async function pageToken(record:MetaVaultRecord,token:string){
   throw new DeliveryError("FACEBOOK_PAGE_IDENTITY_MISMATCH",424);
  return page.access_token;
 }
-async function instagramIdentity(record:MetaVaultRecord,token:string,story:boolean,ownerBusinessConfirmed=false){
+export async function instagramIdentity(record:MetaVaultRecord,token:string,story:boolean,ownerBusinessConfirmed=false){
  if(!record.verifiedAccount||record.username!=="palabrasquedespiertan"||!/^\d{8,25}$/.test(record.accountId||""))
   throw new DeliveryError("INSTAGRAM_NOT_VERIFIED",424);
  // La identidad puede comprobarse aun si Meta no concede el campo opcional

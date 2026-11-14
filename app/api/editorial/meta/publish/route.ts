@@ -1,6 +1,7 @@
 import {NextRequest,NextResponse} from "next/server";
 import {authorizedDraftRequest,responseHeaders,validId} from "@/lib/editorial-meta-drafts";
 import {DeliveryError,publishTestOnce,readReceipts,publicationReadiness,readFacebookScheduledSnapshot} from "@/lib/editorial-meta-delivery";
+import {autoDashboard} from "@/lib/editorial-auto-publish";
 export const runtime="nodejs";export const dynamic="force-dynamic";export const maxDuration=60;
 const send=(data:unknown,status=200)=>NextResponse.json(data,{status,headers:responseHeaders});
 export async function GET(request:NextRequest){
@@ -8,6 +9,10 @@ export async function GET(request:NextRequest){
  const id=request.nextUrl.searchParams.get("id")||"";
  if(!validId(id))return send({error:"ID inválido"},400);
  try{
+  if(request.nextUrl.searchParams.get("auto")==="1"){
+   if(id!=="8077d038-98eb-4729-abe5-425a26267460")return send({error:"Consulta no permitida"},403);
+   return send({automation:await autoDashboard()});
+  }
   if(request.nextUrl.searchParams.get("scheduled")==="1"){
    if(id!=="8077d038-98eb-4729-abe5-425a26267460")return send({error:"Consulta no permitida"},403);
    return send({schedule:await readFacebookScheduledSnapshot()});

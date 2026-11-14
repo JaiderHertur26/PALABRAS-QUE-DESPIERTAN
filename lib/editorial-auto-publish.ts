@@ -1,0 +1,256 @@
+import "server-only";
+import {createClient} from "@supabase/supabase-js";
+import {createHash} from "node:crypto";
+import sharp from "sharp";
+import {
+ credential,getGraph,postGraph,pageToken,instagramIdentity,DeliveryError,
+} from "@/lib/editorial-meta-delivery";
+
+const SUPABASE="https://lwuzkjvolxwkxdyafcjv.supabase.co";
+const SITE="https://www.palabrasquedespiertan.online";
+const BUCKET="pqd-meta-drafts-v1";
+const PREFIX="automation/v1";
+const CHANNELS=["facebook_feed","instagram_feed","facebook_story","instagram_story"] as const;
+type Channel=typeof CHANNELS[number];
+type Item={
+ code:string;kind:"mensaje"|"articulo"|"tema";title:string;body:string;summary:string;
+ state:string;approved_by_author:boolean;scheduled_at:string|null;social_scheduled_at:string|null;
+ social_state:string|null;cover_url:string|null;canonical_url:string|null;bible_reference:string|null;
+ updated_at:string;
+};
+type AutoReceipt={
+ version:1;code:string;channel:Channel;status:"reserved"|"preparing"|"publishing"|"published"|"needs_review";
+ scheduledAt:string;createdAt:string;updatedAt:string;sourceSha256:string;mediaSha256:string;
+ metaMediaId:string|null;metaPostId:string|null;permalink:string|null;reason:string|null;
+};
+export type AutoResult={code:string;channel:Channel;status:string;metaPostId?:string|null;reason?:string|null};
+
+function client(){
+ const secret=process.env.SUPABASE_SECRET_KEY||"";
+ if(process.env.NEXT_PUBLIC_SUPABASE_URL!==SUPABASE||!secret.startsWith("sb_secret_"))throw Error("AUTO_BACKEND_UNAVAILABLE");
+ return createClient(SUPABASE,secret,{auth:{persistSession:false,autoRefreshToken:false}});
+}
+const clock=(item:Item)=>item.scheduled_at?Date.parse(item.scheduled_at)+5*60_000:NaN;
+const sha=(x:Buffer)=>createHash("sha256").update(x).digest("hex");
+const receiptPath=(i:Item,ch:Channel)=>PREFIX+"/receipts/"+i.code+"/"+ch+".json";
+const assetPath=(i:Item,ch:Channel,hash:string)=>PREFIX+"/images/"+i.code+"/"+hash+"-"+(ch.endsWith("story")?"story":"feed")+".jpg";
+function textClean(s:string){
+ return s.replace(/<[^>]+>/g," ").replace(/\*\*/g,"").replace(/\[(.*?)\]\([^)]*\)/g,"$1")
+  .replace(/[\t ]+/g," ").replace(/\n{3,}/g,"\n\n").trim();
+}
+function caption(i:Item){
+ const intro=i.kind==="mensaje"?textClean(i.body||i.summary):textClean(i.summary);
+ const max=Math.max(100,1400-i.title.length-i.code.length);
+ return [
+  i.code+" · "+i.title,"",intro.slice(0,max),
+  i.bible_reference?"\nFundamento bíblico: "+textClean(i.bible_reference):"",
+  "\nP. Jaider Herrera Turizo",
+  "\nLEE Y COMENTA LA PUBLICACIÓN EN LA REVISTA:",
+  String(i.canonical_url),"\n#PalabrasQueDespiertan #FeCatólica #Oración",
+ ].filter(Boolean).join("\n").trim().slice(0,2100);
+}
+export function isAutoEligible(i:Item,now:number){
+ if(!/^(PD|ART)-\d{3}$/.test(i.code))return false;
+ if(i.kind!=="mensaje"&&i.kind!=="articulo")return false;
+ if(i.state!=="scheduled"||i.approved_by_author!==true)return false;
+ if(i.social_scheduled_at!==null)return false; // La reserva existente en Meta Business Suite prevalece.
+ if(!i.social_state||!/^(no-programado|pendiente-meta|META PENDIENTE)/i.test(i.social_state))return false;
+ if(!i.cover_url||!/^\/(mensajes|articulos)\/[a-z0-9-]+\.(png|jpg|jpeg|webp)$/.test(i.cover_url))return false;
+ if(!i.canonical_url||!i.canonical_url.startsWith(SITE+"/"))return false;
+ if(!i.body||!i.summary||!i.title||!i.scheduled_at)return false;
+ const t=clock(i);
+ // Nunca anticipar ni publicar contenido atrasado durante días.
+ return Number.isFinite(t)&&t>now-75*60_000&&t<now+45*60_000;
+}
+export function dueChannels(i:Item,now:number):Channel[]{
+ if(!isAutoEligible(i,now))return [];
+ const t=clock(i);
+ return CHANNELS.filter(ch=>{
+  const due=t+(ch.endsWith("story")?15*60_000:0);
+  return now>=due&&now-due<=40*60_000;
+ });
+}
+async function readyWebsite(i:Item){
+ if(!i.canonical_url||!i.canonical_url.startsWith(SITE+"/"))throw Error("CANONICAL_NOT_OFFICIAL");
+ const r=await fetch(i.canonical_url,{cache:"no-store",redirect:"error",signal:AbortSignal.timeout(12000)});
+ if(!r.ok||r.status!==200)throw Error("WEB_NOT_PUBLIC_YET");
+ // La página pública usa la autorización temporal de Supabase; un 200 es imprescindible.
+ await r.body?.cancel();
+}
+async function imageBytes(i:Item,ch:Channel){
+ const source=SITE+i.cover_url!;
+ const res=await fetch(source,{cache:"no-store",redirect:"error",signal:AbortSignal.timeout(15000)});
+ if(!res.ok||res.status!==200)throw Error("COVER_UNAVAILABLE");
+ const bytes=Buffer.from(await res.arrayBuffer());
+ if(bytes.length<5_000||bytes.length>9_000_000)throw Error("COVER_SIZE_INVALID");
+ const info=await sharp(bytes).metadata();
+ if(!info.width||!info.height||info.width<250||info.height<250)throw Error("COVER_DIMENSIONS_INVALID");
+ const isStory=ch.endsWith("story");
+ const w=1080,h=isStory?1920:1080;
+ const output=await sharp(bytes).rotate().resize(w,h,{
+  fit:"contain",position:"centre",background:"#100e0c",
+ }).jpeg({quality:88,mozjpeg:true}).toBuffer();
+ if(output.length>3_500_000)throw Error("JPEG_SIZE_INVALID");
+ return {output,sourceSha256:sha(bytes),mediaSha256:sha(output)};
+}
+function store(){return client().storage.from(BUCKET)}
+async function readReceipt(i:Item,ch:Channel):Promise<AutoReceipt|null>{
+ const {data,error}=await store().download(receiptPath(i,ch));
+ if(error||!data)return null;
+ const receipt=JSON.parse(await data.text()) as AutoReceipt;
+ if(receipt.version!==1||receipt.code!==i.code||receipt.channel!==ch)throw Error("RECEIPT_INVALID");
+ return receipt;
+}
+async function saveReceipt(receipt:AutoReceipt,patch:Partial<AutoReceipt>){
+ const next={...receipt,...patch,updatedAt:new Date().toISOString()};
+ const {error}=await store().upload(PREFIX+"/receipts/"+receipt.code+"/"+receipt.channel+".json",
+  new Blob([JSON.stringify(next)],{type:"application/json"}),{upsert:true,contentType:"application/json"});
+ if(error)throw Error("RECEIPT_UPDATE_FAILED");
+ return next;
+}
+async function signedMedia(i:Item,ch:Channel,bytes:Buffer,hash:string){
+ const path=assetPath(i,ch,hash);
+ const existing=await store().download(path);
+ if(existing.error){
+  const {error}=await store().upload(path,new Blob([new Uint8Array(bytes)],{type:"image/jpeg"}),
+   {upsert:false,contentType:"image/jpeg",cacheControl:"0"});
+  if(error){
+   const retry=await store().download(path);
+   if(retry.error)throw Error("MEDIA_STORE_FAILED");
+  }
+ }
+ const signed=await store().createSignedUrl(path,3600);
+ if(signed.error||!signed.data?.signedUrl)throw Error("SIGNED_MEDIA_FAILED");
+ return signed.data.signedUrl;
+}
+function idOK(x:unknown){return typeof x==="string"&&/^\d{8,25}(?:_\d{8,25})?$/.test(x)}
+async function sendToMeta(i:Item,ch:Channel,jpeg:Buffer,mediaHash:string){
+ const {record,token}=await credential();
+ if(ch.startsWith("facebook")){
+  for(const scope of ["pages_show_list","pages_read_engagement","pages_manage_posts"])
+   if(!record.scopes.includes(scope))throw Error("FACEBOOK_SCOPE_MISSING");
+  const pageAccess=await pageToken(record,token);
+  const form=new FormData();
+  form.set("source",new Blob([new Uint8Array(jpeg)],{type:"image/jpeg"}),i.code.toLowerCase()+".jpg");
+  if(ch==="facebook_feed")form.set("caption",caption(i));
+  form.set("published",ch==="facebook_story"?"false":"true");
+  const create=await postGraph(record.facebookPageId!+"/photos",pageAccess,form);
+  const mediaId=String(create.id||"");
+  if(!idOK(mediaId))throw Error("FACEBOOK_MEDIA_ID_MISSING");
+  if(ch==="facebook_story"){
+   const story=await postGraph(record.facebookPageId!+"/photo_stories",pageAccess,new URLSearchParams({photo_id:mediaId}));
+   if(story.success!==true||!idOK(story.post_id))throw Error("FACEBOOK_STORY_UNVERIFIED");
+   return {mediaId,postId:String(story.post_id),permalink:null};
+  }
+  const info=await getGraph(mediaId,pageAccess,"id,link").catch(()=>null);
+  return {mediaId,postId:String(create.post_id||mediaId),permalink:typeof info?.link==="string"?info.link:null};
+ }
+ for(const scope of ["instagram_basic","instagram_content_publish"])
+  if(!record.scopes.includes(scope))throw Error("INSTAGRAM_SCOPE_MISSING");
+ // TEST-001 confirmó una cuenta Business. Se verifica cada vez la identidad.
+ const id=await instagramIdentity(record,token,ch==="instagram_story",ch==="instagram_story");
+ const url=await signedMedia(i,ch,jpeg,mediaHash);
+ const body=new URLSearchParams({image_url:url});
+ if(ch==="instagram_story")body.set("media_type","STORIES");
+ else body.set("caption",caption(i));
+ const create=await postGraph(id+"/media",token,body);
+ const container=String(create.id||"");
+ if(!idOK(container))throw Error("IG_CONTAINER_INVALID");
+ let finished=false;
+ for(let j=0;j<8;j++){
+  const state=await getGraph(container,token,"status_code").catch(()=>null);
+  if(state?.status_code==="FINISHED"){finished=true;break;}
+  if(state?.status_code==="ERROR"||state?.status_code==="EXPIRED")break;
+  if(j<7)await new Promise(resolve=>setTimeout(resolve,1400));
+ }
+ if(!finished)throw Error("IG_CONTAINER_NOT_READY");
+ const out=await postGraph(id+"/media_publish",token,new URLSearchParams({creation_id:container}));
+ if(!idOK(out.id))throw Error("IG_PUBLISH_UNVERIFIED");
+ const info=await getGraph(String(out.id),token,"id,permalink,media_type").catch(()=>null);
+ return {mediaId:container,postId:String(out.id),permalink:typeof info?.permalink==="string"?info.permalink:null};
+}
+async function one(i:Item,ch:Channel):Promise<AutoResult>{
+ const existing=await readReceipt(i,ch);
+ if(existing)return {code:i.code,channel:ch,status:"already_reserved",metaPostId:existing.metaPostId};
+ // No historias sueltas: requieren el feed de la misma red confirmado.
+ if(ch.endsWith("story")){
+  const feed=await readReceipt(i,ch.startsWith("facebook")?"facebook_feed":"instagram_feed");
+  if(!feed||feed.status!=="published")return {code:i.code,channel:ch,status:"feed_not_confirmed"};
+ }
+ try{
+  await readyWebsite(i);
+  const {output,sourceSha256,mediaSha256}=await imageBytes(i,ch);
+  const createdAt=new Date().toISOString();
+  const rec:AutoReceipt={version:1,code:i.code,channel:ch,status:"reserved",
+   scheduledAt:new Date(clock(i)+(ch.endsWith("story")?900000:0)).toISOString(),
+   createdAt,updatedAt:createdAt,sourceSha256,mediaSha256,
+   metaMediaId:null,metaPostId:null,permalink:null,reason:null};
+  const reserve=await store().upload(receiptPath(i,ch),new Blob([JSON.stringify(rec)],{type:"application/json"}),
+   {upsert:false,contentType:"application/json",cacheControl:"0"});
+  if(reserve.error){
+   const prior=await readReceipt(i,ch);
+   return {code:i.code,channel:ch,status:prior?"already_reserved":"reserve_error"};
+  }
+  let current=rec;
+  try{
+   current=await saveReceipt(current,{status:"publishing"});
+   const result=await sendToMeta(i,ch,output,mediaSha256);
+   current=await saveReceipt(current,{status:"published",metaMediaId:result.mediaId,
+    metaPostId:result.postId,permalink:result.permalink,reason:null});
+   return {code:i.code,channel:ch,status:"published",metaPostId:current.metaPostId};
+  }catch(e){
+   const reason=e instanceof Error?e.message:"META_DELIVERY_UNCERTAIN";
+   await saveReceipt(current,{status:"needs_review",reason:reason.slice(0,100)}).catch(()=>null);
+   return {code:i.code,channel:ch,status:"needs_review",reason:reason.slice(0,100)};
+  }
+ }catch(e){
+  return {code:i.code,channel:ch,status:"preflight_blocked",reason:e instanceof Error?e.message:"UNKNOWN"};
+ }
+}
+export async function autoDispatch(now=Date.now()){
+ if(process.env.META_AUTO_PUBLISH_ENABLED!=="true")return {enabled:false,checkedAt:new Date(now).toISOString(),results:[]};
+ const q=client();
+ const {data,error}=await q.from("editorial_items").select(
+  "code,kind,title,body,summary,state,approved_by_author,scheduled_at,social_scheduled_at,social_state,cover_url,canonical_url,bible_reference,updated_at"
+ ).eq("state","scheduled").eq("approved_by_author",true).order("scheduled_at",{ascending:true}).limit(120);
+ if(error||!Array.isArray(data))throw Error("EDITORIAL_READ_FAILED");
+ const items=(data as Item[]).filter(i=>isAutoEligible(i,now)).slice(0,1);
+ const results:AutoResult[]=[];
+ for(const i of items){
+  const channels=dueChannels(i,now);
+  const feeds=channels.filter(c=>c.endsWith("_feed"));
+  const stories=channels.filter(c=>c.endsWith("_story"));
+  results.push(...await Promise.all(feeds.map(ch=>one(i,ch))));
+  // Las historias sólo se procesan después de confirmar los recibos de sus feeds.
+  results.push(...await Promise.all(stories.map(ch=>one(i,ch))));
+ }
+ return {enabled:true,checkedAt:new Date(now).toISOString(),checkedItems:data.length,candidates:items.length,results};
+}
+
+export async function autoDashboard(now=Date.now()){
+ const q=client();
+ const {data,error}=await q.from("editorial_items").select(
+  "code,kind,title,body,summary,state,approved_by_author,scheduled_at,social_scheduled_at,social_state,cover_url,canonical_url,bible_reference,updated_at"
+ ).in("kind",["mensaje","articulo"]).eq("approved_by_author",true).order("scheduled_at",{ascending:true}).limit(120);
+ if(error||!data)throw Error("AUTO_DASHBOARD_UNAVAILABLE");
+ const items=data as Item[];
+ const future=items.filter(x=>x.state==="scheduled"&&x.scheduled_at&&Date.parse(x.scheduled_at)>=now-24*3600_000);
+ const externallyDeclared=future.filter(x=>!!x.social_scheduled_at);
+ const candidates=future.filter(x=>isAutoEligible(x,now)||x.state==="scheduled"&&x.approved_by_author&&!x.social_scheduled_at
+  &&/^(no-programado|pendiente-meta|META PENDIENTE)/i.test(x.social_state||""))
+  .sort((a,b)=>clock(a)-clock(b));
+ const first=candidates.slice(0,8);
+ const next=await Promise.all(first.map(async item=>{
+  const result=await Promise.all(CHANNELS.map(async ch=>{
+   const receipt=await readReceipt(item,ch).catch(()=>null);
+   return [ch,receipt?.status||"pending",receipt?.metaPostId||null] as const;
+  }));
+  return {code:item.code,title:item.title,socialAt:new Date(clock(item)).toISOString(),
+   channels:Object.fromEntries(result.map(([ch,state,metaPostId])=>[ch,{state,metaPostId}]))};
+ }));
+ return {enabled:process.env.META_AUTO_PUBLISH_ENABLED==="true",
+  schedule:"Cada 15 minutos, hora Colombia; ejecución con margen de hasta 15 minutos",
+  externallyDeclared:externallyDeclared.length,automaticCandidates:candidates.length,
+  excludedCodes:externallyDeclared.map(x=>x.code).slice(0,25),next,
+  lastReadAt:new Date(now).toISOString()};
+}
