@@ -8,6 +8,9 @@ export type MetaVaultRecord={
  username?:string|null;accountId?:string|null;
  verificationState?:"confirmed"|"awaiting_account_permission"|"expired"|"meta_unavailable"|"unverified";
  lastVerificationAttemptAt?:string;lastVerifiedAt?:string|null;
+ facebookPageVerified?:boolean;facebookPageId?:string|null;facebookPageName?:string|null;facebookPageUsername?:string|null;
+ facebookCanCreateContent?:boolean;facebookVerificationState?:FacebookVerificationState;
+ lastFacebookVerificationAttemptAt?:string;lastFacebookVerifiedAt?:string|null;
 };
 export type AccountVerification={verified:boolean;username:string|null;accountId:string|null;
  state:NonNullable<MetaVaultRecord["verificationState"]>; expiresAt:number|null;tokenValid:boolean|null};
@@ -92,4 +95,105 @@ export async function verifySavedInstagram(record:MetaVaultRecord,appAuth:string
  const match=candidates.find(x=>x.username==="palabrasquedespiertan");
  if(match)return {verified:true,username:match.username,accountId:match.id,state:"confirmed",expiresAt,tokenValid:true};
  return {verified:false,username:null,accountId:null,state:"awaiting_account_permission",expiresAt,tokenValid:true};
+}
+
+export type FacebookVerificationState="confirmed"|"no_page"|"insufficient_tasks"|"meta_unavailable"|"missing_scopes";
+export type FacebookVerification={
+ verified:boolean;
+ pageId:string|null;
+ pageName:string|null;
+ pageUsername:string|null;
+ canCreateContent:boolean;
+ state:FacebookVerificationState;
+};
+function isKnownPage(page:Record<string,unknown>,igId:string|null){
+ const username=typeof page.username==="string"?page.username.trim().toLowerCase():"";
+ const link=typeof page.link==="string"?page.link.trim():"";
+ let linked=false;
+ const ig=page.instagram_business_account;
+ if(ig&&typeof ig==="object"){
+  const linkedIg=ig as {id?:unknown;username?:unknown};
+  linked=(igId!==null&&String(linkedIg.id)===igId)||
+   (typeof linkedIg.username==="string"&&linkedIg.username.toLowerCase()==="palabrasquedespiertan");
+ }
+ const matchHandle=username==="palabrasquedespiertan01";
+ let matchLink=false;
+ if(link){
+  try{
+   const url=new URL(link);
+   matchLink=(url.hostname==="facebook.com"||url.hostname==="www.facebook.com"||
+    url.hostname==="m.facebook.com")&&/^\/palabrasquedespiertan01\/?$/i.test(url.pathname);
+  }catch{}
+ }
+ const exactName=typeof page.name==="string"&&page.name.trim().toLowerCase()==="palabras que despiertan";
+ return matchHandle||matchLink||(exactName&&linked);
+}
+function safePage(raw:unknown){
+ if(!raw||typeof raw!=="object")return null;
+ const p=raw as Record<string,unknown>;
+ if(!/^\d{8,25}$/.test(String(p.id||"")))return null;
+ return p;
+}
+/** Read-only authorization probe. No Facebook post is created. */
+export async function verifySavedFacebook(record:MetaVaultRecord,appAuth:string):Promise<FacebookVerification>{
+ const missing:FacebookVerification={verified:false,pageId:null,pageName:null,pageUsername:null,canCreateContent:false,state:"no_page"};
+ const scopes=["pages_show_list","pages_read_engagement","pages_manage_posts"];
+ if(scopes.some(x=>!record.scopes.includes(x)))return {...missing,state:"missing_scopes"};
+ const token=decryptToken(record);
+ // Meta documents /me/accounts for system-user access to managed Page tokens.
+ let list=await graph("/me/accounts",token,{
+  fields:"id,name,username,link,access_token,tasks,instagram_business_account{id,username}",limit:"25"
+ });
+ if(!Array.isArray(list?.data)){
+  list=await graph("/me/accounts",token,{fields:"id,name,access_token,tasks",limit:"25"});
+ }
+ const rows=Array.isArray(list?.data)?list.data.map(safePage).filter((x):x is Record<string,unknown>=>x!==null):[];
+ // Meta sometimes returns only target_ids for system-user permissions.
+ // Fall back to those explicit target ids; never search for Pages by name.
+ if(rows.length===0 && /^2572239026621118\|[a-fA-F0-9]{32}$/.test(appAuth)){
+  const tokenMeta=await graph("/debug_token",appAuth,{input_token:token});
+  const info=tokenMeta?.data;
+  if(info&&typeof info==="object"){
+   const data=info as Record<string,unknown>;
+   if(data.is_valid===true&&String(data.app_id)===record.appId){
+    const grants=Array.isArray(data.granular_scopes)?data.granular_scopes:[];
+    const pageIds=new Set<string>();
+    for(const grant of grants){
+     if(!grant||typeof grant!=="object")continue;
+     const g=grant as {scope?:unknown;target_ids?:unknown};
+     if(!["pages_manage_posts","pages_read_engagement","pages_show_list"].includes(String(g.scope)))continue;
+     if(!Array.isArray(g.target_ids))continue;
+     for(const target of g.target_ids){const id=String(target);if(/^\d{8,25}$/.test(id))pageIds.add(id)}
+    }
+    rows.push(...[...pageIds].slice(0,8).map(id=>({id})));
+   }
+  }
+ }
+ if(rows.length===0)return {...missing,state:Array.isArray(list?.data)?"no_page":"meta_unavailable"};
+ const requested=rows.slice(0,25);
+ // Query only Page details; do not query posts, upload files, or publish anything.
+ const detailed=await Promise.all(requested.map(async page=>{
+  const pageToken=typeof page.access_token==="string"&&page.access_token.length>20
+   ?page.access_token:token;
+  const detail=await graph("/"+page.id,pageToken,{
+   fields:"id,name,username,link,instagram_business_account{id,username}"
+  });
+  return {...page,...(detail&&String(detail.id)===String(page.id)?detail:{})};
+ }));
+ const igId=record.verifiedAccount&&record.accountId?record.accountId:null;
+ const match=detailed.find(x=>isKnownPage(x,igId));
+ if(!match)return missing;
+ const tasks=Array.isArray(match.tasks)?match.tasks.filter((x):x is string=>typeof x==="string"):[];
+ const canCreate=tasks.some(x=>[
+  "CREATE_CONTENT","MANAGE","PROFILE_PLUS_CREATE_CONTENT",
+  "PROFILE_PLUS_FULL_CONTROL","PROFILE_PLUS_MANAGE","PROFILE_PLUS_FACEBOOK_ACCESS"
+ ].includes(x));
+ const hasPageToken=typeof match.access_token==="string"&&match.access_token.length>20;
+ return {
+  verified:true,pageId:String(match.id),
+  pageName:typeof match.name==="string"?match.name:null,
+  pageUsername:typeof match.username==="string"?match.username:null,
+  canCreateContent:canCreate&&hasPageToken,
+  state:canCreate&&hasPageToken?"confirmed":"insufficient_tasks"
+ };
 }

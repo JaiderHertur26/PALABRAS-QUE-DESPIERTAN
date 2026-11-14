@@ -37,3 +37,21 @@ test("Verificación de Instagram sin exponer ni inferir la identidad",()=>{
  assert.match(vault,/username:item\.verifiedAccount\?item\.username:null/);
  assert.doesNotMatch(vault,/return reply\(\{.*token[,:]/);
 });
+
+test("Validación de fanpage orgánica con identidad y rol, sin publicar ni filtrar tokens",()=>{
+ const probe=read("lib/meta-account-verification.ts");
+ const vault=read("app/api/editorial/meta/vault/route.ts");
+ assert.match(probe,/verifySavedFacebook/);
+ assert.match(probe,/\/me\/accounts/);
+ assert.match(probe,/granular_scopes/);
+ assert.match(probe,/isKnownPage/);
+ assert.match(probe,/palabrasquedespiertan01/);
+ assert.match(probe,/instagram_business_account/);
+ assert.match(probe,/CREATE_CONTENT/);
+ assert.match(probe,/canCreateContent:canCreate&&hasPageToken/);
+ assert.match(vault,/facebookPageVerified/);
+ assert.match(vault,/lastFacebookVerificationAttemptAt/);
+ assert.match(vault,/facebookPageVerified:item.facebookPageVerified===true/);
+ assert.doesNotMatch(vault,/pageAccessToken|page\.access_token|encrypted:item\.encrypted/);
+ assert.doesNotMatch(probe,/method:"POST"|method:'POST'|\/feed\b|\/photos\b/);
+});

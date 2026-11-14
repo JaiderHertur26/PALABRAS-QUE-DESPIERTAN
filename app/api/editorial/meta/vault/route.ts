@@ -1,7 +1,7 @@
 import {NextRequest,NextResponse} from "next/server";
 import {createClient} from "@supabase/supabase-js";
 import {createCipheriv,randomBytes,timingSafeEqual} from "node:crypto";
-import {verifySavedInstagram,type MetaVaultRecord} from "@/lib/meta-account-verification";
+import {verifySavedInstagram,verifySavedFacebook,type MetaVaultRecord} from "@/lib/meta-account-verification";
 
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
@@ -72,12 +72,45 @@ export async function GET(request:NextRequest){
     item.verificationState=item.verifiedAccount?"confirmed":"meta_unavailable";
    }
   }
+  const facebookScopes=["pages_show_list","pages_read_engagement","pages_manage_posts"];
+  const hasFacebookScopes=facebookScopes.every(x=>item.scopes.includes(x));
+  const lastFacebook=item.lastFacebookVerificationAttemptAt?Date.parse(item.lastFacebookVerificationAttemptAt):0;
+  // Facebook has its own verification schedule: Instagram can already be confirmed.
+  const facebookDelay=item.facebookPageVerified?86_400_000:90_000;
+  if(hasFacebookScopes&&now-lastFacebook>facebookDelay&&/^2572239026621118\|[a-fA-F0-9]{32}$/.test(appAuth)){
+   try{
+    const page=await verifySavedFacebook(item,appAuth);
+    item.facebookVerificationState=page.state;
+    item.lastFacebookVerificationAttemptAt=new Date(now).toISOString();
+    if(page.state!=="meta_unavailable"){
+     item.facebookPageVerified=page.verified;
+     item.facebookPageId=page.verified?page.pageId:null;
+     item.facebookPageName=page.verified?page.pageName:null;
+     item.facebookPageUsername=page.verified?page.pageUsername:null;
+     item.facebookCanCreateContent=page.verified&&page.canCreateContent;
+     if(page.verified)item.lastFacebookVerifiedAt=item.lastFacebookVerificationAttemptAt;
+    }
+    const {error:saveError}=await store().upload(keyPath,
+      new Blob([JSON.stringify(item)],{type:"application/json"}),
+      {contentType:"application/json",upsert:true,cacheControl:"0"});
+    if(saveError)throw Error("Facebook verification metadata not saved");
+   }catch{
+    // A Meta outage must not expose or replace the stored encrypted token.
+    item.facebookVerificationState="meta_unavailable";
+   }
+  }
   return reply({
    connected:true,at:item.at,scopes:item.scopes,
    expiresAt:item.expiresAt,verifiedAccount:item.verifiedAccount===true,
    username:item.verifiedAccount?item.username:null,
    verificationState:item.verificationState||"unverified",
-   lastVerifiedAt:item.lastVerifiedAt||null
+   lastVerifiedAt:item.lastVerifiedAt||null,
+   facebookPageVerified:item.facebookPageVerified===true,
+   facebookPageId:item.facebookPageVerified?item.facebookPageId:null,
+   facebookPageName:item.facebookPageVerified?item.facebookPageName:null,
+   facebookCanCreateContent:item.facebookCanCreateContent===true,
+   facebookVerificationState:item.facebookVerificationState||"unverified",
+   lastFacebookVerifiedAt:item.lastFacebookVerifiedAt||null
   });
  }catch{return reply({error:"No se pudo verificar la conexión"},503);}
 }
