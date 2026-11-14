@@ -73,15 +73,18 @@ test("Borradores de Meta se almacenan en bucket privado separado, accesibles sol
  assert.match(route,/upsert:true/);
  assert.doesNotMatch(route,/graph.facebook.com|media_publish|\/feed|is_published/);
 });
-test("La edición y sustitución de imágenes revoca aprobación de contenido",()=>{
+test("Aprobaciones de feed e historias independientes, con revisión ante cambios",()=>{
  const model=read("lib/editorial-meta-drafts.ts");
  const media=read("app/api/editorial/meta/drafts/media/route.ts");
- assert.match(model,/contentChanged/);
- assert.match(model,/const approved=body.contentApproved===true&&!contentChanged/);
- assert.match(model,/Adjunta las imágenes y guárdalas antes de aprobar/);
+ assert.match(model,/const changed=\(slot:Slot\)/);
+ assert.match(model,/const approved=body.contentApproved===true&&!changed\("feed"\)/);
+ assert.match(model,/const storyApproved=body.storyApproved===true&&!changed\("story"\)/);
+ assert.match(model,/Adjunta y guarda la imagen del feed antes de aprobarlo/);
+ assert.match(model,/Adjunta la imagen vertical y activa una historia/);
  assert.match(media,/changedImage/);
- assert.match(media,/contentApproved:revokesApproval\?false/);
- assert.match(media,/approvalAt:revokesApproval\?null/);
+ assert.match(media,/contentApproved:t.slot==="feed"&&changedImage\?false/);
+ assert.match(media,/storyApproved:t.slot==="story"&&changedImage\?false/);
+ assert.match(media,/storyApprovalAt:t.slot==="story"&&changedImage\?null/);
  assert.match(media,/x-pqd-expected-revision/);
  assert.match(media,/sha256/);
  assert.match(media,/image\/png/);
@@ -139,7 +142,8 @@ test("Historias sólo para TEST-001 con imagen aprobada, permisos y doble fase",
  const route=read("app/api/editorial/meta/publish/route.ts");
  assert.match(src,/preparedStoryHash=/);
  assert.match(src,/draft.media.story\?\.sha256===preparedStoryHash/);
- assert.match(src,/FACEBOOK_STORY_BUSINESS_PERMISSION_REQUIRED/);
+ assert.match(src,/await pageToken\(record,token\)/);
+ assert.match(src,/draft.storyApproved/);
  assert.match(src,/INSTAGRAM_STORIES_BUSINESS_REQUIRED/);
  assert.match(src,/photo_stories/);
  assert.match(src,/photo_id:mediaId/);

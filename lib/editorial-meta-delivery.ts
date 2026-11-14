@@ -150,8 +150,10 @@ function isTest(draft:Draft,channel:ChannelName){
 export type Readiness={ready:boolean;reason:string;instagramAccountType?:string|null};
 export async function checkChannelEligibility(draft:Draft,channel:ChannelName):Promise<Readiness>{
  if(!isTest(draft,channel))return {ready:false,reason:"NOT_APPROVED_TEST"};
- if(!draft.contentApproved||!draft.approvalAt||!draft.channels[channel].enabled)
-  return {ready:false,reason:"CONTENT_NOT_APPROVED"};
+ const isStory=channel.endsWith("_story");
+ if(isStory?(!draft.storyApproved||!draft.storyApprovalAt):(!draft.contentApproved||!draft.approvalAt))
+  return {ready:false,reason:isStory?"STORY_NOT_APPROVED":"CONTENT_NOT_APPROVED"};
+ if(!draft.channels[channel].enabled)return {ready:false,reason:"CHANNEL_NOT_SELECTED"};
  if(draft.channels[channel].mode!=="manual"||draft.channels[channel].scheduledAt!==null)
   return {ready:false,reason:"SCHEDULED_ITEM_NOT_ELIGIBLE"};
  if(channel.endsWith("_feed")&&(draft.channels[channel].copy.trim().length<30||draft.channels[channel].copy.length>2200))
@@ -165,8 +167,10 @@ export async function checkChannelEligibility(draft:Draft,channel:ChannelName):P
    if(["pages_show_list","pages_read_engagement","pages_manage_posts"].some(x=>!record.scopes.includes(x)))
     throw new DeliveryError("FACEBOOK_SCOPES_MISSING",424);
    await pageToken(record,token);
-   if(channel==="facebook_story"&&!record.scopes.includes("business_management"))
-    throw new DeliveryError("FACEBOOK_STORY_BUSINESS_PERMISSION_REQUIRED",424);
+   // Para historias de Facebook, Meta exige token de página, CREATE_CONTENT
+   // y permisos de Page; business_management puede depender del acceso
+   // al negocio, pero no es un requisito universal del endpoint de historia.
+   // El estado real se determina por la respuesta de Meta a la prueba.
   }else{
    if(["instagram_basic","instagram_content_publish"].some(x=>!record.scopes.includes(x)))
     throw new DeliveryError("INSTAGRAM_SCOPES_MISSING",424);
@@ -179,21 +183,48 @@ export async function checkChannelEligibility(draft:Draft,channel:ChannelName):P
   return {ready:false,reason:e instanceof DeliveryError?e.code:"META_PREFLIGHT_UNAVAILABLE"};
  }
 }
+export async function storyAccountDiagnostic(){
+ // Comprobación de solo lectura: no crea multimedia, publicaciones ni recibos.
+ try{
+  const {record,token}=await credential();
+  let igType:string|null=null;
+  let igStatus:"confirmed"|"unavailable"|"identity_mismatch"="unavailable";
+  if(record.accountId&&/^\\d{8,25}$/.test(record.accountId)){
+   const profile=await getGraph(record.accountId,token,"id,username,account_type").catch(()=>null);
+   if(profile?.id===record.accountId&&String(profile.username).toLowerCase()==="palabrasquedespiertan"){
+    igStatus="confirmed";
+    igType=typeof profile.account_type==="string"?profile.account_type:null;
+   }else if(profile)igStatus="identity_mismatch";
+  }
+  const pageReady=await pageToken(record,token).then(()=>true).catch(()=>false);
+  return {instagram:{type:igType,status:igStatus,canPublishStories:igType==="BUSINESS"},
+   facebook:{pageReady,hasBusinessManagementScope:record.scopes.includes("business_management"),
+    canAttemptStories:pageReady&&["pages_show_list","pages_read_engagement","pages_manage_posts"]
+     .every(s=>record.scopes.includes(s))}};
+ }catch{
+  return {instagram:{type:null,status:"unavailable",canPublishStories:false},
+   facebook:{pageReady:false,hasBusinessManagementScope:false,canAttemptStories:false}};
+ }
+}
 export async function publicationReadiness(id:string){
  const draft=await loadDraft(id);
  if(!draft||draft.id!==approvedTestId)return null;
  const channels=await Promise.all(
   channelNames.map(async c=>[c,await checkChannelEligibility(draft,c)] as const)
  );
- return {revision:draft.updatedAt,channels:Object.fromEntries(channels)};
+ return {revision:draft.updatedAt,channels:Object.fromEntries(channels),
+  storyAccounts:await storyAccountDiagnostic()};
 }
 export async function publishTestOnce(id:string,channel:ChannelName,revision:string){
  if(!safeId(id)||!isChannel(channel))throw new DeliveryError("INVALID_TARGET");
  const draft=await loadDraft(id);
  if(!draft||!isTest(draft,channel))throw new DeliveryError("ONLY_APPROVED_TEST001_FEED_ALLOWED",403);
  if(draft.updatedAt!==revision)throw new DeliveryError("DRAFT_CHANGED_RELOAD",409);
- if(!draft.contentApproved||!draft.approvalAt||!draft.channels[channel].enabled)
+ if(channel.endsWith("_story")
+  ?(!draft.storyApproved||!draft.storyApprovalAt)
+  :(!draft.contentApproved||!draft.approvalAt))
   throw new DeliveryError("CONTENT_NOT_APPROVED",409);
+ if(!draft.channels[channel].enabled)throw new DeliveryError("CHANNEL_NOT_SELECTED",409);
  const setting=draft.channels[channel];
  if(setting.mode!=="manual"||setting.scheduledAt!==null)throw new DeliveryError("SCHEDULED_CONTENT_NOT_ALLOWED",409);
  if(channel.endsWith("_feed")&&(setting.copy.trim().length<30||setting.copy.length>2200))
@@ -205,7 +236,8 @@ export async function publishTestOnce(id:string,channel:ChannelName,revision:str
  const preflight=await checkChannelEligibility(draft,channel);
  if(!preflight.ready)throw new DeliveryError(preflight.reason,424);
  const latest=await loadDraft(id);
- if(!latest||latest.updatedAt!==revision||!latest.contentApproved)
+ if(!latest||latest.updatedAt!==revision||
+   (channel.endsWith("_story")?!latest.storyApproved:!latest.contentApproved))
   throw new DeliveryError("DRAFT_CHANGED_DURING_PREFLIGHT",409);
  const created=initDelivery(draft,channel);
  const reservation=await privateDraftStore().upload(path(id,channel),

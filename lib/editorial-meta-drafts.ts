@@ -17,6 +17,7 @@ export type MediaFile={slot:Slot;mime:"image/jpeg"|"image/png";width:number;heig
 export type Draft={
  version:1;id:string;title:string;reference:string;
  contentApproved:boolean;approvalAt:string|null;
+ storyApproved?:boolean;storyApprovalAt?:string|null;
  createdAt:string;updatedAt:string;channels:Record<ChannelName,Channel>;
  media:{feed:MediaFile|null;story:MediaFile|null}
 };
@@ -79,15 +80,21 @@ export function validatedFields(raw:unknown,old:Draft|null):Draft{
   channels[name]={enabled:item.enabled,copy:item.copy,mode:item.mode as Channel["mode"],scheduledAt:item.scheduledAt as string|null};
  }
  if(typeof body.contentApproved!=="boolean")throw Error("Falta el estado de aprobación");
- const contentChanged=!!old&&(old.title!==title.trim()||old.reference!==reference.trim()||
-  channelNames.some(name=>old.channels[name].copy!==channels[name].copy||
-   old.channels[name].enabled!==channels[name].enabled));
- const approved=body.contentApproved===true&&!contentChanged;
- const needed=new Set(channelNames.filter(name=>channels[name].enabled).map(name=>name.endsWith("_story")?"story":"feed"));
- if(approved&&([...needed].some(slot=>!old?.media[slot as Slot])))throw Error("Adjunta las imágenes y guárdalas antes de aprobar el contenido");
+ const commonChanged=!!old&&(old.title!==title.trim()||old.reference!==reference.trim());
+ const changed=(slot:Slot)=>commonChanged||!!old&&channelNames
+  .filter(name=>name.endsWith(slot==="story"?"_story":"_feed"))
+  .some(name=>old.channels[name].copy!==channels[name].copy||
+   old.channels[name].enabled!==channels[name].enabled);
+ const feedEnabled=channelNames.some(name=>name.endsWith("_feed")&&channels[name].enabled);
+ const storyEnabled=channelNames.some(name=>name.endsWith("_story")&&channels[name].enabled);
+ const approved=body.contentApproved===true&&!changed("feed");
+ const storyApproved=body.storyApproved===true&&!changed("story");
+ if(approved&&feedEnabled&&!old?.media.feed)throw Error("Adjunta y guarda la imagen del feed antes de aprobarlo");
+ if(storyApproved&&(!storyEnabled||!old?.media.story))throw Error("Adjunta la imagen vertical y activa una historia antes de aprobarla");
  const now=new Date().toISOString();
- return {version:1,id,title:title.trim(),reference:reference.trim(),contentApproved:approved,
-  approvalAt:approved?(old?.contentApproved?old.approvalAt:now):null,
+ return {version:1,id,title:title.trim(),reference:reference.trim(),
+  contentApproved:approved,approvalAt:approved?(old?.contentApproved?old.approvalAt:now):null,
+  storyApproved,storyApprovalAt:storyApproved?(old?.storyApproved?old.storyApprovalAt:now):null,
   createdAt:old?.createdAt||now,updatedAt:now,channels,
   media:old?.media||{feed:null,story:null}};
 }
