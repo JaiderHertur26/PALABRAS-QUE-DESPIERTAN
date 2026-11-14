@@ -86,3 +86,25 @@ test("Los borradores antiguos siguen legibles sin aprobación de historia",()=>{
  assert.equal(result.contentApproved,true);
  assert.equal(result.storyApproved,false);
 });
+
+test("La dirección puede confirmar que Instagram es Business sin modificar feeds ni historias aprobadas",()=>{
+ const old=make();old.channels.instagram_story.enabled=true;old.storyApproved=true;old.storyApprovalAt=now;
+ const next=structuredClone(old);next.instagramBusinessConfirmed=true;
+ const result=validatedFields(next,old);
+ assert.equal(result.contentApproved,true);
+ assert.equal(result.approvalAt,now);
+ assert.equal(result.storyApproved,true);
+ assert.equal(result.storyApprovalAt,now);
+ assert.equal(result.instagramBusinessConfirmed,true);
+ assert.ok(result.instagramBusinessConfirmedAt);
+});
+test("La declaración Business no se acepta sin una historia de Instagram aprobada",()=>{
+ const old=make();const next=structuredClone(old);next.instagramBusinessConfirmed=true;
+ assert.throws(()=>validatedFields(next,old),/confirmación Business/);
+});
+test("Al cambiar identidad o historia se rechaza una declaración Business desactualizada",()=>{
+ const old=make();old.channels.instagram_story.enabled=true;old.storyApproved=true;old.storyApprovalAt=now;
+ old.instagramBusinessConfirmed=true;old.instagramBusinessConfirmedAt=now;
+ const next=structuredClone(old);next.channels.instagram_story.copy="Otro contenido";
+ assert.throws(()=>validatedFields(next,old),/confirmación Business/);
+});

@@ -18,6 +18,7 @@ export type Draft={
  version:1;id:string;title:string;reference:string;
  contentApproved:boolean;approvalAt:string|null;
  storyApproved?:boolean;storyApprovalAt?:string|null;
+ instagramBusinessConfirmed?:boolean;instagramBusinessConfirmedAt?:string|null;
  createdAt:string;updatedAt:string;channels:Record<ChannelName,Channel>;
  media:{feed:MediaFile|null;story:MediaFile|null}
 };
@@ -89,12 +90,18 @@ export function validatedFields(raw:unknown,old:Draft|null):Draft{
  const storyEnabled=channelNames.some(name=>name.endsWith("_story")&&channels[name].enabled);
  const approved=body.contentApproved===true&&!changed("feed");
  const storyApproved=body.storyApproved===true&&!changed("story");
+ const businessConfirmation=body.instagramBusinessConfirmed===true;
+ if(businessConfirmation&&(!storyApproved||!channels.instagram_story.enabled||!old?.media.story))
+  throw Error("La confirmación Business requiere una historia aprobada y guardada para Instagram");
+ const instagramBusinessConfirmed=businessConfirmation&&!changed("story");
  if(approved&&feedEnabled&&!old?.media.feed)throw Error("Adjunta y guarda la imagen del feed antes de aprobarlo");
  if(storyApproved&&(!storyEnabled||!old?.media.story))throw Error("Adjunta la imagen vertical y activa una historia antes de aprobarla");
  const now=new Date().toISOString();
  return {version:1,id,title:title.trim(),reference:reference.trim(),
   contentApproved:approved,approvalAt:approved?(old?.contentApproved?old.approvalAt:now):null,
   storyApproved,storyApprovalAt:storyApproved?(old?.storyApproved?old.storyApprovalAt:now):null,
+  instagramBusinessConfirmed,instagramBusinessConfirmedAt:instagramBusinessConfirmed
+   ?(old?.instagramBusinessConfirmed&&old.instagramBusinessConfirmedAt?old.instagramBusinessConfirmedAt:now):null,
   createdAt:old?.createdAt||now,updatedAt:now,channels,
   media:old?.media||{feed:null,story:null}};
 }

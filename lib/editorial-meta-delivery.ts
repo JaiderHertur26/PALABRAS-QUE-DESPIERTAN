@@ -74,7 +74,7 @@ async function pageToken(record:MetaVaultRecord,token:string){
   throw new DeliveryError("FACEBOOK_PAGE_IDENTITY_MISMATCH",424);
  return page.access_token;
 }
-async function instagramIdentity(record:MetaVaultRecord,token:string,story:boolean){
+async function instagramIdentity(record:MetaVaultRecord,token:string,story:boolean,ownerBusinessConfirmed=false){
  if(!record.verifiedAccount||record.username!=="palabrasquedespiertan"||!/^\d{8,25}$/.test(record.accountId||""))
   throw new DeliveryError("INSTAGRAM_NOT_VERIFIED",424);
  // La identidad puede comprobarse aun si Meta no concede el campo opcional
@@ -84,7 +84,13 @@ async function instagramIdentity(record:MetaVaultRecord,token:string,story:boole
   throw new DeliveryError("INSTAGRAM_IDENTITY_MISMATCH",424);
  if(story){
   const type=await getGraph(String(record.accountId),token,"id,account_type").catch(()=>null);
-  if(type?.account_type!=="BUSINESS")throw new DeliveryError("INSTAGRAM_STORIES_BUSINESS_REQUIRED",424);
+  // En Facebook Login, Meta puede omitir account_type del IGUser.
+  // Nunca permitir que una confirmación del titular anule CREATOR explícito.
+  if(type?.account_type==="CREATOR"||type?.account_type&&type.account_type!=="BUSINESS")
+   throw new DeliveryError("INSTAGRAM_STORIES_BUSINESS_REQUIRED",424);
+  if(type?.account_type!=="BUSINESS"&&!ownerBusinessConfirmed)
+   throw new DeliveryError("INSTAGRAM_BUSINESS_OWNER_CONFIRMATION_REQUIRED",424);
+  // Meta sigue validando la elegibilidad Business en /media con STORIES.
  }
  return String(record.accountId);
 }
@@ -174,7 +180,8 @@ export async function checkChannelEligibility(draft:Draft,channel:ChannelName):P
   }else{
    if(["instagram_basic","instagram_content_publish"].some(x=>!record.scopes.includes(x)))
     throw new DeliveryError("INSTAGRAM_SCOPES_MISSING",424);
-   await instagramIdentity(record,token,channel==="instagram_story");
+   await instagramIdentity(record,token,channel==="instagram_story",
+    draft.instagramBusinessConfirmed===true&&!!draft.instagramBusinessConfirmedAt);
    // Garantizar que Meta pueda recuperar la imagen antes de reservar un intento.
    await signedImage(draft,slot);
   }
@@ -190,10 +197,11 @@ export async function storyAccountDiagnostic(){
   let igType:string|null=null;
   let igStatus:"confirmed"|"unavailable"|"identity_mismatch"="unavailable";
   if(record.accountId&&/^\d{8,25}$/.test(record.accountId)){
-   const profile=await getGraph(record.accountId,token,"id,username,account_type").catch(()=>null);
+   const profile=await getGraph(record.accountId,token,"id,username").catch(()=>null);
    if(profile?.id===record.accountId&&String(profile.username).toLowerCase()==="palabrasquedespiertan"){
     igStatus="confirmed";
-    igType=typeof profile.account_type==="string"?profile.account_type:null;
+    const type=await getGraph(record.accountId,token,"id,account_type").catch(()=>null);
+    igType=typeof type?.account_type==="string"?type.account_type:null;
    }else if(profile)igStatus="identity_mismatch";
   }
   const pageReady=await pageToken(record,token).then(()=>true).catch(()=>false);
@@ -286,7 +294,8 @@ export async function publishTestOnce(id:string,channel:ChannelName,revision:str
     if(!postId&&typeof output.id==="string")postId=output.id;
    }
   }else{
-   const igId=await instagramIdentity(record,token,channel==="instagram_story");
+   const igId=await instagramIdentity(record,token,channel==="instagram_story",
+    draft.instagramBusinessConfirmed===true&&!!draft.instagramBusinessConfirmedAt);
    const url=await signedImage(draft,slot);
    const form=new URLSearchParams({image_url:url});
    if(channel==="instagram_story")form.set("media_type","STORIES");

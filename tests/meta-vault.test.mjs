@@ -113,7 +113,8 @@ test("Publicación Meta sólo en TEST-001 aprobado y con bloqueo atómico por re
  assert.match(model,/mediaSha256/);
  assert.match(model,/sha256/);
  assert.match(model,/INSTAGRAM_STORIES_BUSINESS_REQUIRED/);
- assert.match(model,/instagramIdentity\(record,token,channel==="instagram_story"\)/);
+ assert.match(model,/instagramIdentity\(record,token,channel==="instagram_story",/);
+ assert.match(model,/INSTAGRAM_BUSINESS_OWNER_CONFIRMATION_REQUIRED/);
  assert.match(route,/authorizedDraftRequest\(request\)/);
  assert.match(route,/PUBLICAR_TEST001_UNA_VEZ/);
  assert.match(route,/facebook_feed","instagram_feed/);
