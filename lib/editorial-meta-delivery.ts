@@ -190,6 +190,39 @@ export async function checkChannelEligibility(draft:Draft,channel:ChannelName):P
   return {ready:false,reason:e instanceof DeliveryError?e.code:"META_PREFLIGHT_UNAVAILABLE"};
  }
 }
+export type FacebookScheduledSnapshot={
+ status:"ok"|"unavailable";checkedAt:string;truncated:boolean;reason:string|null;
+ posts:Array<{id:string;code:string|null;scheduledAt:string|null;excerpt:string}>;
+};
+export async function readFacebookScheduledSnapshot():Promise<FacebookScheduledSnapshot>{
+ const base:FacebookScheduledSnapshot={status:"unavailable",checkedAt:new Date().toISOString(),
+  truncated:false,reason:null,posts:[]};
+ try{
+  const {record,token}=await credential();
+  const pageAccess=await pageToken(record,token);
+  if(!record.facebookPageId||!/^\d{8,25}$/.test(record.facebookPageId))
+   throw new DeliveryError("FACEBOOK_PAGE_NOT_VERIFIED",424);
+  // Graph's scheduled_posts edge is read-only, separate from feeds and stories.
+  const results=await getGraph(record.facebookPageId+"/scheduled_posts",pageAccess,
+   "id,message,scheduled_publish_time,created_time").catch(()=>
+    getGraph(record.facebookPageId+"/scheduled_posts",pageAccess,
+     "id,scheduled_publish_time"));
+  if(!Array.isArray(results.data))throw new DeliveryError("META_SCHEDULE_RESPONSE_INVALID",424);
+  const rows=results.data.slice(0,100) as Array<Record<string,unknown>>;
+  const posts=rows.filter(x=>typeof x.id==="string").map(x=>{
+   const message=typeof x.message==="string"?x.message:"";
+   const code=message.match(/\b(?:PD|ART)-\d{3}\b/i)?.[0]?.toUpperCase()||null;
+   const raw=x.scheduled_publish_time;
+   const ms=typeof raw==="number"?raw*1000:typeof raw==="string"&&/^\d+$/.test(raw)?Number(raw)*1000:Date.parse(String(raw||""));
+   return {id:String(x.id),code,scheduledAt:Number.isFinite(ms)&&ms>0?new Date(ms).toISOString():null,
+    excerpt:message.replace(/\s+/g," ").slice(0,100)};
+  });
+  return {...base,status:"ok",posts,truncated:!!(results.paging&&typeof results.paging==="object"&&
+   (results.paging as Record<string,unknown>).next)};
+ }catch(e){
+  return {...base,reason:e instanceof DeliveryError?e.code:"META_SCHEDULE_READ_UNAVAILABLE"};
+ }
+}
 export async function storyAccountDiagnostic(){
  // Comprobación de solo lectura: no crea multimedia, publicaciones ni recibos.
  try{
