@@ -58,7 +58,7 @@ export async function publicMensajes():Promise<Mensaje[]>{
    id:row.code,slug:row.slug,titulo:row.title,texto:row.body||original?.texto||"",
    referencia:row.bible_reference||original?.referencia||"",temporada:row.season||original?.temporada||"T07",
    serie:row.series||original?.serie||"T07-S01",
-   fecha:row.published_at?.slice(0,10)||original?.fecha||new Date().toISOString().slice(0,10),
+   fecha:row.published_at?.slice(0,10)||row.scheduled_at?.slice(0,10)||original?.fecha||new Date().toISOString().slice(0,10),
    autor:original?.autor||"P. Jaider Herrera Turizo",imagen:row.cover_url||original?.imagen||"/identidad/cruz-fondo.png",
    instagram:row.source_url?.startsWith("https://www.instagram.com/")?row.source_url:original?.instagram||null
   };

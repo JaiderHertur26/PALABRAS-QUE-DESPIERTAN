@@ -29,3 +29,8 @@ test("La Temporada 01 y la serie Creados por amor existen en el catálogo del si
  assert.ok(season);
  assert.ok(season.series.some(x=>x.id==="T01-S01"&&x.titulo==="Creados por amor"));
 });
+
+test("Los mensajes nuevos muestran su fecha editorial programada, nunca la fecha actual del servidor",()=>{
+ const content=fs.readFileSync(path.join(root,"lib","editorial-live.ts"),"utf8");
+ assert.match(content,/fecha:row\.published_at\?\.slice\(0,10\)\|\|row\.scheduled_at\?\.slice\(0,10\)/);
+});
