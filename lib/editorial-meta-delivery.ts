@@ -191,22 +191,26 @@ export async function checkChannelEligibility(draft:Draft,channel:ChannelName):P
  }
 }
 export type FacebookScheduledSnapshot={
- status:"ok"|"unavailable";checkedAt:string;truncated:boolean;reason:string|null;
+ status:"ok"|"empty"|"unavailable";checkedAt:string;truncated:boolean;reason:string|null;
+ source:"facebook_graph_scheduled_posts";pageId:string|null;queryMode:"detailed"|"minimal"|null;
  posts:Array<{id:string;code:string|null;scheduledAt:string|null;excerpt:string}>;
 };
 export async function readFacebookScheduledSnapshot():Promise<FacebookScheduledSnapshot>{
  const base:FacebookScheduledSnapshot={status:"unavailable",checkedAt:new Date().toISOString(),
-  truncated:false,reason:null,posts:[]};
+  truncated:false,reason:null,source:"facebook_graph_scheduled_posts",pageId:null,queryMode:null,posts:[]};
  try{
   const {record,token}=await credential();
   const pageAccess=await pageToken(record,token);
   if(!record.facebookPageId||!/^\d{8,25}$/.test(record.facebookPageId))
    throw new DeliveryError("FACEBOOK_PAGE_NOT_VERIFIED",424);
   // Graph's scheduled_posts edge is read-only, separate from feeds and stories.
-  const results=await getGraph(record.facebookPageId+"/scheduled_posts",pageAccess,
-   "id,message,scheduled_publish_time,created_time").catch(()=>
-    getGraph(record.facebookPageId+"/scheduled_posts",pageAccess,
-     "id,scheduled_publish_time"));
+  const endpoint=record.facebookPageId+"/scheduled_posts";
+  let queryMode:"detailed"|"minimal"="detailed";
+  const results=await getGraph(endpoint,pageAccess,
+   "id,message,scheduled_publish_time,created_time").catch(async()=>{
+    queryMode="minimal";
+    return getGraph(endpoint,pageAccess,"id,scheduled_publish_time");
+   });
   if(!Array.isArray(results.data))throw new DeliveryError("META_SCHEDULE_RESPONSE_INVALID",424);
   const rows=results.data.slice(0,100) as Array<Record<string,unknown>>;
   const posts=rows.filter(x=>typeof x.id==="string").map(x=>{
@@ -217,8 +221,12 @@ export async function readFacebookScheduledSnapshot():Promise<FacebookScheduledS
    return {id:String(x.id),code,scheduledAt:Number.isFinite(ms)&&ms>0?new Date(ms).toISOString():null,
     excerpt:message.replace(/\s+/g," ").slice(0,100)};
   });
-  return {...base,status:"ok",posts,truncated:!!(results.paging&&typeof results.paging==="object"&&
-   (results.paging as Record<string,unknown>).next)};
+  // Una respuesta vacía indica ausencia de resultados EN ESTA API, no ausencia
+  // de reservas en Meta Business Suite o en Instagram. Nunca autoriza reenvíos.
+  return {...base,status:posts.length?"ok":"empty",
+   reason:posts.length?null:"META_EDGE_EMPTY_NOT_AUTHORITATIVE",pageId:record.facebookPageId,
+   queryMode,posts,truncated:!!(results.paging&&typeof results.paging==="object"&&
+    (results.paging as Record<string,unknown>).next)};
  }catch(e){
   return {...base,reason:e instanceof DeliveryError?e.code:"META_SCHEDULE_READ_UNAVAILABLE"};
  }

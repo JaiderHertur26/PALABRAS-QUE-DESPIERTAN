@@ -11,7 +11,7 @@ const compiled=ts.transpileModule(src,{compilerOptions:{module:ts.ModuleKind.Com
 const pageId="943474758856762";
 const vault={version:1,appId:"2572239026621118",expiresAt:null,facebookPageVerified:true,facebookPageId:pageId,
  facebookPageName:"Palabras que despiertan",facebookCanCreateContent:true,scopes:["pages_show_list","pages_read_engagement","pages_manage_posts"]};
-async function scenario(pageVerified){
+async function scenario(pageVerified,returnsEmpty=false){
  const module={exports:{}},calls=[];
  const record={...vault,facebookPageVerified:pageVerified};
  const requireStub=name=>{
@@ -27,7 +27,7 @@ async function scenario(pageVerified){
   const path=new URL(url).pathname;
   let body;
   if(path==="/v26.0/me/accounts")body={data:[{id:pageId,name:"Palabras que despiertan",access_token:"page-access-token-of-sufficient-length",tasks:["CREATE_CONTENT"]}]};
-  else if(path==="/v26.0/"+pageId+"/scheduled_posts")body={data:[{id:"9434_123",message:"PD-002 · Confianza verdadera",scheduled_publish_time:1794960000}],paging:{}};
+  else if(path==="/v26.0/"+pageId+"/scheduled_posts")body={data:returnsEmpty?[]:[{id:"9434_123",message:"PD-002 · Confianza verdadera",scheduled_publish_time:1794960000}],paging:{}};
   else throw Error("Unrecognized endpoint "+path);
   return {ok:true,status:200,json:async()=>body};
  };
@@ -59,4 +59,16 @@ test("Ruta de conciliación exige autenticación editorial y no publica",()=>{
  assert.match(route,/readFacebookScheduledSnapshot\(\)/);
  assert.match(route,/id!=="8077d038-98eb-4729-abe5-425a26267460"/);
  assert.doesNotMatch(src,/scheduled_posts.*postGraph/);
+});
+
+test("Una respuesta vacía de scheduled_posts no se equipara a ausencia de reservas en Business Suite",async()=>{
+ const {snapshot,calls}=await scenario(true,true);
+ assert.equal(snapshot.status,"empty");
+ assert.equal(snapshot.reason,"META_EDGE_EMPTY_NOT_AUTHORITATIVE");
+ assert.equal(snapshot.source,"facebook_graph_scheduled_posts");
+ assert.equal(snapshot.pageId,pageId);
+ assert.equal(snapshot.queryMode,"detailed");
+ assert.equal(snapshot.posts.length,0);
+ assert.ok(calls.some(c=>c.url.includes("/scheduled_posts")));
+ assert.ok(calls.every(c=>c.method==="GET"));
 });
