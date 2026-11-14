@@ -78,9 +78,13 @@ async function readyWebsite(i:Item){
  await r.body?.cancel();
 }
 async function imageBytes(i:Item,ch:Channel){
- const source=SITE+i.cover_url!;
+ const officialT01Story=ch.endsWith("story")&&/^PD-0(?:4[1-9]|50)$/.test(i.code);
+ // Conservar el arte vertical original aprobado, no estirar la portada cuadrada.
+ const source=officialT01Story
+  ?SITE+"/mensajes/historias/"+i.code.toLowerCase()+".png"
+  :SITE+i.cover_url!;
  const res=await fetch(source,{cache:"no-store",redirect:"error",signal:AbortSignal.timeout(15000)});
- if(!res.ok||res.status!==200)throw Error("COVER_UNAVAILABLE");
+ if(!res.ok||res.status!==200)throw Error(officialT01Story?"OFFICIAL_STORY_IMAGE_UNAVAILABLE":"COVER_UNAVAILABLE");
  const bytes=Buffer.from(await res.arrayBuffer());
  if(bytes.length<5_000||bytes.length>9_000_000)throw Error("COVER_SIZE_INVALID");
  const info=await sharp(bytes).metadata();

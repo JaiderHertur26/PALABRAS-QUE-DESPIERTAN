@@ -103,3 +103,10 @@ test("Historias preprogramadas no modifican feeds externos ni crean publicacione
  assert.match(source,/\?\(\["facebook_story","instagram_story"\] as Channel\[\]\)/);
  assert.match(source,/upsert:false/);
 });
+
+test("Temporada 01 usa el diseño vertical oficial de cada historia sin sustituirlo por el feed cuadrado",()=>{
+ assert.match(source,/officialT01Story=ch\.endsWith\("story"\)&&\/\^PD-0\(\?:4\[1-9\]\|50\)\$\/\.test\(i\.code\)/);
+ assert.match(source,/SITE\+"\/mensajes\/historias\/"\+i\.code\.toLowerCase\(\)\+"\.png"/);
+ assert.match(source,/OFFICIAL_STORY_IMAGE_UNAVAILABLE/);
+ assert.match(source,/fit:"contain"/);
+});
