@@ -1,13 +1,18 @@
 import {NextRequest,NextResponse} from "next/server";
 import {authorizedDraftRequest,responseHeaders,validId} from "@/lib/editorial-meta-drafts";
-import {DeliveryError,publishTestOnce,readReceipts} from "@/lib/editorial-meta-delivery";
-export const runtime="nodejs";export const dynamic="force-dynamic";
+import {DeliveryError,publishTestOnce,readReceipts,publicationReadiness} from "@/lib/editorial-meta-delivery";
+export const runtime="nodejs";export const dynamic="force-dynamic";export const maxDuration=60;
 const send=(data:unknown,status=200)=>NextResponse.json(data,{status,headers:responseHeaders});
 export async function GET(request:NextRequest){
  if(!await authorizedDraftRequest(request))return send({error:"Acceso denegado"},403);
  const id=request.nextUrl.searchParams.get("id")||"";
  if(!validId(id))return send({error:"ID inválido"},400);
- try{return send({deliveries:await readReceipts(id)})}
+ try{
+  const deliveries=await readReceipts(id);
+  if(request.nextUrl.searchParams.get("preflight")==="1")
+   return send({deliveries,readiness:await publicationReadiness(id)});
+  return send({deliveries});
+ }
  catch{return send({error:"Estado de publicación no disponible"},503)}
 }
 export async function POST(request:NextRequest){

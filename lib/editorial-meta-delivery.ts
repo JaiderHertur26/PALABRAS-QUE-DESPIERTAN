@@ -8,6 +8,12 @@ const graphRoot="https://graph.facebook.com/v26.0";
 const project="https://lwuzkjvolxwkxdyafcjv.supabase.co";
 const vault="pqd-meta-credentials-v1";
 const eventRoot="deliveries/v1";
+const approvedTestId="8077d038-98eb-4729-abe5-425a26267460";
+const approvedFeedHash="8bbecb856e6b5816896b3d58a7457bbe2be7d4fea2c28cad21c3ffb8530cc0c5";
+const approvedCaptionHashes={
+ facebook_feed:"fbc1c73983c52c280fbe6f11ea959b54755d6b2d64c3ad98d2911e7635d7d21f",
+ instagram_feed:"96d75c6c6e78b18154a8a97baccd0e9ee1ffd0536313459715cac936cc115495"
+} as const;
 export type DeliveryStatus="reserved"|"media_prepared"|"publishing"|"published"|"rejected"|"needs_review";
 export type Delivery={
  version:1;id:string;channel:ChannelName;status:DeliveryStatus;
@@ -49,9 +55,15 @@ async function postGraph(endpoint:string,accessToken:string,body:FormData|URLSea
 async function pageToken(record:MetaVaultRecord,token:string){
  if(!record.facebookPageVerified||!record.facebookCanCreateContent||!/^\d{8,25}$/.test(record.facebookPageId||""))
   throw new DeliveryError("FACEBOOK_PAGE_NOT_VERIFIED",424);
- const list=await getGraph("me/accounts",token,"id,name,username,access_token,tasks");
- const items=Array.isArray(list.data)?list.data as Record<string,unknown>[]:[];
- const page=items.find(x=>String(x.id)===record.facebookPageId);
+ const list=await getGraph("me/accounts",token,"id,name,username,access_token,tasks").catch(()=>null);
+ const items=Array.isArray(list?.data)?list.data as Record<string,unknown>[]:[];
+ let page=items.find(x=>String(x.id)===record.facebookPageId);
+ // Los usuarios del sistema pueden recibir los activos por identificador
+ // y no por /me/accounts. Comprobación alternativa de solo lectura.
+ if(!page){
+  const direct=await getGraph(String(record.facebookPageId),token,"id,name,username,access_token,tasks").catch(()=>null);
+  if(direct&&String(direct.id)===record.facebookPageId)page=direct;
+ }
  if(!page||typeof page.access_token!=="string"||page.access_token.length<20)
   throw new DeliveryError("FACEBOOK_PAGE_TOKEN_NOT_FOUND",424);
  const tasks=Array.isArray(page.tasks)?page.tasks:[];
@@ -64,10 +76,15 @@ async function pageToken(record:MetaVaultRecord,token:string){
 async function instagramIdentity(record:MetaVaultRecord,token:string,story:boolean){
  if(!record.verifiedAccount||record.username!=="palabrasquedespiertan"||!/^\d{8,25}$/.test(record.accountId||""))
   throw new DeliveryError("INSTAGRAM_NOT_VERIFIED",424);
- const ig=await getGraph(String(record.accountId),token,"id,username,account_type");
+ // La identidad puede comprobarse aun si Meta no concede el campo opcional
+ // account_type. Un error en ese campo nunca debe bloquear el feed.
+ const ig=await getGraph(String(record.accountId),token,"id,username");
  if(String(ig.id)!==record.accountId||String(ig.username).toLowerCase()!=="palabrasquedespiertan")
   throw new DeliveryError("INSTAGRAM_IDENTITY_MISMATCH",424);
- if(story&&ig.account_type!=="BUSINESS")throw new DeliveryError("INSTAGRAM_STORIES_BUSINESS_REQUIRED",424);
+ if(story){
+  const type=await getGraph(String(record.accountId),token,"id,account_type").catch(()=>null);
+  if(type?.account_type!=="BUSINESS")throw new DeliveryError("INSTAGRAM_STORIES_BUSINESS_REQUIRED",424);
+ }
  return String(record.accountId);
 }
 async function loadPicture(draft:Draft,slot:Slot){
@@ -120,7 +137,48 @@ export async function readReceipts(id:string){
 }
 function isTest(draft:Draft,channel:ChannelName){
  // Fase inicial: no se abre el envío automático a contenidos PD ni ART.
- return draft.reference==="TEST-001"&&["facebook_feed","instagram_feed"].includes(channel);
+ if(draft.id!==approvedTestId||draft.reference!=="TEST-001"||
+  draft.media.feed?.sha256!==approvedFeedHash||!(channel in approvedCaptionHashes))return false;
+ const copy=draft.channels[channel].copy;
+ return createHash("sha256").update(copy).digest("hex")===
+  approvedCaptionHashes[channel as keyof typeof approvedCaptionHashes];
+}
+export type Readiness={ready:boolean;reason:string;instagramAccountType?:string|null};
+export async function checkChannelEligibility(draft:Draft,channel:ChannelName):Promise<Readiness>{
+ if(!isTest(draft,channel))return {ready:false,reason:"NOT_APPROVED_TEST"};
+ if(!draft.contentApproved||!draft.approvalAt||!draft.channels[channel].enabled)
+  return {ready:false,reason:"CONTENT_NOT_APPROVED"};
+ if(draft.channels[channel].mode!=="manual"||draft.channels[channel].scheduledAt!==null)
+  return {ready:false,reason:"SCHEDULED_ITEM_NOT_ELIGIBLE"};
+ if(draft.channels[channel].copy.trim().length<30||draft.channels[channel].copy.length>2200)
+  return {ready:false,reason:"INVALID_CAPTION"};
+ if(await readReceipt(draft.id,channel))return {ready:false,reason:"DELIVERY_ALREADY_RESERVED"};
+ try{
+  await loadPicture(draft,"feed");
+  const {record,token}=await credential();
+  if(channel==="facebook_feed"){
+   if(["pages_show_list","pages_read_engagement","pages_manage_posts"].some(x=>!record.scopes.includes(x)))
+    throw new DeliveryError("FACEBOOK_SCOPES_MISSING",424);
+   await pageToken(record,token);
+  }else{
+   if(["instagram_basic","instagram_content_publish"].some(x=>!record.scopes.includes(x)))
+    throw new DeliveryError("INSTAGRAM_SCOPES_MISSING",424);
+   await instagramIdentity(record,token,false);
+   // Garantizar que Meta pueda recuperar la imagen antes de reservar un intento.
+   await signedImage(draft,"feed");
+  }
+  return {ready:true,reason:"READY",instagramAccountType:record.instagramAccountType||null};
+ }catch(e){
+  return {ready:false,reason:e instanceof DeliveryError?e.code:"META_PREFLIGHT_UNAVAILABLE"};
+ }
+}
+export async function publicationReadiness(id:string){
+ const draft=await loadDraft(id);
+ if(!draft||draft.id!==approvedTestId)return null;
+ const channels=await Promise.all(
+  (["facebook_feed","instagram_feed"] as const).map(async c=>[c,await checkChannelEligibility(draft,c)] as const)
+ );
+ return {revision:draft.updatedAt,channels:Object.fromEntries(channels)};
 }
 export async function publishTestOnce(id:string,channel:ChannelName,revision:string){
  if(!safeId(id)||!isChannel(channel))throw new DeliveryError("INVALID_TARGET");
@@ -136,6 +194,11 @@ export async function publishTestOnce(id:string,channel:ChannelName,revision:str
  await loadPicture(draft,slot);
  const present=await readReceipt(id,channel);
  if(present)return {receipt:present,duplicatePrevented:true};
+ const preflight=await checkChannelEligibility(draft,channel);
+ if(!preflight.ready)throw new DeliveryError(preflight.reason,424);
+ const latest=await loadDraft(id);
+ if(!latest||latest.updatedAt!==revision||!latest.contentApproved)
+  throw new DeliveryError("DRAFT_CHANGED_DURING_PREFLIGHT",409);
  const created=initDelivery(draft,channel);
  const reservation=await privateDraftStore().upload(path(id,channel),
   new Blob([JSON.stringify(created)],{type:"application/json"}),

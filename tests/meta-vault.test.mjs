@@ -116,3 +116,20 @@ test("Publicación Meta sólo en TEST-001 aprobado y con bloqueo atómico por re
  assert.match(route,/facebook_feed","instagram_feed/);
  assert.doesNotMatch(route,/cron|setInterval|autoPublish/);
 });
+
+test("Meta preflight comprueba permisos y página antes de reservar o publicar",()=>{
+ const src=read("lib/editorial-meta-delivery.ts");
+ const endpoint=read("app/api/editorial/meta/publish/route.ts");
+ assert.match(src,/approvedTestId=/);
+ assert.match(src,/approvedFeedHash=/);
+ assert.match(src,/approvedCaptionHashes=/);
+ assert.match(src,/createHash\("sha256"\).update\(copy\)/);
+ assert.match(src,/checkChannelEligibility\(draft,channel\)/);
+ assert.match(src,/if\(!preflight.ready\)throw/);
+ assert.match(src,/DRAFT_CHANGED_DURING_PREFLIGHT/);
+ assert.match(src,/await pageToken\(record,token\)/);
+ assert.match(src,/await signedImage\(draft,"feed"\)/);
+ assert.match(endpoint,/request.nextUrl.searchParams.get\("preflight"\)==="1"/);
+ assert.match(endpoint,/publicationReadiness\(id\)/);
+ assert.match(src,/upsert:false/);
+});
