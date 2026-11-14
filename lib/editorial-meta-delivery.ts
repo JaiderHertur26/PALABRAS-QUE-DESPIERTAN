@@ -189,7 +189,7 @@ export async function storyAccountDiagnostic(){
   const {record,token}=await credential();
   let igType:string|null=null;
   let igStatus:"confirmed"|"unavailable"|"identity_mismatch"="unavailable";
-  if(record.accountId&&/^\\d{8,25}$/.test(record.accountId)){
+  if(record.accountId&&/^\d{8,25}$/.test(record.accountId)){
    const profile=await getGraph(record.accountId,token,"id,username,account_type").catch(()=>null);
    if(profile?.id===record.accountId&&String(profile.username).toLowerCase()==="palabrasquedespiertan"){
     igStatus="confirmed";
