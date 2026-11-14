@@ -20,7 +20,7 @@ function mocked(name){
 }
 vm.runInNewContext(output,{module,exports:module.exports,require:mocked,Date,Buffer,URL,Blob,fetch:()=>{throw Error("No network")},
  process:{env:{}},setTimeout,clearTimeout,FormData,console});
-const {isAutoEligible,dueChannels,autoDispatch}=module.exports;
+const {isAutoEligible,dueChannels,autoDispatch,externalStoryDue,validStoryPlan,feedContentMatches}=module.exports;
 const T=Date.parse("2026-11-17T00:00:00.000Z");
 function item(){
  return {code:"PD-014",kind:"mensaje",title:"Palabra aprobada",body:"Texto original autorizado",summary:"Texto aprobado",approved_by_author:true,
@@ -70,4 +70,36 @@ test("Ruta cron solo acepta la clave privada y la programación tiene destino ú
  assert.equal(config.schedules["pqd-meta-editorial-15m"].timezone,"America/Bogota");
  assert.equal(config.schedules["pqd-meta-editorial-15m"].path,"/api/cron/pqd-auto");
  assert.equal(config.schedules["pqd-meta-editorial-15m"].requestMethod,"GET");
+});
+
+test("Las historias de feeds ya programados se activan independientemente quince minutos después",()=>{
+ const x=item();x.code="PD-002";x.social_scheduled_at=new Date(T).toISOString();
+ x.social_state="PROGRAMADO EN META (FACEBOOK + INSTAGRAM); AUN NO PUBLICADO";
+ assert.equal(isAutoEligible(x,T+900000),false);
+ assert.equal(externalStoryDue(x,T+899999),false);
+ assert.equal(externalStoryDue(x,T+900000),true);
+ assert.equal(externalStoryDue(x,T+91*60000+900000),false);
+ const plan={version:1,code:x.code,source:"external_feed",status:"scheduled",
+  webAt:x.scheduled_at,feedAt:new Date(T).toISOString(),storyAt:new Date(T+900000).toISOString(),
+  coverUrl:x.cover_url,createdAt:"2026-11-14T12:00:00.000Z",
+  channels:{facebook_story:true,instagram_story:true}};
+ assert.equal(validStoryPlan(x,plan),true);
+ assert.equal(validStoryPlan({...x,cover_url:"/mensajes/otra.png"},plan),false);
+ assert.equal(validStoryPlan(x,{...plan,storyAt:new Date(T+360000).toISOString()}),false);
+});
+test("El feed externo solo se confirma por código o enlace exacto, nunca por hora o título genérico",()=>{
+ const x=item();x.code="PD-002";
+ assert.equal(feedContentMatches("PD-002 · La puerta que se abre",x),true);
+ assert.equal(feedContentMatches("Visita "+x.canonical_url,x),true);
+ assert.equal(feedContentMatches("PD-003 · La puerta que se abre",x),false);
+ assert.equal(feedContentMatches("Mensaje de las siete de la noche",x),false);
+});
+test("Historias preprogramadas no modifican feeds externos ni crean publicaciones duplicadas",()=>{
+ assert.match(source,/externalStoryDue\(i,now\)/);
+ assert.match(source,/validStoryPlan\(i,plan\)/);
+ assert.match(source,/externalFeedConfirmed\(i,ch\)/);
+ assert.match(source,/external_feed_unconfirmed/);
+ assert.match(source,/story_plan_missing/);
+ assert.match(source,/\?\(\["facebook_story","instagram_story"\] as Channel\[\]\)/);
+ assert.match(source,/upsert:false/);
 });

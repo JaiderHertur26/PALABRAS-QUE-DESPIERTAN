@@ -169,20 +169,102 @@ async function sendToMeta(i:Item,ch:Channel,jpeg:Buffer,mediaHash:string){
  const info=await getGraph(String(out.id),token,"id,permalink,media_type").catch(()=>null);
  return {mediaId:container,postId:String(out.id),permalink:typeof info?.permalink==="string"?info.permalink:null};
 }
+type StoryPlan={
+ version:1;code:string;source:"external_feed"|"automatic_feed";status:"scheduled";
+ webAt:string;feedAt:string;storyAt:string;coverUrl:string;createdAt:string;
+ channels:{facebook_story:true;instagram_story:true};
+};
+const storyPlanPath=(code:string)=>PREFIX+"/story-plans/"+code+".json";
+function feedTimestamp(i:Item){
+ return i.social_scheduled_at?Date.parse(i.social_scheduled_at):clock(i);
+}
+export function externalStoryDue(i:Item,now:number){
+ const fed=feedTimestamp(i),web=i.scheduled_at?Date.parse(i.scheduled_at):NaN;
+ if(!/^PD-\d{3}$/.test(i.code)||i.kind!=="mensaje"||i.state!=="scheduled"||!i.approved_by_author)return false;
+ if(!i.social_scheduled_at||!/PROGRAMADO EN META/i.test(i.social_state||""))return false;
+ if(!i.cover_url||!/^\/mensajes\/[a-z0-9-]+\.(?:png|jpg|jpeg|webp)$/.test(i.cover_url))return false;
+ if(!i.canonical_url?.startsWith(SITE+"/mensajes/"))return false;
+ if(!Number.isFinite(fed)||!Number.isFinite(web)||Math.abs(fed-web-300_000)>60_000)return false;
+ const due=fed+15*60_000;
+ return now>=due&&now-due<=90*60_000;
+}
+export function validStoryPlan(i:Item,plan:StoryPlan|null){
+ if(!plan||plan.version!==1||plan.code!==i.code||plan.status!=="scheduled")return false;
+ if(plan.channels.facebook_story!==true||plan.channels.instagram_story!==true)return false;
+ if(plan.webAt!==i.scheduled_at||plan.coverUrl!==i.cover_url)return false;
+ const feed=feedTimestamp(i);
+ return Number.isFinite(feed)&&plan.feedAt===new Date(feed).toISOString()
+  &&plan.storyAt===new Date(feed+900_000).toISOString()
+  &&plan.source===(i.social_scheduled_at?"external_feed":"automatic_feed");
+}
+async function readStoryPlan(i:Item):Promise<StoryPlan|null>{
+ const {data,error}=await store().download(storyPlanPath(i.code));
+ if(error||!data)return null;
+ try{return JSON.parse(await data.text()) as StoryPlan}catch{return null}
+}
+export function feedContentMatches(description:string,i:Item){
+ const text=description.toLowerCase();
+ const code=i.code.toLowerCase(),url=String(i.canonical_url||"").toLowerCase();
+ // Nunca confirmar un feed solo porque coincide una hora o un nombre genérico.
+ return new RegExp("(?:^|[^a-z0-9])"+code+"(?:$|[^a-z0-9])","i").test(description)
+  ||url.startsWith(SITE+"/")&&text.includes(url);
+}
+export async function externalFeedConfirmed(i:Item,ch:Channel){
+ const target=feedTimestamp(i);
+ if(!Number.isFinite(target))return false;
+ const {record,token}=await credential();
+ let rows:Record<string,unknown>[]=[];
+ if(ch==="facebook_story"){
+  const pageAccess=await pageToken(record,token);
+  // Primero comprobar publicaciones activas de la página, incluidas las
+  // que pasaron de "programado" a "publicado" desde Business Suite.
+  const primary=await getGraph(record.facebookPageId!+"/published_posts?limit=60",pageAccess,
+   "id,message,created_time,permalink_url").catch(()=>null);
+  const resp=Array.isArray(primary?.data)&&primary.data.length?primary:
+   await getGraph(record.facebookPageId!+"/posts?limit=60",pageAccess,
+    "id,message,created_time,permalink_url");
+  if(!Array.isArray(resp.data))return false;
+  rows=resp.data as Record<string,unknown>[];
+ }else if(ch==="instagram_story"){
+  const id=await instagramIdentity(record,token,false);
+  const resp=await getGraph(id+"/media?limit=60",token,
+   "id,caption,timestamp,media_type,permalink");
+  if(!Array.isArray(resp.data))return false;
+  rows=(resp.data as Record<string,unknown>[])
+   .filter(x=>x.media_type!=="STORY");
+ }else return false;
+ return rows.some(x=>{
+  const message=String(x.message||x.caption||"");
+  const timestamp=Date.parse(String(x.created_time||x.timestamp||""));
+  return feedContentMatches(message,i)&&Number.isFinite(timestamp)
+   &&timestamp>=target-10*60_000&&timestamp<=target+90*60_000;
+ });
+}
 async function one(i:Item,ch:Channel):Promise<AutoResult>{
  const existing=await readReceipt(i,ch);
  if(existing)return {code:i.code,channel:ch,status:"already_reserved",metaPostId:existing.metaPostId};
- // No historias sueltas: requieren el feed de la misma red confirmado.
+ // Las historias requieren un feed confirmado. Si el feed fue programado
+ // directamente en Business Suite, exigir comprobación positiva en Graph.
  if(ch.endsWith("story")){
   const feed=await readReceipt(i,ch.startsWith("facebook")?"facebook_feed":"instagram_feed");
-  if(!feed||feed.status!=="published")return {code:i.code,channel:ch,status:"feed_not_confirmed"};
+  if(!feed||feed.status!=="published"){
+   if(!i.social_scheduled_at)return {code:i.code,channel:ch,status:"feed_not_confirmed"};
+   const plan=await readStoryPlan(i);
+   if(!validStoryPlan(i,plan))return {code:i.code,channel:ch,status:"story_plan_missing"};
+   try{
+    if(!await externalFeedConfirmed(i,ch))
+     return {code:i.code,channel:ch,status:"external_feed_unconfirmed"};
+   }catch{
+    return {code:i.code,channel:ch,status:"external_feed_check_unavailable"};
+   }
+  }
  }
  try{
   await readyWebsite(i);
   const {output,sourceSha256,mediaSha256}=await imageBytes(i,ch);
   const createdAt=new Date().toISOString();
   const rec:AutoReceipt={version:1,code:i.code,channel:ch,status:"reserved",
-   scheduledAt:new Date(clock(i)+(ch.endsWith("story")?900000:0)).toISOString(),
+   scheduledAt:new Date(feedTimestamp(i)+(ch.endsWith("story")?900000:0)).toISOString(),
    createdAt,updatedAt:createdAt,sourceSha256,mediaSha256,
    metaMediaId:null,metaPostId:null,permalink:null,reason:null};
   const reserve=await store().upload(receiptPath(i,ch),new Blob([JSON.stringify(rec)],{type:"application/json"}),
@@ -214,17 +296,22 @@ export async function autoDispatch(now=Date.now()){
   "code,kind,title,body,summary,state,approved_by_author,scheduled_at,social_scheduled_at,social_state,cover_url,canonical_url,bible_reference,updated_at"
  ).eq("state","scheduled").eq("approved_by_author",true).order("scheduled_at",{ascending:true}).limit(120);
  if(error||!Array.isArray(data))throw Error("EDITORIAL_READ_FAILED");
- const items=(data as Item[]).filter(i=>isAutoEligible(i,now)).slice(0,1);
+ const eligible=data as Item[];
+ const normal=eligible.filter(i=>isAutoEligible(i,now));
+ const external=eligible.filter(i=>externalStoryDue(i,now));
+ const queue=[...normal,...external].sort((a,b)=>feedTimestamp(a)-feedTimestamp(b)).slice(0,1);
  const results:AutoResult[]=[];
- for(const i of items){
-  const channels=dueChannels(i,now);
+ for(const i of queue){
+  const channels=i.social_scheduled_at
+   ?(["facebook_story","instagram_story"] as Channel[])
+   :dueChannels(i,now);
   const feeds=channels.filter(c=>c.endsWith("_feed"));
   const stories=channels.filter(c=>c.endsWith("_story"));
   results.push(...await Promise.all(feeds.map(ch=>one(i,ch))));
-  // Las historias sólo se procesan después de confirmar los recibos de sus feeds.
   results.push(...await Promise.all(stories.map(ch=>one(i,ch))));
  }
- return {enabled:true,checkedAt:new Date(now).toISOString(),checkedItems:data.length,candidates:items.length,results};
+ return {enabled:true,checkedAt:new Date(now).toISOString(),checkedItems:data.length,
+  candidates:queue.length,externalStoryCandidates:external.length,results};
 }
 
 export async function autoDashboard(now=Date.now()){
@@ -236,21 +323,35 @@ export async function autoDashboard(now=Date.now()){
  const items=data as Item[];
  const future=items.filter(x=>x.state==="scheduled"&&x.scheduled_at&&Date.parse(x.scheduled_at)>=now-24*3600_000);
  const externallyDeclared=future.filter(x=>!!x.social_scheduled_at);
- const candidates=future.filter(x=>isAutoEligible(x,now)||x.state==="scheduled"&&x.approved_by_author&&!x.social_scheduled_at
+ const candidates=future.filter(x=>x.state==="scheduled"&&x.approved_by_author&&!x.social_scheduled_at
   &&/^(no-programado|pendiente-meta|META PENDIENTE)/i.test(x.social_state||""))
-  .sort((a,b)=>clock(a)-clock(b));
- const first=candidates.slice(0,8);
+  .sort((a,b)=>feedTimestamp(a)-feedTimestamp(b));
+ const futureSorted=[...future].sort((a,b)=>feedTimestamp(a)-feedTimestamp(b));
+ const list=await store().list(PREFIX+"/story-plans",{limit:100});
+ const scheduledNames=new Set((list.data||[]).map(x=>x.name));
+ const storyPlans=future.filter(i=>scheduledNames.has(i.code+".json")).length;
+ const externalStoryPlans=externallyDeclared.filter(i=>scheduledNames.has(i.code+".json")).length;
+ const first=futureSorted.slice(0,8);
  const next=await Promise.all(first.map(async item=>{
+  const plan=await readStoryPlan(item).catch(()=>null);
+  const planned=validStoryPlan(item,plan);
   const result=await Promise.all(CHANNELS.map(async ch=>{
    const receipt=await readReceipt(item,ch).catch(()=>null);
-   return [ch,receipt?.status||"pending",receipt?.metaPostId||null] as const;
+   const automaticStory=ch.endsWith("_story")&&planned;
+   const externalFeed=ch.endsWith("_feed")&&!!item.social_scheduled_at;
+   const state=receipt?.status||(
+    externalFeed?"external_schedule_recorded":automaticStory?"scheduled":ch.endsWith("_feed")?"pending":"not_scheduled"
+   );
+   return [ch,{state,metaPostId:receipt?.metaPostId||null,
+    scheduledAt:automaticStory?plan!.storyAt:null}] as const;
   }));
-  return {code:item.code,title:item.title,socialAt:new Date(clock(item)).toISOString(),
-   channels:Object.fromEntries(result.map(([ch,state,metaPostId])=>[ch,{state,metaPostId}]))};
+  return {code:item.code,title:item.title,socialAt:new Date(feedTimestamp(item)).toISOString(),
+   channels:Object.fromEntries(result)};
  }));
  return {enabled:process.env.META_AUTO_PUBLISH_ENABLED==="true",
   schedule:"Cada 15 minutos, hora Colombia; ejecución con margen de hasta 15 minutos",
   externallyDeclared:externallyDeclared.length,automaticCandidates:candidates.length,
+  storyPlans,externalStoryPlans,
   excludedCodes:externallyDeclared.map(x=>x.code).slice(0,25),next,
   lastReadAt:new Date(now).toISOString()};
 }
