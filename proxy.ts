@@ -18,8 +18,9 @@ export async function proxy(request:NextRequest){
    ?request.nextUrl.searchParams.get("url")||""
    :request.nextUrl.pathname;
  const planned=/^\/mensajes\/(pd-\d{3}-[a-z0-9-]+)\.png$/.exec(assetPath);
+ const plannedStory=/^\/mensajes\/historias\/(pd-\d{3})\.png$/.exec(assetPath);
  const articleCover=/^\/articulos\/art-(\d{3})\.png$/.exec(assetPath);
- if(planned||articleCover){
+ if(planned||plannedStory||articleCover){
   // La tabla editorial es privada: no se amplían permisos RLS al público para entregar imágenes.
   // El servidor consulta el estado con una credencial que jamás llega al navegador.
   const key=process.env.SUPABASE_SECRET_KEY;
@@ -27,8 +28,10 @@ export async function proxy(request:NextRequest){
    return NextResponse.json({error:"Imagen no disponible"},{status:404,headers:{"Cache-Control":"no-store"}});
   const serverClient=createClient(supabaseProjectUrl,key,{auth:{persistSession:false,autoRefreshToken:false}});
   let eligible=serverClient.from("editorial_items").select("state,scheduled_at")
-   .eq("cover_url",assetPath).eq("kind",articleCover?"articulo":"mensaje");
-  eligible=articleCover?eligible.eq("code","ART-"+articleCover[1]):eligible.eq("slug",planned![1]);
+   .eq("kind",articleCover?"articulo":"mensaje");
+  if(articleCover)eligible=eligible.eq("cover_url",assetPath).eq("code","ART-"+articleCover[1]);
+  else if(plannedStory)eligible=eligible.eq("code",plannedStory[1].toUpperCase());
+  else eligible=eligible.eq("cover_url",assetPath).eq("slug",planned![1]);
   const {data,error}=await eligible.maybeSingle();
   const isVisible=data?.state==="published"||(data?.state==="scheduled"&&!!data.scheduled_at&&new Date(data.scheduled_at).getTime()<=Date.now());
   if(error||!data||!isVisible)return NextResponse.json({error:"Imagen no disponible"},{status:404,headers:{"Cache-Control":"no-store"}});

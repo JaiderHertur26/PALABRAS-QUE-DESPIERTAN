@@ -34,3 +34,12 @@ test("Los mensajes nuevos muestran su fecha editorial programada, nunca la fecha
  const content=fs.readFileSync(path.join(root,"lib","editorial-live.ts"),"utf8");
  assert.match(content,/fecha:row\.published_at\?\.slice\(0,10\)\|\|row\.scheduled_at\?\.slice\(0,10\)/);
 });
+
+test("Las imágenes de historias futuras están protegidas igual que las tarjetas cuadradas",()=>{
+ const proxy=fs.readFileSync(path.join(root,"proxy.ts"),"utf8");
+ assert.match(proxy,/const plannedStory=\/\^\\\/mensajes\\\/historias\\\/\(pd-\\d\{3\}\)\\\.png\$\/\.exec\(assetPath\)/);
+ assert.match(proxy,/if\(planned\|\|plannedStory\|\|articleCover\)/);
+ assert.match(proxy,/eligible=eligible\.eq\("code",plannedStory\[1\]\.toUpperCase\(\)\)/);
+ assert.match(proxy,/request\.nextUrl\.pathname==="\/_next\/image"/);
+ assert.match(proxy,/return NextResponse\.json\(\{error:"Imagen no disponible"\},\{status:404/);
+});
