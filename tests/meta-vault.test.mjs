@@ -55,3 +55,46 @@ test("Validación de fanpage orgánica con identidad y rol, sin publicar ni filt
  assert.doesNotMatch(vault,/pageAccessToken|page\.access_token|encrypted:item\.encrypted/);
  assert.doesNotMatch(probe,/method:"POST"|method:'POST'|\/feed\b|\/photos\b/);
 });
+
+test("Borradores de Meta se almacenan en bucket privado separado, accesibles solo por dirección",()=>{
+ const model=read("lib/editorial-meta-drafts.ts");
+ const route=read("app/api/editorial/meta/drafts/route.ts");
+ const media=read("app/api/editorial/meta/drafts/media/route.ts");
+ assert.match(model,/pqd-meta-drafts-v1/);
+ assert.doesNotMatch(model,/pqd-meta-credentials-v1/);
+ assert.match(model,/timingSafeEqual/);
+ assert.match(model,/user.email\?\.toLowerCase\(\)!=="pquedespiertan@gmail.com"/);
+ assert.match(model,/editorial_is_authorized/);
+ assert.match(model,/privateDraftStore/);
+ assert.match(route,/authorizedDraftRequest\(req\)/);
+ assert.match(media,/authorizedDraftRequest\(req\)/);
+ assert.match(route,/expectedUpdatedAt/);
+ assert.match(route,/updatedAt\|\|null/);
+ assert.match(route,/upsert:true/);
+ assert.doesNotMatch(route,/graph.facebook.com|media_publish|\/feed|is_published/);
+});
+test("La edición y sustitución de imágenes revoca aprobación de contenido",()=>{
+ const model=read("lib/editorial-meta-drafts.ts");
+ const media=read("app/api/editorial/meta/drafts/media/route.ts");
+ assert.match(model,/contentChanged/);
+ assert.match(model,/const approved=body.contentApproved===true&&!contentChanged/);
+ assert.match(model,/Adjunta las imágenes y guárdalas antes de aprobar/);
+ assert.match(media,/changedImage/);
+ assert.match(media,/contentApproved:changedImage\?false/);
+ assert.match(media,/approvalAt:changedImage\?null/);
+ assert.match(media,/x-pqd-expected-revision/);
+ assert.match(media,/sha256/);
+ assert.match(media,/image\/png/);
+ assert.match(media,/image\/jpeg/);
+ assert.match(media,/Math.abs\(ratio-9\/16\)>0.025/);
+ assert.match(media,/width\*height>16_000_000/);
+ assert.doesNotMatch(media,/graph.facebook.com|media_publish|POST.*\/feed/);
+});
+test("Tipos de cuenta Instagram para proteger historias",()=>{
+ const probe=read("lib/meta-account-verification.ts");
+ const vault=read("app/api/editorial/meta/vault/route.ts");
+ assert.match(probe,/account_type/);
+ assert.match(probe,/accountType/);
+ assert.match(vault,/instagramAccountType/);
+ assert.match(vault,/item.verifiedAccount&&item.instagramAccountType/);
+});

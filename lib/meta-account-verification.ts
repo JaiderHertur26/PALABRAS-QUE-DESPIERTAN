@@ -5,7 +5,7 @@ const API="https://graph.facebook.com/v26.0";
 export type MetaVaultRecord={
  version:1; at:string; appId:string;scopes:string[];
  expiresAt:number|null;verifiedAccount:boolean;iv:string;tag:string;encrypted:string;
- username?:string|null;accountId?:string|null;
+ username?:string|null;accountId?:string|null;instagramAccountType?:string|null;
  verificationState?:"confirmed"|"awaiting_account_permission"|"expired"|"meta_unavailable"|"unverified";
  lastVerificationAttemptAt?:string;lastVerifiedAt?:string|null;
  facebookPageVerified?:boolean;facebookPageId?:string|null;facebookPageName?:string|null;facebookPageUsername?:string|null;
@@ -13,7 +13,7 @@ export type MetaVaultRecord={
  lastFacebookVerificationAttemptAt?:string;lastFacebookVerifiedAt?:string|null;
 };
 export type AccountVerification={verified:boolean;username:string|null;accountId:string|null;
- state:NonNullable<MetaVaultRecord["verificationState"]>; expiresAt:number|null;tokenValid:boolean|null};
+ state:NonNullable<MetaVaultRecord["verificationState"]>; expiresAt:number|null;tokenValid:boolean|null;accountType?:string|null};
 
 function decryptToken(record:MetaVaultRecord){
  const key=process.env.META_TOKEN_ENCRYPTION_KEY||"";
@@ -93,7 +93,11 @@ export async function verifySavedInstagram(record:MetaVaultRecord,appAuth:string
   }
  }
  const match=candidates.find(x=>x.username==="palabrasquedespiertan");
- if(match)return {verified:true,username:match.username,accountId:match.id,state:"confirmed",expiresAt,tokenValid:true};
+ if(match){
+  const detail=await graph("/"+match.id,token,{fields:"id,account_type"});
+  const accountType=detail&&String(detail.id)===match.id&&typeof detail.account_type==="string"?detail.account_type:null;
+  return {verified:true,username:match.username,accountId:match.id,state:"confirmed",expiresAt,tokenValid:true,accountType};
+ }
  return {verified:false,username:null,accountId:null,state:"awaiting_account_permission",expiresAt,tokenValid:true};
 }
 

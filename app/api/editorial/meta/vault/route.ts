@@ -50,7 +50,7 @@ export async function GET(request:NextRequest){
   const now=Date.now();
   const latest=item.lastVerificationAttemptAt?Date.parse(item.lastVerificationAttemptAt):0;
   // A confirmed account is checked daily; a pending match at most every 15 minutes.
-  const minDelay=item.verifiedAccount?86_400_000:900_000;
+  const minDelay=item.verifiedAccount&&item.instagramAccountType?86_400_000:900_000;
   const appAuth=request.headers.get("x-pqd-meta-app-authorization")||"";
   if(now-latest>minDelay&&/^2572239026621118\|[a-fA-F0-9]{32}$/.test(appAuth)){
    try{
@@ -60,6 +60,7 @@ export async function GET(request:NextRequest){
     item.verifiedAccount=verification.verified;
     item.accountId=verification.verified?verification.accountId:null;
     item.username=verification.verified?verification.username:null;
+    item.instagramAccountType=verification.verified?verification.accountType||null:null;
     if(verification.verified)item.lastVerifiedAt=item.lastVerificationAttemptAt;
     item.expiresAt=verification.expiresAt;
     // Only metadata changes. The token ciphertext and encryption key are untouched.
@@ -103,6 +104,7 @@ export async function GET(request:NextRequest){
    connected:true,at:item.at,scopes:item.scopes,
    expiresAt:item.expiresAt,verifiedAccount:item.verifiedAccount===true,
    username:item.verifiedAccount?item.username:null,
+   instagramAccountType:item.verifiedAccount?item.instagramAccountType||null:null,
    verificationState:item.verificationState||"unverified",
    lastVerifiedAt:item.lastVerifiedAt||null,
    facebookPageVerified:item.facebookPageVerified===true,
