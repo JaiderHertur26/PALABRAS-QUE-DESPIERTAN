@@ -15,7 +15,7 @@ export type MetaVaultRecord={
 export type AccountVerification={verified:boolean;username:string|null;accountId:string|null;
  state:NonNullable<MetaVaultRecord["verificationState"]>; expiresAt:number|null;tokenValid:boolean|null;accountType?:string|null};
 
-function decryptToken(record:MetaVaultRecord){
+export function decryptMetaAccessToken(record:MetaVaultRecord){
  const key=process.env.META_TOKEN_ENCRYPTION_KEY||"";
  if(!/^[a-f0-9]{64}$/i.test(key))throw Error("Meta encryption unavailable");
  const decipher=createDecipheriv("aes-256-gcm",Buffer.from(key,"hex"),Buffer.from(record.iv,"base64"));
@@ -52,7 +52,7 @@ function normalizedCandidate(candidate:unknown){
  return {id:obj.id,username:obj.username.toLowerCase().replace(/^@/,"")};
 }
 export async function verifySavedInstagram(record:MetaVaultRecord,appAuth:string):Promise<AccountVerification>{
- const token=decryptToken(record);
+ const token=decryptMetaAccessToken(record);
  // Only a Meta app token (appId|appSecret) received from our authenticated editorial server.
  if(!/^2572239026621118\|[a-fA-F0-9]{32}$/.test(appAuth))
   return {verified:false,username:null,accountId:null,state:"unverified",expiresAt:record.expiresAt,tokenValid:null};
@@ -143,7 +143,7 @@ export async function verifySavedFacebook(record:MetaVaultRecord,appAuth:string)
  const missing:FacebookVerification={verified:false,pageId:null,pageName:null,pageUsername:null,canCreateContent:false,state:"no_page"};
  const scopes=["pages_show_list","pages_read_engagement","pages_manage_posts"];
  if(scopes.some(x=>!record.scopes.includes(x)))return {...missing,state:"missing_scopes"};
- const token=decryptToken(record);
+ const token=decryptMetaAccessToken(record);
  // Meta documents /me/accounts for system-user access to managed Page tokens.
  let list=await graph("/me/accounts",token,{
   fields:"id,name,username,link,access_token,tasks,instagram_business_account{id,username}",limit:"25"

@@ -79,9 +79,15 @@ export async function PUT(req:NextRequest){
   if(error)throw Error("Upload failed");
   const media:MediaFile={slot:t.slot,mime,width,height,size:bytes.length,sha256,uploadedAt:new Date().toISOString()};
   const changedImage=draft.media[t.slot]?.sha256!==sha256;
+  // Una imagen destinada a un canal todavía desactivado no invalida
+  // una aprobación anterior limitada a los canales actualmente activos.
+  const activeSlot=t.slot==="story"
+   ?draft.channels.facebook_story.enabled||draft.channels.instagram_story.enabled
+   :draft.channels.facebook_feed.enabled||draft.channels.instagram_feed.enabled;
+  const revokesApproval=changedImage&&activeSlot;
   const updated={...draft,media:{...draft.media,[t.slot]:media},
-   contentApproved:changedImage?false:draft.contentApproved,
-   approvalAt:changedImage?null:draft.approvalAt,
+   contentApproved:revokesApproval?false:draft.contentApproved,
+   approvalAt:revokesApproval?null:draft.approvalAt,
    updatedAt:new Date().toISOString()};
   const {error:saveError}=await privateDraftStore().upload(draftPath(t.id),new Blob([JSON.stringify(updated)],{type:"application/json"}),{upsert:true,contentType:"application/json",cacheControl:"0"});
   if(saveError)throw Error("Save media metadata failed");

@@ -80,8 +80,8 @@ test("La edición y sustitución de imágenes revoca aprobación de contenido",(
  assert.match(model,/const approved=body.contentApproved===true&&!contentChanged/);
  assert.match(model,/Adjunta las imágenes y guárdalas antes de aprobar/);
  assert.match(media,/changedImage/);
- assert.match(media,/contentApproved:changedImage\?false/);
- assert.match(media,/approvalAt:changedImage\?null/);
+ assert.match(media,/contentApproved:revokesApproval\?false/);
+ assert.match(media,/approvalAt:revokesApproval\?null/);
  assert.match(media,/x-pqd-expected-revision/);
  assert.match(media,/sha256/);
  assert.match(media,/image\/png/);
@@ -97,4 +97,22 @@ test("Tipos de cuenta Instagram para proteger historias",()=>{
  assert.match(probe,/accountType/);
  assert.match(vault,/instagramAccountType/);
  assert.match(vault,/item.verifiedAccount&&item.instagramAccountType/);
+});
+
+test("Publicación Meta sólo en TEST-001 aprobado y con bloqueo atómico por red",()=>{
+ const model=read("lib/editorial-meta-delivery.ts");
+ const route=read("app/api/editorial/meta/publish/route.ts");
+ assert.match(model,/ONLY_APPROVED_TEST001_FEED_ALLOWED/);
+ assert.match(model,/draft.contentApproved/);
+ assert.match(model,/upsert:false/);
+ assert.match(model,/readReceipt\(id,channel\)/);
+ assert.match(model,/status:"needs_review"/);
+ assert.match(model,/mediaSha256/);
+ assert.match(model,/sha256/);
+ assert.match(model,/INSTAGRAM_STORIES_BUSINESS_REQUIRED/);
+ assert.match(model,/instagramIdentity\(record,token,false\)/);
+ assert.match(route,/authorizedDraftRequest\(request\)/);
+ assert.match(route,/PUBLICAR_TEST001_UNA_VEZ/);
+ assert.match(route,/facebook_feed","instagram_feed/);
+ assert.doesNotMatch(route,/cron|setInterval|autoPublish/);
 });
