@@ -40,9 +40,11 @@ function textClean(s:string){
 }
 function caption(i:Item){
  const intro=i.kind==="mensaje"?textClean(i.body||i.summary):textClean(i.summary);
- const max=Math.max(100,1400-i.title.length-i.code.length);
+ const detailedT01=/^PD-0(?:5[1-9]|6\d|70)$/.test(i.code);
+ const reflection=detailedT01&&i.summary?"\nPara reflexionar: "+textClean(i.summary):"";
+ const max=Math.max(100,1400-i.title.length-i.code.length-reflection.length);
  return [
-  i.code+" · "+i.title,"",intro.slice(0,max),
+  i.code+" · "+i.title,"",intro.slice(0,max),reflection,
   i.bible_reference?"\nFundamento bíblico: "+textClean(i.bible_reference):"",
   "\nP. Jaider Herrera Turizo",
   "\nLEE Y COMENTA LA PUBLICACIÓN EN LA REVISTA:",
@@ -78,7 +80,7 @@ async function readyWebsite(i:Item){
  await r.body?.cancel();
 }
 async function imageBytes(i:Item,ch:Channel){
- const officialT01Story=ch.endsWith("story")&&/^PD-0(?:4[1-9]|50)$/.test(i.code);
+ const officialT01Story=ch.endsWith("story")&&/^PD-0(?:4[1-9]|[5-6]\d|70)$/.test(i.code);
  // Conservar el arte vertical original aprobado, no estirar la portada cuadrada.
  const source=officialT01Story
   ?SITE+"/mensajes/historias/"+i.code.toLowerCase()+".png"
