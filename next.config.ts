@@ -4,6 +4,10 @@ const nextConfig:NextConfig = {
  poweredByHeader:false,
  reactStrictMode:true,
  images:{formats:["image/avif","image/webp"]},
+ // La ruta pública original permanece igual, aunque el Git deploy no incluya los PNG locales.
+ async rewrites(){
+  return [{source:"/articulos/art-:id(\\d{3}).png",destination:"/api/articulos/portada/art-:id"}];
+ },
  async headers(){
   return [{
    source:"/:path*",
