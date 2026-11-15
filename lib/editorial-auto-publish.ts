@@ -40,8 +40,8 @@ function textClean(s:string){
 }
 function caption(i:Item){
  const intro=i.kind==="mensaje"?textClean(i.body||i.summary):textClean(i.summary);
- const detailedT01=/^PD-0(?:5[1-9]|6\d|70)$/.test(i.code);
- const reflection=detailedT01&&i.summary?"\nPara reflexionar: "+textClean(i.summary):"";
+ const detailedSeason=/^PD-(?:0(?:5[1-9]|[6-9]\d)|100)$/.test(i.code);
+ const reflection=detailedSeason&&i.summary?"\nPara reflexionar: "+textClean(i.summary):"";
  const max=Math.max(100,1400-i.title.length-i.code.length-reflection.length);
  return [
   i.code+" · "+i.title,"",intro.slice(0,max),reflection,
@@ -80,13 +80,13 @@ async function readyWebsite(i:Item){
  await r.body?.cancel();
 }
 async function imageBytes(i:Item,ch:Channel){
- const officialT01Story=ch.endsWith("story")&&/^PD-0(?:4[1-9]|[5-6]\d|70)$/.test(i.code);
+ const officialSeasonStory=ch.endsWith("story")&&/^PD-(?:0(?:4[1-9]|[5-9]\d)|100)$/.test(i.code);
  // Conservar el arte vertical original aprobado, no estirar la portada cuadrada.
- const source=officialT01Story
+ const source=officialSeasonStory
   ?SITE+"/mensajes/historias/"+i.code.toLowerCase()+".png"
   :SITE+i.cover_url!;
  const res=await fetch(source,{cache:"no-store",redirect:"error",signal:AbortSignal.timeout(15000)});
- if(!res.ok||res.status!==200)throw Error(officialT01Story?"OFFICIAL_STORY_IMAGE_UNAVAILABLE":"COVER_UNAVAILABLE");
+ if(!res.ok||res.status!==200)throw Error(officialSeasonStory?"OFFICIAL_STORY_IMAGE_UNAVAILABLE":"COVER_UNAVAILABLE");
  const bytes=Buffer.from(await res.arrayBuffer());
  if(bytes.length<5_000||bytes.length>9_000_000)throw Error("COVER_SIZE_INVALID");
  const info=await sharp(bytes).metadata();

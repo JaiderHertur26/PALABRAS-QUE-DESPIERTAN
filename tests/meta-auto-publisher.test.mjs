@@ -105,8 +105,8 @@ test("Historias preprogramadas no modifican feeds externos ni crean publicacione
 });
 
 test("Temporada 01 usa el diseño vertical oficial de cada historia sin sustituirlo por el feed cuadrado",()=>{
- assert.match(source,/officialT01Story=ch\.endsWith\("story"\)/);
- assert.ok(source.includes("4[1-9]|[5-6]") && source.includes("|70)$"));
+ assert.match(source,/officialSeasonStory=ch\.endsWith\("story"\)/);
+ assert.ok(source.includes("4[1-9]|[5-9]") && source.includes("|100)$"));
  assert.match(source,/SITE\+"\/mensajes\/historias\/"\+i\.code\.toLowerCase\(\)\+"\.png"/);
  assert.match(source,/OFFICIAL_STORY_IMAGE_UNAVAILABLE/);
  assert.match(source,/fit:"contain"/);

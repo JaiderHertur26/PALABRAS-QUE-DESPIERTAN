@@ -30,6 +30,6 @@ test("Los nombres T01-S02/T01-S03 están reconocidos en la estructura maestra de
 });
 test("El publicador de historias reconoce hasta PD-070 y utiliza la imagen vertical oficial",()=>{
  const src=fs.readFileSync(path.join(root,"lib","editorial-auto-publish.ts"),"utf8");
- assert.ok(src.includes("|70)$"));
+ assert.ok(src.includes("[5-9]") && src.includes("|100)$"));
  assert.ok(src.includes("SITE+\"/mensajes/historias/\"+i.code.toLowerCase()"));
 });
