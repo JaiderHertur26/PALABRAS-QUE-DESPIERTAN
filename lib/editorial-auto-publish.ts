@@ -82,11 +82,13 @@ async function readyWebsite(i:Item){
 async function imageBytes(i:Item,ch:Channel){
  const officialSeasonStory=ch.endsWith("story")&&/^PD-(?:0(?:4[1-9]|[5-9]\d)|100)$/.test(i.code);
  // Conservar el arte vertical original aprobado, no estirar la portada cuadrada.
+ const officialArticleStory=ch.endsWith("story")&&i.kind==="articulo"&&i.code==="ART-015";
  const source=officialSeasonStory
   ?SITE+"/mensajes/historias/"+i.code.toLowerCase()+".png"
+  :officialArticleStory?SITE+"/api/articulos/historia/"+i.code.toLowerCase()
   :SITE+i.cover_url!;
  const res=await fetch(source,{cache:"no-store",redirect:"error",signal:AbortSignal.timeout(15000)});
- if(!res.ok||res.status!==200)throw Error(officialSeasonStory?"OFFICIAL_STORY_IMAGE_UNAVAILABLE":"COVER_UNAVAILABLE");
+ if(!res.ok||res.status!==200)throw Error(officialSeasonStory?"OFFICIAL_STORY_IMAGE_UNAVAILABLE":officialArticleStory?"OFFICIAL_ARTICLE_STORY_IMAGE_UNAVAILABLE":"COVER_UNAVAILABLE");
  const bytes=Buffer.from(await res.arrayBuffer());
  if(bytes.length<5_000||bytes.length>9_000_000)throw Error("COVER_SIZE_INVALID");
  const info=await sharp(bytes).metadata();
