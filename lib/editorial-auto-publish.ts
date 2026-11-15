@@ -82,7 +82,7 @@ async function readyWebsite(i:Item){
 async function imageBytes(i:Item,ch:Channel){
  const officialSeasonStory=ch.endsWith("story")&&/^PD-(?:0(?:4[1-9]|[5-9]\d)|100)$/.test(i.code);
  // Conservar el arte vertical original aprobado, no estirar la portada cuadrada.
- const officialArticleStory=ch.endsWith("story")&&i.kind==="articulo"&&/^ART-(?:015|016)$/.test(i.code);
+ const officialArticleStory=ch.endsWith("story")&&i.kind==="articulo"&&/^ART-(?:015|016|017)$/.test(i.code);
  const source=officialSeasonStory
   ?SITE+"/mensajes/historias/"+i.code.toLowerCase()+".png"
   :officialArticleStory?SITE+"/api/articulos/historia/"+i.code.toLowerCase()

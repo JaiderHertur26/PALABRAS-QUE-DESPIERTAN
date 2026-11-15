@@ -11,7 +11,7 @@ test("La historia vertical de ART-015 tiene endpoint privado con fecha y aprobac
 });
 test("Meta usa la historia de autor ART-015 y no una reescalada del cover",()=>{
  const src=fs.readFileSync(path.join(base,"lib","editorial-auto-publish.ts"),"utf8");
- assert.ok(src.includes('officialArticleStory=ch.endsWith("story")&&i.kind==="articulo"&&/^ART-(?:015|016)$/.test(i.code)'));
+ assert.ok(src.includes('officialArticleStory=ch.endsWith("story")&&i.kind==="articulo"&&/^ART-(?:015|016|017)$/.test(i.code)'));
  assert.ok(src.includes('SITE+"/api/articulos/historia/"+i.code.toLowerCase()'));
  assert.ok(src.includes("OFFICIAL_ARTICLE_STORY_IMAGE_UNAVAILABLE"));
 });
