@@ -96,23 +96,28 @@ export async function GET(_request:Request,{params}:{params:Promise<{filename:st
    if(source.hostname==="palabrasquedespiertan-84600kc0x-jaiderherreras-projects.vercel.app"
        &&source.pathname==="/mensajes/pd-002-la-puerta-que-se-abre.png"
        &&source.searchParams.has("_vercel_share")){
-    const headers=new Headers();
-    let response=await fetch(source,{redirect:"manual",cache:"no-store",headers});
+    const trustedHosts=new Set([source.hostname,"vercel.com","www.vercel.com"]);
+    const cookiesByHost=new Map<string,string[]>();
+    let response=await fetch(source,{redirect:"manual",cache:"no-store"});
     console.info("PD002_MIGRATE_FETCH",response.status,response.headers.get("content-type"));
-    for(let n=0;n<4&&response.status>=300&&response.status<400;n++){
-     const where=response.headers.get("location");
-     if(!where)break;
-     const next=new URL(where,source);
-     console.info("PD002_MIGRATE_REDIRECT_HOST",next.hostname);
-     if(next.hostname!==source.hostname)break;
-     const setCookies=response.headers.getSetCookie();
-     for(const item of setCookies){
+    for(let n=0;n<8&&response.status>=300&&response.status<400;n++){
+     const currentHost=new URL(response.url).hostname;
+     for(const item of response.headers.getSetCookie()){
       const cookie=item.split(";")[0];
-      if(cookie&&cookie.includes("=")){
-       const existing=headers.get("cookie");
-       headers.set("cookie",existing?existing+"; "+cookie:cookie);
+      if(cookie.includes("=")){
+       const array=cookiesByHost.get(currentHost)??[];
+       array.push(cookie);
+       cookiesByHost.set(currentHost,array);
       }
      }
+     const where=response.headers.get("location");
+     if(!where)break;
+     const next=new URL(where,response.url);
+     console.info("PD002_MIGRATE_REDIRECT_HOST",next.hostname);
+     if(next.protocol!=="https:"||!trustedHosts.has(next.hostname))break;
+     const headers=new Headers();
+     const destCookies=cookiesByHost.get(next.hostname);
+     if(destCookies?.length)headers.set("cookie",destCookies.join("; "));
      response=await fetch(next,{redirect:"manual",cache:"no-store",headers});
      console.info("PD002_MIGRATE_REDIRECT",response.status,response.headers.get("content-type"));
     }
