@@ -103,6 +103,7 @@ export async function GET(_request:Request,{params}:{params:Promise<{filename:st
      const where=response.headers.get("location");
      if(!where)break;
      const next=new URL(where,source);
+     console.info("PD002_MIGRATE_REDIRECT_HOST",next.hostname);
      if(next.hostname!==source.hostname)break;
      const setCookies=response.headers.getSetCookie();
      for(const item of setCookies){
