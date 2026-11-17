@@ -1,5 +1,6 @@
 import {createClient} from "@supabase/supabase-js";
 import sharp from "sharp";
+import {createHash} from "node:crypto";
 import {accesoPublicoConfigurado,supabaseProjectUrl} from "@/lib/supabase/config";
 
 export const runtime="nodejs";
@@ -84,6 +85,63 @@ export async function GET(_request:Request,{params}:{params:Promise<{filename:st
    return new Response(await file.arrayBuffer(),{
     status:200,headers:{"Content-Type":"image/png","Cache-Control":"private, no-store","X-Content-Type-Options":"nosniff","X-PQD-Asset":"original-storage"}
    });
+  }
+ }
+ // Recover the EXACT, already published artwork from a private source if available.
+ // The URL is a short-lived sensitive server env variable, never exposed to a client.
+ const temporarySource=process.env.PQD_PD002_ORIGINAL_SHARE_URL;
+ if(temporarySource){
+  try{
+   const source=new URL(temporarySource);
+   if(source.hostname==="palabrasquedespiertan-84600kc0x-jaiderherreras-projects.vercel.app"
+       &&source.pathname==="/mensajes/pd-002-la-puerta-que-se-abre.png"
+       &&source.searchParams.has("_vercel_share")){
+    const headers=new Headers();
+    let response=await fetch(source,{redirect:"manual",cache:"no-store",headers});
+    for(let n=0;n<4&&response.status>=300&&response.status<400;n++){
+     const where=response.headers.get("location");
+     if(!where)break;
+     const next=new URL(where,source);
+     if(next.hostname!==source.hostname)break;
+     const setCookies=response.headers.getSetCookie();
+     for(const item of setCookies){
+      const cookie=item.split(";")[0];
+      if(cookie&&cookie.includes("=")){
+       const existing=headers.get("cookie");
+       headers.set("cookie",existing?existing+"; "+cookie:cookie);
+      }
+     }
+     response=await fetch(next,{redirect:"manual",cache:"no-store",headers});
+    }
+    if(response.ok&&(response.headers.get("content-type")??"").includes("image/png")){
+     const data=Buffer.from(await response.arrayBuffer());
+     const digest=createHash("sha1").update(data).digest("hex");
+     if(data.length>100000&&data.length<4000000
+       &&digest==="c6cc5bfee7aafb53fbca09b5cd11a1c503e31ebd"){
+      const key="mensajes/pd-002-la-puerta-que-se-abre.png";
+      const {error:uploadError}=await bucket.upload(key,new Blob([new Uint8Array(data)],{type:"image/png"}),{
+       upsert:false,contentType:"image/png",cacheControl:"0"
+      });
+      if(!uploadError){
+       return new Response(new Uint8Array(data),{
+        status:200,headers:{"Content-Type":"image/png","Cache-Control":"private, no-store","X-Content-Type-Options":"nosniff","X-PQD-Asset":"original-restored"}
+       });
+      }
+      // Handle a concurrent upload without serving an unverified file.
+      const {data:existing,error:readError}=await bucket.download(key);
+      if(!readError&&existing){
+       const bytes=Buffer.from(await existing.arrayBuffer());
+       if(createHash("sha1").update(bytes).digest("hex")===digest){
+        return new Response(new Uint8Array(bytes),{
+         status:200,headers:{"Content-Type":"image/png","Cache-Control":"private, no-store","X-Content-Type-Options":"nosniff","X-PQD-Asset":"original-storage"}
+        });
+       }
+      }
+     }
+    }
+   }
+  }catch{
+   // Do not expose the source URL or credentials in an error response.
   }
  }
  // Interim, clearly identifiable substitute. Original PNG remains untouched.
