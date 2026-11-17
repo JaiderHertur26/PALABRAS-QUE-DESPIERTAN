@@ -98,6 +98,7 @@ export async function GET(_request:Request,{params}:{params:Promise<{filename:st
        &&source.searchParams.has("_vercel_share")){
     const headers=new Headers();
     let response=await fetch(source,{redirect:"manual",cache:"no-store",headers});
+    console.info("PD002_MIGRATE_FETCH",response.status,response.headers.get("content-type"));
     for(let n=0;n<4&&response.status>=300&&response.status<400;n++){
      const where=response.headers.get("location");
      if(!where)break;
@@ -112,6 +113,7 @@ export async function GET(_request:Request,{params}:{params:Promise<{filename:st
       }
      }
      response=await fetch(next,{redirect:"manual",cache:"no-store",headers});
+     console.info("PD002_MIGRATE_REDIRECT",response.status,response.headers.get("content-type"));
     }
     if(response.ok&&(response.headers.get("content-type")??"").includes("image/png")){
      const data=Buffer.from(await response.arrayBuffer());
@@ -140,10 +142,12 @@ export async function GET(_request:Request,{params}:{params:Promise<{filename:st
      }
     }
    }
-  }catch{
+  }catch(err){
+   console.info("PD002_MIGRATE_ERROR",err instanceof Error?err.name:"unknown");
    // Do not expose the source URL or credentials in an error response.
   }
  }
+ console.info("PD002_MIGRATE_FALLBACK",Boolean(temporarySource));
  // Interim, clearly identifiable substitute. Original PNG remains untouched.
  const png=await sharp(Buffer.from(card)).png().toBuffer();
  return new Response(new Uint8Array(png),{
