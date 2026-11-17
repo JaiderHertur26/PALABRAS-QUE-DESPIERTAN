@@ -8,18 +8,15 @@ const titles=[
  "el-creador-en-un-pesebre","el-mundo-no-lo-reconocio","el-no-esta-en-la-lista","el-amor-no-empezo-en-la-cruz",
  "la-salvacion-no-es-solo-volver","tu-origen-tiene-destino"
 ];
-function png(fp){
- const b=fs.readFileSync(fp);
- assert.equal(b.subarray(0,8).toString("hex"),"89504e470d0a1a0a");
- return [b.readUInt32BE(16),b.readUInt32BE(20),b.length];
-}
-test("T01-S02 y T01-S03 incluyen 20 portadas y 20 historias originales con dimensiones correctas",()=>{
+test("T01-S02 y T01-S03: veinte portadas e historias futuras quedan en Storage privado",()=>{
+ const cover=fs.readFileSync(path.join(root,"app/api/mensajes/portada/[filename]/route.ts"),"utf8");
+ const story=fs.readFileSync(path.join(root,"app/api/mensajes/historia/[code]/route.ts"),"utf8");
+ assert.match(cover,/pqd-article-covers-private-v1/);
+ assert.match(story,/pqd-article-covers-private-v1/);
  for(let i=0;i<20;i++){
   const code="pd-"+String(51+i).padStart(3,"0");
-  const card=png(path.join(root,"public","mensajes",code+"-"+titles[i]+".png"));
-  const story=png(path.join(root,"public","mensajes","historias",code+".png"));
-  assert.deepEqual(card.slice(0,2),[1254,1254]);assert.deepEqual(story.slice(0,2),[1080,1920]);
-  assert.ok(card[2]>100000&&story[2]>100000);
+  assert.equal(fs.existsSync(path.join(root,"public","mensajes",code+"-"+titles[i]+".png")),false);
+  assert.equal(fs.existsSync(path.join(root,"public","mensajes","historias",code+".png")),false);
  }
 });
 test("Los nombres T01-S02/T01-S03 están reconocidos en la estructura maestra de la revista",()=>{
@@ -31,5 +28,5 @@ test("Los nombres T01-S02/T01-S03 están reconocidos en la estructura maestra de
 test("El publicador de historias reconoce hasta PD-070 y utiliza la imagen vertical oficial",()=>{
  const src=fs.readFileSync(path.join(root,"lib","editorial-auto-publish.ts"),"utf8");
  assert.ok(src.includes("[5-9]") && src.includes("|100)$"));
- assert.ok(src.includes("SITE+\"/mensajes/historias/\"+i.code.toLowerCase()"));
+ assert.ok(src.includes('SITE+"/mensajes/historias/"+i.code.toLowerCase()'));
 });

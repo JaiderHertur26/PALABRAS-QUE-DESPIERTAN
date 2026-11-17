@@ -32,8 +32,10 @@ tsconfig.tsbuildinfo
 Thumbs.db
 desktop.ini
 
-# Gráficos de mensajes futuros: originales privados, solo se distribuyen por despliegue controlado.
-/public/mensajes/pd-0[0-9][0-9]-*.png
+# Gráficos futuros: las portadas e historias se almacenan en Supabase Storage privado.
+# Nunca versionar ni volver a incluir estos originales en despliegues GitHub.
+/public/mensajes/pd-[0-9][0-9][0-9]-*.png
+/public/mensajes/historias/pd-[0-9][0-9][0-9].png
 /data/graphic-integrity.json
 
 # Tarjetas originales de artículos, almacenadas localmente y desplegadas sin publicarlas en GitHub.
