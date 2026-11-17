@@ -1,6 +1,6 @@
 import {createClient} from "@supabase/supabase-js";
 import sharp from "sharp";
-import {createHash} from "node:crypto";
+import {createHash,createHmac,timingSafeEqual} from "node:crypto";
 import {accesoPublicoConfigurado,supabaseProjectUrl} from "@/lib/supabase/config";
 
 export const runtime="nodejs";
@@ -159,4 +159,58 @@ export async function GET(_request:Request,{params}:{params:Promise<{filename:st
  return new Response(new Uint8Array(png),{
   status:200,headers:{"Content-Type":"image/png","Cache-Control":"private, no-store","X-Content-Type-Options":"nosniff","X-PQD-Asset":"text-faithful-fallback"}
  });
+}
+
+/**
+ * One-time, tightly scoped migration endpoint for the original PD-002 PNG.
+ * POST does not publish an unpublished message, change text, or change any date.
+ * The endpoint will be removed after its successful verified migration.
+ */
+export async function POST(request:Request,{params}:{params:Promise<{filename:string}>}){
+ const {filename}=await params;
+ if(filename!=="pd-002-la-puerta-que-se-abre")return denied();
+ const migrationSecret=process.env.PQD_PD002_ORIGINAL_SHARE_URL;
+ const serviceKey=process.env.SUPABASE_SECRET_KEY;
+ if(!migrationSecret||!migrationSecret.includes("_vercel_share=")
+    ||!serviceKey?.startsWith("sb_secret_")||!accesoPublicoConfigurado())return failed();
+ const supplied=request.headers.get("authorization")?.match(/^Bearer ([a-f0-9]{64})$/)?.[1];
+ if(!supplied)return denied();
+ const expected=createHmac("sha256",migrationSecret)
+  .update("pqd-pd002-original-artwork-migration-2026-11-17").digest("hex");
+ if(!timingSafeEqual(Buffer.from(supplied,"hex"),Buffer.from(expected,"hex")))return denied();
+
+ const length=Number(request.headers.get("content-length")||"0");
+ if(length&&length!==2019698)return new Response("Invalid asset size",{status:400});
+ const bytes=Buffer.from(await request.arrayBuffer());
+ const checksum=createHash("sha1").update(bytes).digest("hex");
+ if(bytes.length!==2019698||checksum!=="c6cc5bfee7aafb53fbca09b5cd11a1c503e31ebd")
+  return new Response("Invalid original artwork fingerprint",{status:400});
+
+ const db=createClient(supabaseProjectUrl,serviceKey,{auth:{persistSession:false,autoRefreshToken:false}});
+ const {data:row,error:rowError}=await db.from("editorial_items")
+  .select("code,kind,state,approved_by_author,scheduled_at")
+  .eq("kind","mensaje").eq("code","PD-002").maybeSingle();
+ const visible=row?.approved_by_author===true&&(
+   row.state==="published"||(row.state==="scheduled"&&row.scheduled_at&&Date.parse(row.scheduled_at)<=Date.now()));
+ if(rowError||!visible)return denied();
+
+ const bucket=db.storage.from("pqd-article-covers-private-v1");
+ const target="mensajes/pd-002-la-puerta-que-se-abre.png";
+ const prior=await bucket.download(target);
+ if(prior.data){
+  const already=Buffer.from(await prior.data.arrayBuffer());
+  if(createHash("sha1").update(already).digest("hex")!==checksum)
+    return new Response("Original asset conflict",{status:409});
+ }else{
+  const {error:uploadError}=await bucket.upload(target,new Blob([new Uint8Array(bytes)],{type:"image/png"}),{
+   upsert:false,contentType:"image/png",cacheControl:"0"
+  });
+  if(uploadError)return failed();
+ }
+ const {data:verified,error:verifyError}=await bucket.download(target);
+ if(verifyError||!verified)return failed();
+ const checkBytes=Buffer.from(await verified.arrayBuffer());
+ if(checkBytes.length!==bytes.length||createHash("sha1").update(checkBytes).digest("hex")!==checksum)return failed();
+ return Response.json({status:"original-restored",code:"PD-002",storage:"private",bytes:bytes.length,
+  sha1:checksum},{status:200,headers:{"Cache-Control":"private, no-store","X-Content-Type-Options":"nosniff"}});
 }
