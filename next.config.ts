@@ -6,7 +6,12 @@ const nextConfig:NextConfig = {
  images:{formats:["image/avif","image/webp"]},
  // La ruta pública original permanece igual, aunque el Git deploy no incluya los PNG locales.
  async rewrites(){
-  return [{source:"/articulos/art-:id(\\d{3}).png",destination:"/api/articulos/portada/art-:id"}];
+  return [
+   {source:"/articulos/art-:id(\\d{3}).png",destination:"/api/articulos/portada/art-:id"},
+   // Fix the missing PD-002 image without changing the canonical URL or exposing future cards.
+   {source:"/mensajes/pd-002-la-puerta-que-se-abre.png",destination:"/api/mensajes/portada/pd-002-la-puerta-que-se-abre"},
+   {source:"/mensajes/pd-002.png",destination:"/api/mensajes/portada/pd-002-la-puerta-que-se-abre"}
+  ];
  },
  async headers(){
   return [{
