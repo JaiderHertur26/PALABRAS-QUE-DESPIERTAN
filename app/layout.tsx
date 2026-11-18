@@ -5,6 +5,7 @@ import "./responsive.css";
 import "./social.css";
 import "./research.css";
 import "./magazine-community.css";
+import "./editorial-improvements.css";
 import {Header} from "@/components/Header";
 import {Footer} from "@/components/Footer";
 import {VisitTracker} from "@/components/VisitTracker";
@@ -25,9 +26,9 @@ export const metadata:Metadata = {
   siteName:nombreProyecto,
   title:nombreProyecto,
   description:`${lema}. ${descripcion}`,
-  images:[{url:"/identidad/portada-oficial.png",width:1024,height:1536,alt:"Portada original de Palabras que despiertan"}]
+  images:[{url:"/identidad/vista-previa-social.jpg",width:1200,height:630,alt:"Palabras que despiertan, revista teológica"}]
  },
- twitter:{card:"summary_large_image",title:nombreProyecto,description:descripcion,images:["/identidad/portada-oficial.png"]},
+ twitter:{card:"summary_large_image",title:nombreProyecto,description:descripcion,images:["/identidad/vista-previa-social.jpg"]},
  robots:{index:true,follow:true,noarchive:false,nosnippet:false},
  formatDetection:{email:false,address:false,telephone:false}
 };

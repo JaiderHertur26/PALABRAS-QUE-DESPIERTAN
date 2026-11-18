@@ -20,13 +20,13 @@ export default async function Articulos(){
    <p className="eyebrow">REVISTA PALABRAS QUE DESPIERTAN · INVESTIGACIÓN TEOLÓGICA</p>
    <h1>Una biblioteca para ir a las raíces de la fe.</h1>
    <p className="lead">Investigaciones originales que unen Sagrada Escritura, Tradición, Magisterio y experiencia humana. De una pregunta que despierta a una reflexión que permite comprender.</p>
-   <div className="research-library-stats"><span>{ordenados.length} artículos editoriales</span><span>Autor: P. Jaider Herrera Turizo</span><span>Edición inaugural · 2026</span></div>
+   <div className="research-library-stats"><span>{ordenados.length} artículos publicados</span><span>Autor: P. Jaider Herrera Turizo</span><a className="text-link" href="#articulos-publicados">Ver investigaciones ↓</a></div>
   </header>
   <div className="research-library-intro">
-   <p>Estos artículos integran la colección de investigación teológica de <em>Palabras que despiertan</em>. Se publican con aprobación editorial del autor en nuestra revista independiente; no se presentan como trabajos evaluados por pares ni como documentos oficiales del Magisterio.</p>
-   <Link className="text-link" href="/teologia">Conoce nuestro enfoque teológico ↗</Link>
+   <p>Investigaciones originales aprobadas por el autor y publicadas en esta revista independiente. No son documentos oficiales del Magisterio ni trabajos con evaluación externa por pares.</p>
+   <Link className="text-link" href="/teologia">Nuestro enfoque teológico ↗</Link>
   </div>
-  <section aria-labelledby="library-title">
+  <section id="articulos-publicados" aria-labelledby="library-title">
    <div className="research-section-top"><h2 id="library-title">Cuadernos de investigación</h2><span>ART-001 — ART-{String(ordenados.length).padStart(3,"0")}</span></div>
    <div className="research-library-grid">
     {ordenados.map((a,i)=><article className="research-card" key={a.slug}>

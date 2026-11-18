@@ -6,7 +6,8 @@ test("Temporada 02: 30 portadas y 30 historias se reservan para Storage privado"
  assert.match(cover,/approved_by_author/);assert.match(story,/approved_by_author/);
  assert.match(cover,/Date\.parse/);assert.match(story,/Date\.parse/);
  const files=fs.readdirSync(path.join(root,"public","mensajes"));
- const stories=fs.readdirSync(path.join(root,"public","mensajes","historias"));
+ const storiesDirectory=path.join(root,"public","mensajes","historias");
+ const stories=fs.existsSync(storiesDirectory)?fs.readdirSync(storiesDirectory):[]; // Git no versiona carpetas vacías.
  for(let n=71;n<=100;n++){
   const code="pd-"+String(n).padStart(3,"0");
   assert.equal(files.some(f=>f.startsWith(code+"-")&&f.endsWith(".png")),false);

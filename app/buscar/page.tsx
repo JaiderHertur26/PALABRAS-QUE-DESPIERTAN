@@ -1,28 +1,45 @@
+import Image from "next/image";
+import Link from "next/link";
 import type {Metadata} from "next";
-import {temporadas,seriePorId} from "@/lib/editorial";
-import {buscarPublicos} from "@/lib/search-live";
-import {publicMensajes} from "@/lib/editorial-live";
+import {buscarTodoPublico} from "@/lib/search-all";
 import {Breadcrumbs} from "@/components/Breadcrumbs";
-import {ArchiveFilters} from "@/components/ArchiveFilters";
 import {MessageCard} from "@/components/MessageCard";
 import {SectionIntro} from "@/components/SectionIntro";
+import {UnifiedSearchForm} from "@/components/UnifiedSearchForm";
 
-export const metadata:Metadata={title:"Buscar",robots:{index:false,follow:false}};
-type Params={q?:string;temporada?:string;serie?:string;orden?:string};
+export const metadata:Metadata={title:"Buscar",description:"Buscador de mensajes y artículos publicados de Palabras que despiertan.",robots:{index:false,follow:true}};
 export const dynamic="force-dynamic";
+type Params={q?:string;tipo?:string};
 export default async function Buscar({searchParams}:{searchParams:Promise<Params>}){
  const p=await searchParams;
  const q=typeof p.q==="string"?p.q.slice(0,120):"";
- const temporada=temporadas.some(t=>t.id===p.temporada)?p.temporada:"";
- const serie=p.serie&&seriePorId(p.serie)?p.serie:"";
- const orden=p.orden==="antiguos"||p.orden==="numero"?p.orden:"recientes";
- const resultados=await buscarPublicos({q,temporada,serie,orden});
- return <section className="shell content-page">
+ const tipo=p.tipo==="mensajes"||p.tipo==="articulos"?p.tipo:"todos";
+ const {mensajes,articulos,total}=await buscarTodoPublico(q,tipo);
+ return <section className="shell content-page unified-search-page">
   <Breadcrumbs items={[{texto:"Buscar"}]}/>
-  <SectionIntro eyebrow="BUSCADOR" title="Encuentra una palabra para tu camino" description="Busca entre las reflexiones publicadas, por palabra clave, referencia bíblica, serie o temporada."/>
-  <ArchiveFilters q={q} temporada={temporada} serie={serie} orden={orden} action="/buscar" published={await publicMensajes()}/>
-  <p className="archive-count" role="status">{resultados.length} {resultados.length===1?"reflexión disponible":"reflexiones disponibles"}{q?" para «"+q+"»":""}</p>
-  {resultados.length ? <div className="cards-grid">{resultados.map(m=><MessageCard key={m.id} mensaje={m}/>)}</div>
-   : <div className="empty-state"><h2>No hay coincidencias</h2><p>Intenta otra palabra, número de mensaje, serie o referencia bíblica. Los contenidos aún no publicados no aparecen en la búsqueda.</p></div>}
+  <SectionIntro eyebrow="BUSCADOR EDITORIAL" title="Encuentra una palabra para tu camino"
+   description="Explora reflexiones e investigaciones teológicas por tema, título o referencia bíblica."/>
+  <UnifiedSearchForm q={q} tipo={tipo}/>
+  <p className="unified-search-count" role="status">{total} {total===1?"resultado publicado":"resultados publicados"}{q?<> para «{q}»</>:null}</p>
+  {articulos.length>0&&<section aria-labelledby="resultados-articulos" className="unified-search-group">
+   <div className="magazine-section-heading"><h2 id="resultados-articulos">Artículos de investigación <small>({articulos.length})</small></h2></div>
+   <div className="unified-article-results">{articulos.map(a=><article key={a.slug} className="unified-article-result">
+    {a.imagen&&<Link href={"/articulos/"+a.slug} className="unified-article-cover" aria-label={"Leer "+a.titulo}>
+     <Image src={a.imagen} alt={"Tarjeta original "+a.id} width={1254} height={1254} sizes="(max-width:620px) 100px, 150px"/>
+    </Link>}
+    <div><p className="eyebrow">{a.id} · INVESTIGACIÓN</p><h3><Link href={"/articulos/"+a.slug}>{a.titulo}</Link></h3>
+     {a.subtitulo&&<p className="unified-article-subtitle">{a.subtitulo}</p>}
+     <p>{a.resumen.slice(0,220)}{a.resumen.length>220?"…":""}</p>
+     <Link className="text-link" href={"/articulos/"+a.slug}>Leer investigación ↗</Link></div>
+   </article>)}</div>
+  </section>}
+  {mensajes.length>0&&<section aria-labelledby="resultados-mensajes" className="unified-search-group">
+   <div className="magazine-section-heading"><h2 id="resultados-mensajes">Mensajes para meditar <small>({mensajes.length})</small></h2></div>
+   <div className="cards-grid">{mensajes.map(m=><MessageCard key={m.id} mensaje={m}/>)}</div>
+  </section>}
+  {total===0&&<div className="empty-state"><h2>No hay coincidencias publicadas</h2>
+   <p>Prueba una expresión más breve o consulta directamente los archivos. No se muestran borradores ni publicaciones futuras.</p>
+   <div className="unified-empty-links"><Link className="button-outline" href="/mensajes">Mensajes</Link><Link className="button-outline" href="/articulos">Artículos</Link></div>
+  </div>}
  </section>;
 }

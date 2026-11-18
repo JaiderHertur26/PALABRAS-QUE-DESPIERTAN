@@ -11,6 +11,7 @@ export default async function Testimonios(){
  return <section className="shell content-page testimonials-page">
   <Breadcrumbs items={[{texto:"Revista",href:"/revista"},{texto:"Testimonios"}]}/>
   <SectionIntro eyebrow="LA FE QUE SE COMPARTE" title="Testimonios: historias que también despiertan" description="Un espacio para escuchar y compartir experiencias a la luz de la fe católica, con respeto por cada persona y sin confundir la vivencia personal con la enseñanza doctrinal."/>
+  <nav className="testimonials-quicklinks" aria-label="Accesos a la comunidad"><a className="button-gold" href="#temas-testimonios">Explorar temas ↓</a><Link href="/participar" className="button-outline">Cómo participar ↗</Link></nav>
   <div className="testimony-intro">
    <div className="testimony-intro-symbol" aria-hidden="true">✝</div>
    <div><p className="eyebrow">EL SENTIDO DE ESTE ESPACIO</p><h2>No buscamos relatos perfectos, sino experiencias contadas con verdad.</h2>
@@ -18,7 +19,7 @@ export default async function Testimonios(){
     <Link href="/participar" className="text-link">Conocer las normas de participación ↗</Link>
    </div>
   </div>
-  <div className="magazine-section-heading"><div><p className="eyebrow">DIÁLOGOS PROPUESTOS</p><h2>Elige un tema para conversar</h2></div><span className="topic-amount">{temas.length} temas</span></div>
+  <div className="magazine-section-heading" id="temas-testimonios"><div><p className="eyebrow">DIÁLOGOS PROPUESTOS</p><h2>Elige un tema para conversar</h2></div><span className="topic-amount">{temas.length} temas</span></div>
   <div className="topic-grid">
    {temas.map(t=><Link href={`/testimonios/${t.slug}`} className="topic-card" key={t.slug}>
     <span className="topic-number">{t.numero}</span><p className="eyebrow">{t.categoria}</p><h3>{t.titulo}</h3><p className="topic-subtitle">{t.subtitulo}</p><blockquote>{t.pregunta}</blockquote><small>{t.referencia}</small><span className="topic-cta">Leer y participar ↗</span>

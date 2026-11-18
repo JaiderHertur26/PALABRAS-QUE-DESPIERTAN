@@ -6,14 +6,15 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { ReaderTools } from "@/components/ReaderTools";
 import {Discussion} from "@/components/community/Discussion";
 import {fechaDePublicacion, seriePorId} from "@/lib/editorial";
-import {publicMensajes} from "@/lib/editorial-live";
+import {publicMensajes,publicArticulos} from "@/lib/editorial-live";
+import {EditorialConnections} from "@/components/EditorialConnections";
 
 export const dynamic="force-dynamic";
 export async function generateMetadata({params}:{params:Promise<{slug:string}>}):Promise<Metadata>{
  const {slug}=await params;
  const m=(await publicMensajes()).find(x=>x.slug===slug);
  if(!m)return {title:"Mensaje no disponible",robots:{index:false}};
- return {title:m.titulo,description:m.texto,openGraph:{title:`${m.titulo} | Palabras que despiertan`,description:m.texto,type:"article",images:[{url:m.imagen,width:1254,height:1254,alt:`Tarjeta original ${m.id}`}]},robots:{index:false,follow:false}};
+ return {title:m.titulo,description:m.texto,alternates:{canonical:"/mensajes/"+m.slug},openGraph:{title:`${m.titulo} | Palabras que despiertan`,description:m.texto,type:"article",images:[{url:m.imagen,width:1254,height:1254,alt:`Tarjeta original ${m.id}`}]},robots:{index:true,follow:true}};
 }
 
 export default async function DetalleMensaje({params}:{params:Promise<{slug:string}>}) {
@@ -21,7 +22,8 @@ export default async function DetalleMensaje({params}:{params:Promise<{slug:stri
  const m=(await publicMensajes()).find(x=>x.slug===slug);
  if(!m)notFound();
  const grupo=seriePorId(m.serie);
- const ordered=[...await publicMensajes()].sort((a,b)=>a.id.localeCompare(b.id));
+ const [publicados,articulos]=await Promise.all([publicMensajes(),publicArticulos()]);
+ const ordered=[...publicados].sort((a,b)=>a.id.localeCompare(b.id));
  const idx=ordered.findIndex(x=>x.id===m.id);
  const vecinos={anterior:idx>0?ordered[idx-1]:null,siguiente:idx>=0?ordered[idx+1]??null:null};
  return <article className="shell article-detail">
@@ -47,6 +49,7 @@ export default async function DetalleMensaje({params}:{params:Promise<{slug:stri
     </div>
    </div>
   </div>
+  <EditorialConnections desde="mensaje" articulos={articulos}/>
   <Discussion tipo="mensaje" id={m.slug} titulo={m.titulo}/>
   <nav className="reading-navigation" aria-label="Navegar entre mensajes publicados">
     {vecinos.anterior ? <Link href={`/mensajes/${vecinos.anterior.slug}`}>← Anterior <strong>{vecinos.anterior.titulo}</strong></Link> : <span/>}

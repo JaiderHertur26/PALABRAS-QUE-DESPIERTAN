@@ -8,6 +8,7 @@ export const dynamic="force-dynamic";
 export default async function Inicio(){
  const [articulos,temas,mensajes]=await Promise.all([publicArticulos(),publicTemas(),publicMensajes()]);
  const destacado=mensajes[0];
+ const ultimoArticulo=[...articulos].sort((a,b)=>b.fecha.localeCompare(a.fecha))[0];
  const temporadasVisibles=temporadas.filter(t=>mensajes.some(m=>m.temporada===t.id)).slice(0,3);
  const seriesVisibles=temporadasVisibles.flatMap(t=>t.series).filter(s=>mensajes.some(m=>m.serie===s.id));
  return <>
@@ -28,6 +29,18 @@ export default async function Inicio(){
    </aside>
   </div>
  </section>
+
+ {ultimoArticulo&&<section className="shell home-latest" aria-labelledby="ultimo-articulo-titulo">
+  {ultimoArticulo.imagen&&<Link className="home-latest-visual" href={"/articulos/"+ultimoArticulo.slug} aria-label={"Leer "+ultimoArticulo.titulo}>
+   <Image src={ultimoArticulo.imagen} alt={"Imagen original de "+ultimoArticulo.titulo} width={1254} height={1254} sizes="(max-width:680px) 240px, 220px"/>
+  </Link>}
+  <div><p className="eyebrow">ÚLTIMA INVESTIGACIÓN PUBLICADA · {ultimoArticulo.id}</p>
+   <h2 id="ultimo-articulo-titulo">{ultimoArticulo.titulo}</h2>
+   {ultimoArticulo.subtitulo&&<p>{ultimoArticulo.subtitulo}</p>}
+   <p>{ultimoArticulo.resumen.slice(0,310)}{ultimoArticulo.resumen.length>310?"…":""}</p>
+   <Link className="button-outline" href={"/articulos/"+ultimoArticulo.slug}>Descubrir el artículo ↗</Link>
+  </div>
+ </section>}
 
  <section className="shell discover" aria-label="Descubrir los contenidos">
    <div className="discover-grid">
