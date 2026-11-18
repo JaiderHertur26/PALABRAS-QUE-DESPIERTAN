@@ -12,6 +12,8 @@ export default async function Inicio(){
  const temporadasVisibles=temporadas.filter(t=>mensajes.some(m=>m.temporada===t.id)).slice(0,3);
  const seriesVisibles=temporadasVisibles.flatMap(t=>t.series).filter(s=>mensajes.some(m=>m.serie===s.id));
  return <>
+ <link rel="preload" as="image" href="/identidad/cruz-fondo-home.webp" media="(min-width: 681px)" fetchPriority="high"/>
+ <link rel="preload" as="image" href="/identidad/cruz-fondo-home-mobile.webp" media="(max-width: 680px)" fetchPriority="high"/>
  <section className="home-hero" aria-labelledby="home-title">
   <div className="shell hero-content">
    <div className="hero-copy">
@@ -19,6 +21,11 @@ export default async function Inicio(){
     <h1 id="home-title"><span>PALABRAS QUE</span><em>DESPIERTAN</em></h1>
     <p className="hero-summary">{descripcion}</p>
     <div className="hero-actions"><Link className="button-gold" href="/mensajes">Leer mensajes <span aria-hidden="true">↗</span></Link><Link className="button-outline" href="/revista">Abrir la revista <span aria-hidden="true">↗</span></Link></div>
+    <nav className="home-hero-shortcuts" aria-label="Accesos rápidos a la lectura">
+     {ultimoArticulo&&<Link href={"/articulos/"+ultimoArticulo.slug}>Última investigación <span aria-hidden="true">↗</span></Link>}
+     {destacado&&<Link href={"/mensajes/"+destacado.slug}>Mensaje más reciente <span aria-hidden="true">↗</span></Link>}
+     <Link href="/buscar">Buscar por tema <span aria-hidden="true">↗</span></Link>
+    </nav>
    </div>
    <div className="hero-art">
     <Image src="/identidad/portada-oficial.png" alt="Brote luminoso que nace de la tierra, imagen original del proyecto" width={1024} height={1536} priority sizes="(max-width:820px) 86vw, 26vw"/>
@@ -84,6 +91,11 @@ export default async function Inicio(){
   </div>
  </section>
 
+ <section className="shell home-news-follow" aria-labelledby="news-home-title">
+  <div><p className="eyebrow">REGRESA A LA PALABRA</p><h2 id="news-home-title">Cada publicación abre un nuevo camino.</h2>
+   <p>Descubre lo que ya hemos publicado y sigue nuestras novedades por los canales oficiales, sin necesidad de registrarte.</p></div>
+  <Link className="button-outline" href="/novedades">Ver novedades ↗</Link>
+ </section>
  <section className="shell home-magazine-teaser" aria-labelledby="magazine-title">
   <div><p className="eyebrow">NUESTRA REVISTA TEOLÓGICA</p><h2 id="magazine-title">Pensar la fe. Escuchar la vida.</h2>
    <p>Una propuesta editorial que reúne reflexiones breves, fundamentos teológicos y conversaciones cuidadas. El lector no termina en la última línea: puede continuar con preguntas, comentarios y testimonios.</p>

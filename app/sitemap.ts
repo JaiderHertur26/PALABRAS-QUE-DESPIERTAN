@@ -7,7 +7,7 @@ export default async function sitemap():Promise<MetadataRoute.Sitemap>{
  const [articulos,mensajes,temas]=await Promise.all([publicArticulos(),publicMensajes(),publicTemas()]);
  const base=(process.env.NEXT_PUBLIC_SITE_URL||"https://www.palabrasquedespiertan.online").replace(/\/+$/,"");
  const staticPaths=["/","/revista","/articulos","/teologia","/mensajes","/autor","/series",
-  "/temporadas","/testimonios","/contacto","/redes","/participar","/privacidad","/aviso-legal"];
+  "/temporadas","/testimonios","/contacto","/redes","/participar","/novedades","/privacidad","/aviso-legal"];
  const launch=new Date("2026-11-13T12:00:00Z");
  const safeDate=(iso:string)=>{const time=Date.parse(iso+"T12:00:00Z");return new Date(Number.isFinite(time)?Math.min(time,Date.now()):Date.now())};
  return [

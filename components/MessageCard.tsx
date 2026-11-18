@@ -7,7 +7,7 @@ export function MessageCard({mensaje, featured=false}: {mensaje:Mensaje; feature
   const serie = seriePorId(mensaje.serie);
   if (featured) {
     return <Link href={`/mensajes/${mensaje.slug}`} className="featured-message" aria-label={`Leer la reflexión destacada: ${mensaje.titulo}`}>
-      <Image src={mensaje.imagen} alt={`Tarjeta editorial auténtica ${mensaje.id}, ${mensaje.titulo}`} width={1254} height={1254} priority className="featured-message-image" />
+      <Image src={mensaje.imagen} alt={`Tarjeta editorial auténtica ${mensaje.id}, ${mensaje.titulo}`} width={1254} height={1254} priority sizes="(max-width: 680px) 320px, (max-width: 1350px) 390px, 370px" className="featured-message-image" />
       <span className="featured-message-link">Leer reflexión <span aria-hidden="true">↗</span></span>
     </Link>;
   }

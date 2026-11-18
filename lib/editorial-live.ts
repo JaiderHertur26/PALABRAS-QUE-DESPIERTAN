@@ -1,4 +1,5 @@
 import "server-only";
+import {cache} from "react";
 import {createClient} from "@supabase/supabase-js";
 import {articulos as snapshotArticles,temas as snapshotTopics} from "@/lib/community/publications";
 import {mensajes as snapshotMessages} from "@/lib/editorial";
@@ -24,13 +25,13 @@ function admin(){
 function effective(row:Row){
  return row.state==="published"||(row.state==="scheduled"&&!!row.scheduled_at&&new Date(row.scheduled_at).getTime()<=Date.now());
 }
-async function rows(kind:Kind):Promise<Row[]>{
+const rows=cache(async (kind:Kind):Promise<Row[]>=>{
  const {data,error}=await admin().from("editorial_items")
   .select("kind,slug,code,title,subtitle,summary,body,state,scheduled_at,published_at,cover_url,bible_reference,season,series,featured,position,source_url")
   .eq("kind",kind).order("position",{ascending:true});
  if(error)throw Error("No se pudo verificar la visibilidad editorial: "+error.code);
  return (data as Row[]).filter(effective);
-}
+});
 export const dynamicEditorial=true;
 export async function publicArticulos():Promise<ArticuloPublico[]>{
  const list=await rows("articulo");

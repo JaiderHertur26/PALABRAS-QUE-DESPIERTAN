@@ -15,6 +15,7 @@ export const metadata:Metadata = {
  metadataBase:new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://www.palabrasquedespiertan.online"),
  title:{default:nombreProyecto,template:`%s | ${nombreProyecto}`},
  applicationName:nombreProyecto,
+ alternates:{types:{"application/rss+xml":"/feed.xml"}},
  description:descripcion,
  authors:[{name:autor}],
  creator:autor,

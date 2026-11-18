@@ -18,6 +18,7 @@ const secundarios=[
  {titulo:"Teología",href:"/teologia"},
  {titulo:"Contacto",href:"/contacto"},
  {titulo:"Participar",href:"/participar"},
+ {titulo:"Novedades",href:"/novedades"},
  {titulo:"Redes",href:"/redes"}
 ];
 const movil=[...principal,...secundarios];

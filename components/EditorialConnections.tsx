@@ -1,26 +1,36 @@
 import Link from "next/link";
 import type {ArticuloPublico} from "@/lib/community/publications";
 import type {Mensaje} from "@/lib/editorial";
+import {enlacesDeFundamento} from "@/lib/editorial-links";
+import {temaPorId,temasDeArticulo,temasDeMensaje} from "@/lib/editorial-topics";
 
-/** Lecturas en otros formatos, sin atribuir correspondencias doctrinales no revisadas. */
-export function EditorialConnections({articulos=[],mensajes=[],desde}:{
- articulos?:ArticuloPublico[];mensajes?:Mensaje[];desde:"articulo"|"mensaje";
+export function EditorialConnections({articulos=[],mensajes=[],desde,codigo}:{
+ articulos?:ArticuloPublico[];mensajes?:Mensaje[];desde:"articulo"|"mensaje";codigo:string;
 }){
- const items=desde==="articulo"
-  ?mensajes.slice(0,2).map(m=>({key:m.id,titulo:m.titulo,href:"/mensajes/"+m.slug,categoria:"Reflexión breve · "+m.id}))
-  :[...articulos].sort((a,b)=>b.fecha.localeCompare(a.fecha)).slice(0,2).map(a=>({key:a.id,titulo:a.titulo,href:"/articulos/"+a.slug,categoria:"Investigación · "+a.id}));
+ const otros=desde==="mensaje"
+  ?enlacesDeFundamento.filter(x=>x.mensaje===codigo).flatMap(x=>{
+   const a=articulos.find(a=>a.id===x.articulo);
+   return a?[{id:a.id,titulo:a.titulo,href:"/articulos/"+a.slug,etiqueta:"Investigación de fondo"}]:[];
+  })
+  :enlacesDeFundamento.filter(x=>x.articulo===codigo).flatMap(x=>{
+   const m=mensajes.find(m=>m.id===x.mensaje);
+   return m?[{id:m.id,titulo:m.titulo,href:"/mensajes/"+m.slug,etiqueta:"Reflexión vinculada"}]:[];
+  });
+ const actual=desde==="articulo"?articulos.find(a=>a.id===codigo):mensajes.find(m=>m.id===codigo);
+ const etiquetas=actual
+  ?desde==="articulo"?temasDeArticulo(actual as ArticuloPublico):temasDeMensaje(actual as Mensaje)
+  :[];
  const catalogo=desde==="articulo"?"/mensajes":"/articulos";
- const nombre=desde==="articulo"?"mensajes publicados":"biblioteca de investigaciones";
- if(items.length===0)return <aside className="article-related">
-  <p className="eyebrow">SIGUE LEYENDO</p><h2>Continúa tu recorrido</h2>
-  <p>Explora otros contenidos de la revista cuando estén disponibles.</p>
-  <Link className="text-link" href={catalogo}>Visitar {nombre} ↗</Link>
- </aside>;
  return <aside className="article-related" aria-labelledby="continue-reading-title">
-  <p className="eyebrow">OTRAS LECTURAS DE LA REVISTA</p>
-  <h2 id="continue-reading-title">Continúa tu recorrido</h2>
-  <p>Descubre otras publicaciones de la revista. Cada contenido conserva su propio contexto y fundamento; no se presupone que desarrollen el mismo tema.</p>
-  <div className="article-related-links">{items.map(item=><Link key={item.key} href={item.href}><small>{item.categoria}</small><strong>{item.titulo} ↗</strong></Link>)}</div>
-  <p><Link className="text-link" href={catalogo}>Explorar {nombre} ↗</Link></p>
+  <p className="eyebrow">{otros.length?"LECTURAS VINCULADAS":"OTROS CAMINOS DE LECTURA"}</p>
+  <h2 id="continue-reading-title">{otros.length?"Profundiza en esta idea":"Sigue descubriendo"}</h2>
+  {otros.length>0
+   ?<><p>Estas publicaciones desarrollan una relación temática concreta, cada una con su propio contexto y nivel de profundidad.</p>
+      <div className="article-related-links">{otros.map(item=><Link key={item.id} href={item.href}><small>{item.etiqueta} · {item.id}</small><strong>{item.titulo} ↗</strong></Link>)}</div></>
+   :<p>Continúa por los temas de esta lectura o explora otras publicaciones de la revista. No se atribuye aquí un fundamento idéntico a contenidos distintos.</p>}
+  {etiquetas.length>0&&<nav className="editorial-topic-links" aria-label="Temas de esta lectura">
+   {etiquetas.map(id=><Link key={id} href={"/buscar?tema="+id}>{temaPorId(id).nombre}</Link>)}
+  </nav>}
+  <p><Link className="text-link" href={catalogo}>Explorar {desde==="articulo"?"mensajes publicados":"investigaciones publicadas"} ↗</Link></p>
  </aside>;
 }

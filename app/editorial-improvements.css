@@ -90,3 +90,72 @@
  .unified-article-result{grid-template-columns:1fr}
  .unified-article-cover{max-width:125px}
 }
+
+/* Excelencia editorial: descubrimiento, navegación, accesibilidad y regreso del lector. */
+.unified-search-controls{grid-template-columns:minmax(0,1fr) minmax(140px,185px) minmax(145px,195px) auto}
+.editorial-topic-links{display:flex;flex-wrap:wrap;gap:.48rem;margin:1rem 0 .25rem;align-items:center}
+.editorial-topic-links>a,.article-topics>a{display:inline-flex;align-items:center;justify-content:center;min-height:38px;border:1px solid #8e6a42;background:#20150d;color:#e9d9c1;font-family:var(--sans);font-size:.78rem;font-weight:600;line-height:1.3;padding:.5rem .85rem;text-decoration:none;border-radius:999px}
+.editorial-topic-links>a:hover,.article-topics>a:hover,.editorial-topic-links>a.is-current{background:#d2a665;color:#170e07;border-color:#dfbd87}
+.editorial-topic-links span{font-size:.72rem;letter-spacing:.1em;color:var(--gold);font-weight:700;margin-right:.35rem}
+.research-topic-menu{margin:0 0 1.65rem}
+.article-topics{display:flex;flex-wrap:wrap;gap:.4rem;margin:.7rem 0 1rem}
+.article-topics>a{min-height:30px;font-size:.7rem;background:#2d1b0d;border-color:#6a5032;padding:.36rem .6rem}
+.home-hero-shortcuts{display:none}
+.home-news-follow{display:flex;align-items:center;justify-content:space-between;gap:1.4rem;padding:2rem 1.5rem;margin-top:1.65rem;margin-bottom:1.65rem;border:1px solid #70502c;background:linear-gradient(115deg,#25180d,#100b07)}
+.home-news-follow h2{font-size:clamp(1.55rem,2.4vw,2.3rem);color:var(--gold-bright);margin:.25rem 0 .45rem}
+.home-news-follow p:not(.eyebrow){font-family:var(--serif);font-size:1.05rem;line-height:1.6;color:var(--muted);max-width:65ch;margin:0}
+.home-news-follow .button-outline{flex-shrink:0}
+.novedades-follow{display:grid;grid-template-columns:1.45fr 1fr;gap:2rem;align-items:center;padding:1.7rem;margin-bottom:2.8rem;border:1px solid var(--line);background:linear-gradient(120deg,#24190f,#130d08)}
+.novedades-follow h2{font-size:clamp(1.5rem,2.4vw,2.2rem);color:var(--gold-bright);margin-bottom:.5rem}
+.novedades-follow p{font-family:var(--serif);font-size:1.08rem;line-height:1.6;color:var(--muted);margin:0}
+.novedades-follow-links{display:flex;flex-wrap:wrap;gap:.6rem;justify-content:flex-end}
+.novedades-list-title{font-size:clamp(1.75rem,3vw,2.6rem);color:var(--gold-bright);margin-bottom:1.4rem}
+.novedades-list{list-style:none;margin:0;padding:0}
+.novedades-list li{display:flex;justify-content:space-between;align-items:flex-start;gap:1.5rem;padding:1.3rem .5rem;border-bottom:1px solid var(--line-soft)}
+.novedades-list li .eyebrow{margin-bottom:.4rem}
+.novedades-list h3{font-size:clamp(1.35rem,2vw,1.9rem);color:var(--gold-bright);margin:0 0 .6rem}
+.novedades-list p:not(.eyebrow){font-family:var(--serif);color:var(--muted);font-size:1rem;line-height:1.55;margin:0}
+.novedades-list time{flex-shrink:0;color:var(--muted);font-size:.83rem}
+.article-reading-actions button,.article-reading-actions a{min-height:44px}
+.editorial-topic-links>a{min-height:40px}
+@media(min-width:1150px) and (max-width:1350px){
+ .primary-nav{display:flex;gap:.65rem;font-size:.87rem}
+ .mobile-toggle{display:none}
+ .header-inner{gap:1rem}
+ .brand{font-size:1.08rem;letter-spacing:.085em}
+ .header-social{display:none}
+}
+@media(max-width:1000px){
+ .unified-search-controls{grid-template-columns:minmax(0,1fr) minmax(150px,205px)}
+ .unified-search-controls input{grid-column:1/-1}
+ .unified-search-controls button{grid-column:1/-1}
+ .novedades-follow{grid-template-columns:1fr}
+ .novedades-follow-links{justify-content:flex-start}
+}
+@media(max-width:680px){
+ .home-hero-shortcuts{display:flex;flex-wrap:wrap;justify-content:center;gap:.4rem .65rem;margin:1.1rem 0 .25rem}
+ .home-hero-shortcuts a{color:var(--gold-bright);font-size:.8rem;line-height:1.35;border-bottom:1px solid #b48952;padding:.35rem .1rem;min-height:38px}
+ .hero-content{gap:.75rem}
+ .hero-art{height:145px!important;width:min(100%,360px)!important}
+ .hero-art img{transform:scale(1.22)!important;object-position:center 84%}
+ .hero-spotlight{max-width:320px!important;margin:.45rem auto!important}
+ .home-latest{gap:.8rem}
+ .home-latest>div{order:0}
+ .home-latest-visual{order:1;max-width:170px!important;margin:.6rem auto 0}
+ .home-news-follow{flex-direction:column;align-items:flex-start;padding:1.2rem}
+ .home-news-follow .button-outline{width:100%}
+ .novedades-follow{padding:1.2rem}
+ .novedades-list li{flex-direction:column;gap:.3rem}
+ .novedades-list time{order:-1;font-size:.76rem}
+ .unified-search-controls{grid-template-columns:1fr}
+ .unified-search-controls input,.unified-search-controls button{grid-column:auto}
+ .editorial-topic-links{gap:.45rem}
+ .editorial-topic-links>a{min-height:42px;font-size:.77rem}
+}
+@media(max-width:380px){
+ .hero-spotlight{max-width:285px!important}
+ .hero-art{height:115px!important}
+}
+
+/* La fotografía original permanece intacta; el fondo móvil se sirve comprimido. */
+@media(max-width:680px){.home-hero::before{background-image:linear-gradient(90deg,rgba(7,5,4,.85),rgba(14,9,5,.12) 52%,rgba(8,5,3,.5)),url("/identidad/cruz-fondo-home-mobile.webp");background-position:center 18%}}

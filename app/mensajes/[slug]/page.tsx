@@ -49,7 +49,7 @@ export default async function DetalleMensaje({params}:{params:Promise<{slug:stri
     </div>
    </div>
   </div>
-  <EditorialConnections desde="mensaje" articulos={articulos}/>
+  <EditorialConnections desde="mensaje" codigo={m.id} articulos={articulos} mensajes={publicados}/>
   <Discussion tipo="mensaje" id={m.slug} titulo={m.titulo}/>
   <nav className="reading-navigation" aria-label="Navegar entre mensajes publicados">
     {vecinos.anterior ? <Link href={`/mensajes/${vecinos.anterior.slug}`}>← Anterior <strong>{vecinos.anterior.titulo}</strong></Link> : <span/>}

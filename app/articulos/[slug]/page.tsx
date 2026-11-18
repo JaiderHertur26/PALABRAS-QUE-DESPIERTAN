@@ -8,6 +8,7 @@ import {Discussion} from "@/components/community/Discussion";
 import {publicArticulos,publicMensajes} from "@/lib/editorial-live";
 import {ArticleReadingTools} from "@/components/ArticleReadingTools";
 import {EditorialConnections} from "@/components/EditorialConnections";
+import {ArticleTopicBadges} from "@/components/ArticleTopicBadges";
 
 export const dynamic="force-dynamic";
 
@@ -41,7 +42,7 @@ export default async function Articulo({params}:{params:Promise<{slug:string}>})
   author:{"@type":"Person",name:a.autor},
   publisher:{"@type":"Organization",name:"Palabras que despiertan"},
   datePublished:a.fecha,dateModified:a.fecha,
-  mainEntityOfPage:{"@type":"WebPage","@id":"/articulos/"+a.slug},
+  mainEntityOfPage:{"@type":"WebPage","@id":"https://www.palabrasquedespiertan.online/articulos/"+a.slug},
   image:a.imagen||"/identidad/cruz-fondo.png",
   isAccessibleForFree:true
  };
@@ -55,6 +56,7 @@ export default async function Articulo({params}:{params:Promise<{slug:string}>})
       <p className="eyebrow">PALABRAS QUE DESPIERTAN · {a.id} · INVESTIGACIÓN TEOLÓGICA</p>
       <h1>{a.titulo}</h1>
       {a.subtitulo && <p className="research-subtitle">{a.subtitulo}</p>}
+      <ArticleTopicBadges articulo={a}/>
       <div className="research-byline"><span>{a.autor}</span><span>Publicado el {new Date(a.fecha+"T12:00:00Z").toLocaleDateString("es-CO",{day:"numeric",month:"long",year:"numeric",timeZone:"UTC"})}</span><span>{Math.max(1,Math.round((a.palabras||0)/230))} min de lectura</span></div>
       <div className="research-article-jump"><a className="button-gold" href="#lectura-articulo">Comenzar a leer ↓</a><a className="button-outline" href="#indice-articulo">Ver índice ↓</a></div>
      </div>
@@ -86,7 +88,7 @@ export default async function Articulo({params}:{params:Promise<{slug:string}>})
     {before?<Link href={"/articulos/"+before.slug}><small>← INVESTIGACIÓN ANTERIOR</small><strong>{before.titulo}</strong></Link>:<span/>}
     {after?<Link href={"/articulos/"+after.slug}><small>SIGUIENTE INVESTIGACIÓN →</small><strong>{after.titulo}</strong></Link>:<span/>}
    </nav>
-   <EditorialConnections desde="articulo" mensajes={mensajes}/>
+   <EditorialConnections desde="articulo" codigo={a.id} articulos={articulos} mensajes={mensajes}/>
    <Discussion tipo="articulo" id={a.slug} titulo={a.titulo}/>
    <div className="research-bottom"><Link href="/revista" className="button-outline">Volver a la revista ↗</Link></div>
   </div>

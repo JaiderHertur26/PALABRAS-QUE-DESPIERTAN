@@ -24,6 +24,7 @@ export function Footer(){
    </nav></div>
    <div><h2>Información</h2><nav aria-label="Información del sitio">
     <Link href="/redes">Redes sociales</Link>
+    <Link href="/novedades">Novedades y RSS</Link>
     <Link href="/privacidad">Privacidad</Link>
     <Link href="/aviso-legal">Aviso legal</Link>
    </nav><SocialLinks className="footer-social"/></div>

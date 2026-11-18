@@ -3,6 +3,8 @@ import Image from "next/image";
 import type {Metadata} from "next";
 import {Breadcrumbs} from "@/components/Breadcrumbs";
 import {publicArticulos} from "@/lib/editorial-live";
+import {ArticleTopicBadges} from "@/components/ArticleTopicBadges";
+import {temasDeArticulo,temasEditoriales} from "@/lib/editorial-topics";
 
 export const metadata:Metadata={
  title:"Artículos de investigación teológica",
@@ -14,6 +16,7 @@ export const metadata:Metadata={
 export const dynamic="force-dynamic";
 export default async function Articulos(){
  const ordenados=[...await publicArticulos()].sort((a,b)=>a.id.localeCompare(b.id));
+ const temasVisibles=temasEditoriales.filter(t=>ordenados.some(a=>temasDeArticulo(a).includes(t.id)));
  return <main className="shell research-library">
   <Breadcrumbs items={[{texto:"Revista",href:"/revista"},{texto:"Artículos"}]}/>
   <header className="research-library-header">
@@ -26,6 +29,10 @@ export default async function Articulos(){
    <p>Investigaciones originales aprobadas por el autor y publicadas en esta revista independiente. No son documentos oficiales del Magisterio ni trabajos con evaluación externa por pares.</p>
    <Link className="text-link" href="/teologia">Nuestro enfoque teológico ↗</Link>
   </div>
+  {temasVisibles.length>0&&<nav className="editorial-topic-links research-topic-menu" aria-label="Explorar investigaciones por tema">
+   <span>EXPLORAR POR TEMA</span>
+   {temasVisibles.map(t=><Link key={t.id} href={"/buscar?tipo=articulos&tema="+t.id}>{t.nombre}</Link>)}
+  </nav>}
   <section id="articulos-publicados" aria-labelledby="library-title">
    <div className="research-section-top"><h2 id="library-title">Cuadernos de investigación</h2><span>ART-001 — ART-{String(ordenados.length).padStart(3,"0")}</span></div>
    <div className="research-library-grid">
@@ -37,6 +44,7 @@ export default async function Articulos(){
       <span className="research-card-number">{String(i+1).padStart(2,"0")}</span>
       <p className="eyebrow">{a.id} · INVESTIGACIÓN TEOLÓGICA</p>
       <h3><Link href={"/articulos/"+a.slug}>{a.titulo}</Link></h3>
+      <ArticleTopicBadges articulo={a} limit={2}/>
       {a.subtitulo && <p className="research-card-subtitle">{a.subtitulo}</p>}
       <p className="research-card-excerpt">{a.resumen.length>260?a.resumen.slice(0,260).trimEnd()+"…":a.resumen}</p>
       <div className="research-card-footer"><span>{Math.max(1,Math.round((a.palabras||0)/230))} min de lectura</span><Link href={"/articulos/"+a.slug}>Leer investigación ↗</Link></div>

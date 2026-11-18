@@ -6,21 +6,23 @@ import {Breadcrumbs} from "@/components/Breadcrumbs";
 import {MessageCard} from "@/components/MessageCard";
 import {SectionIntro} from "@/components/SectionIntro";
 import {UnifiedSearchForm} from "@/components/UnifiedSearchForm";
+import {esTema,temaPorId} from "@/lib/editorial-topics";
 
 export const metadata:Metadata={title:"Buscar",description:"Buscador de mensajes y artículos publicados de Palabras que despiertan.",robots:{index:false,follow:true}};
 export const dynamic="force-dynamic";
-type Params={q?:string;tipo?:string};
+type Params={q?:string;tipo?:string;tema?:string};
 export default async function Buscar({searchParams}:{searchParams:Promise<Params>}){
  const p=await searchParams;
  const q=typeof p.q==="string"?p.q.slice(0,120):"";
  const tipo=p.tipo==="mensajes"||p.tipo==="articulos"?p.tipo:"todos";
- const {mensajes,articulos,total}=await buscarTodoPublico(q,tipo);
+ const tema=typeof p.tema==="string"&&esTema(p.tema)?p.tema:"";
+ const {mensajes,articulos,total,temasDisponibles}=await buscarTodoPublico(q,tipo,tema);
  return <section className="shell content-page unified-search-page">
   <Breadcrumbs items={[{texto:"Buscar"}]}/>
   <SectionIntro eyebrow="BUSCADOR EDITORIAL" title="Encuentra una palabra para tu camino"
    description="Explora reflexiones e investigaciones teológicas por tema, título o referencia bíblica."/>
-  <UnifiedSearchForm q={q} tipo={tipo}/>
-  <p className="unified-search-count" role="status">{total} {total===1?"resultado publicado":"resultados publicados"}{q?<> para «{q}»</>:null}</p>
+  <UnifiedSearchForm q={q} tipo={tipo} tema={tema} disponibles={temasDisponibles}/>
+  <p className="unified-search-count" role="status">{total} {total===1?"resultado publicado":"resultados publicados"}{q?<> para «{q}»</>:null}{tema?<> en {temaPorId(tema).nombre}</>:null}</p>
   {articulos.length>0&&<section aria-labelledby="resultados-articulos" className="unified-search-group">
    <div className="magazine-section-heading"><h2 id="resultados-articulos">Artículos de investigación <small>({articulos.length})</small></h2></div>
    <div className="unified-article-results">{articulos.map(a=><article key={a.slug} className="unified-article-result">

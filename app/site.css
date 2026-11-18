@@ -1,6 +1,6 @@
 /* INICIO: composición inspirada en la maqueta oficial 1672x941, con contenido real */
 .home-hero{position:relative;isolation:isolate;background:linear-gradient(90deg,#0b0805 0%,#17100844 45%,#0b0807 100%);border-bottom:1px solid var(--line-soft);overflow:hidden}
-.home-hero::before{content:"";position:absolute;inset:0;z-index:-1;opacity:.7;background:linear-gradient(90deg,rgba(7,5,4,.85) 0%,rgba(14,9,5,.12) 52%,rgba(8,5,3,.5) 100%),url("/identidad/cruz-fondo.png") center 36% / cover no-repeat}
+.home-hero::before{content:"";position:absolute;inset:0;z-index:-1;opacity:.7;background:linear-gradient(90deg,rgba(7,5,4,.85) 0%,rgba(14,9,5,.12) 52%,rgba(8,5,3,.5) 100%),url("/identidad/cruz-fondo-home.webp") center 36% / cover no-repeat}
 .hero-content{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,.75fr) minmax(0,.92fr);align-items:center;gap:clamp(.7rem,2vw,2.5rem);padding:2.35rem 0 2.65rem;min-height:480px}
 .hero-copy{position:relative;z-index:2;padding-left:1rem}
 .hero-topline{font-size:.68rem;font-weight:700;letter-spacing:.22em;color:#d2b07d;margin:0 0 1.3rem}
