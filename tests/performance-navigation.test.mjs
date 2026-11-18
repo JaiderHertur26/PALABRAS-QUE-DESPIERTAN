@@ -28,3 +28,13 @@ test("La renderización diferida siempre reserva espacio y nunca oculta las publ
  assert.match(css,/contain-intrinsic-size:auto/);
  assert.doesNotMatch(css,/content-visibility:hidden/);
 });
+
+test("La portada, las tarjetas y el pie preservan navegación sin bundles de enlaces cliente",()=>{
+ for(const file of ["app/page.tsx","components/Footer.tsx","components/MessageCard.tsx"]){
+  const source=read(file);
+  assert.doesNotMatch(source,/import Link from "next\/link"|<Link\b/);
+  assert.match(source,/<a\b/);
+ }
+ assert.match(read("app/page.tsx"),/<a className="button-gold" href="\/mensajes"/);
+ assert.match(read("components/Footer.tsx"),/<a href="\/privacidad"/);
+});

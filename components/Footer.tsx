@@ -1,4 +1,3 @@
-import Link from "next/link";
 import {SocialLinks} from "@/components/SocialLinks";
 import {autor,descripcion,nombreProyecto} from "@/lib/editorial";
 export function Footer(){
@@ -9,24 +8,24 @@ export function Footer(){
     <div><p className="footer-name">{nombreProyecto}</p><p>{descripcion}</p><span className="footer-author">{autor}</span></div>
    </div>
    <div><h2>La revista</h2><nav aria-label="Lectura de la revista">
-    <Link href="/revista">Portada editorial</Link>
-    <Link href="/mensajes">Mensajes</Link>
-    <Link href="/articulos">Artículos teológicos</Link>
-    <Link href="/series">Series</Link>
-    <Link href="/temporadas">Temporadas</Link>
+    <a href="/revista">Portada editorial</a>
+    <a href="/mensajes">Mensajes</a>
+    <a href="/articulos">Artículos teológicos</a>
+    <a href="/series">Series</a>
+    <a href="/temporadas">Temporadas</a>
    </nav></div>
    <div><h2>Comunidad</h2><nav aria-label="Participación de la comunidad">
-    <Link href="/testimonios">Testimonios</Link>
-    <Link href="/participar">Normas de participación</Link>
-    <Link href="/teologia">Fundamento teológico</Link>
-    <Link href="/autor">Sobre el autor</Link>
-    <Link href="/contacto">Contacto</Link>
+    <a href="/testimonios">Testimonios</a>
+    <a href="/participar">Normas de participación</a>
+    <a href="/teologia">Fundamento teológico</a>
+    <a href="/autor">Sobre el autor</a>
+    <a href="/contacto">Contacto</a>
    </nav></div>
    <div><h2>Información</h2><nav aria-label="Información del sitio">
-    <Link href="/redes">Redes sociales</Link>
-    <Link href="/novedades">Novedades y RSS</Link>
-    <Link href="/privacidad">Privacidad</Link>
-    <Link href="/aviso-legal">Aviso legal</Link>
+    <a href="/redes">Redes sociales</a>
+    <a href="/novedades">Novedades y RSS</a>
+    <a href="/privacidad">Privacidad</a>
+    <a href="/aviso-legal">Aviso legal</a>
    </nav><SocialLinks className="footer-social"/></div>
   </div>
   <div className="shell footer-bottom">
