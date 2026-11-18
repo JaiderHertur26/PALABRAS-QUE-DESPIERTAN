@@ -1,9 +1,6 @@
-"use client";
-import {useState} from "react";
-import Link from "next/link";
-import {usePathname} from "next/navigation";
 import {SocialLinks} from "@/components/SocialLinks";
 
+/* Navegación HTML nativa: no necesita hidratarse ni cargar JS para abrirse. */
 const principal=[
  {titulo:"Inicio",href:"/"},
  {titulo:"Revista",href:"/revista"},
@@ -23,36 +20,34 @@ const secundarios=[
 ];
 const movil=[...principal,...secundarios];
 export function Header(){
- const pathname=usePathname();
- const [abierto,setAbierto]=useState(false);
- function activo(href:string){return href==="/"?pathname==="/":pathname.startsWith(href);}
  return <header className="site-header">
   <div className="header-inner">
-   <Link href="/" className="brand" aria-label="Palabras que despiertan, ir al inicio" onClick={()=>setAbierto(false)}>
+   <a href="/" className="brand" aria-label="Palabras que despiertan, ir al inicio">
     <span className="brand-cross" aria-hidden="true">✝</span><span className="brand-wordmark">PALABRAS <small>QUE</small> DESPIERTAN</span>
-   </Link>
+   </a>
    <nav className="primary-nav" aria-label="Navegación principal">
-    {principal.map(item=><Link key={item.href} href={item.href} aria-current={activo(item.href)?"page":undefined}>{item.titulo}</Link>)}
-    <details key={pathname} className="nav-more">
+    {principal.map(item=><a key={item.href} href={item.href}>{item.titulo}</a>)}
+    <details className="nav-more">
      <summary>Más <span aria-hidden="true">⌄</span></summary>
      <div className="nav-more-list">
-      {secundarios.map(item=><Link key={item.href} href={item.href} aria-current={activo(item.href)?"page":undefined}>{item.titulo}</Link>)}
+      {secundarios.map(item=><a key={item.href} href={item.href}>{item.titulo}</a>)}
      </div>
     </details>
-    <Link href="/buscar" aria-label="Buscar mensajes y artículos" className="nav-search" aria-current={pathname==="/buscar"?"page":undefined}>
+    <a href="/buscar" aria-label="Buscar mensajes y artículos" className="nav-search">
      <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg>
-    </Link>
+    </a>
    </nav>
    <SocialLinks compact className="header-social"/>
-   <button className="mobile-toggle" type="button" onClick={()=>setAbierto(v=>!v)}
-    aria-expanded={abierto} aria-controls="mobile-site-menu" aria-label={abierto?"Cerrar menú":"Abrir menú"}>
-    <span/><span/><span/>
-   </button>
+   <details className="mobile-menu">
+    <summary className="mobile-toggle" aria-label="Menú principal">
+     <span aria-hidden="true"/><span aria-hidden="true"/><span aria-hidden="true"/>
+    </summary>
+    <nav className="mobile-panel" aria-label="Navegación móvil">
+     {movil.map(item=><a key={item.href} href={item.href}>{item.titulo}</a>)}
+     <a href="/buscar">Buscar en la revista</a>
+     <SocialLinks compact className="menu-social"/>
+    </nav>
+   </details>
   </div>
-  <nav id="mobile-site-menu" className={`mobile-panel ${abierto?"is-open":""}`} aria-label="Navegación móvil" aria-hidden={!abierto}>
-   {movil.map(item=><Link key={item.href} href={item.href} onClick={()=>setAbierto(false)} tabIndex={abierto?0:-1} aria-current={activo(item.href)?"page":undefined}>{item.titulo}</Link>)}
-   <Link href="/buscar" onClick={()=>setAbierto(false)} tabIndex={abierto?0:-1}>Buscar en la revista</Link>
-   <SocialLinks compact className="menu-social"/>
-  </nav>
  </header>;
 }

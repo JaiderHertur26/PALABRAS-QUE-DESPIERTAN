@@ -4,12 +4,15 @@ import fs from "node:fs";
 const read=path=>fs.readFileSync(new URL("../"+path,import.meta.url),"utf8");
 
 test("La revista registra cambios de página sin cookies ni identidad de lectores",()=>{
- const tracker=read("components/VisitTracker.tsx");
- assert.match(tracker,/usePathname/);
+ const tracker=read("public/visit-analytics.js");
+ assert.match(tracker,/window\.location\.pathname/);
  assert.match(tracker,/fetch\("\/api\/visitas"/);
  assert.match(tracker,/credentials:"omit"/);
+ assert.match(tracker,/popstate/);
+ assert.match(tracker,/navigatesuccess/);
+ assert.match(tracker,/MutationObserver/);
  assert.doesNotMatch(tracker,/localStorage|sessionStorage|document\.cookie|fingerprint|userId/);
- assert.match(read("app/layout.tsx"),/<VisitTracker\/>/);
+ assert.match(read("app/layout.tsx"),/src="\/visit-analytics\.js" defer/);
 });
 test("El servidor autoriza las páginas consultadas y no registra contenido pendiente",()=>{
  const route=read("app/api/visitas/route.ts");

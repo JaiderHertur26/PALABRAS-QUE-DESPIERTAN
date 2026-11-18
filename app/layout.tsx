@@ -8,7 +8,6 @@ import "./magazine-community.css";
 import "./editorial-improvements.css";
 import {Header} from "@/components/Header";
 import {Footer} from "@/components/Footer";
-import {VisitTracker} from "@/components/VisitTracker";
 import {autor,descripcion,lema,nombreProyecto} from "@/lib/editorial";
 
 export const metadata:Metadata = {
@@ -48,7 +47,7 @@ export default function RootLayout({children}:Readonly<{children:React.ReactNode
    <Header/>
    <main id="contenido">{children}</main>
    <Footer/>
-   <VisitTracker/>
+   <script src="/visit-analytics.js" defer/>
   </body>
  </html>;
 }
