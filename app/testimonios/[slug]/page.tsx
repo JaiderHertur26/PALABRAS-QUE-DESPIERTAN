@@ -3,7 +3,7 @@ import type {Metadata} from "next";
 import {notFound} from "next/navigation";
 import {publicTemas} from "@/lib/editorial-live";
 import {Breadcrumbs} from "@/components/Breadcrumbs";
-import {Discussion} from "@/components/community/Discussion";
+import {DiscussionDeferred} from "@/components/community/DiscussionDeferred";
 import {avisoTestimonios} from "@/lib/community/rules";
 export const dynamic="force-dynamic";
 export async function generateMetadata({params}:{params:Promise<{slug:string}>}):Promise<Metadata>{
@@ -24,7 +24,7 @@ export default async function Tema({params}:{params:Promise<{slug:string}>}){
    <div className="topic-question"><span aria-hidden="true">“</span><h2>{t.pregunta}</h2></div>
   </div>
   <div className="testimony-disclaimer"><span aria-hidden="true">✧</span><p>{avisoTestimonios}</p></div>
-  <Discussion tipo="tema" id={t.slug} titulo={t.titulo}/>
+  <DiscussionDeferred tipo="tema" id={t.slug} titulo={t.titulo}/>
   <div className="end-link"><Link className="text-link" href="/testimonios">Explorar otros temas ↗</Link></div>
  </section>;
 }

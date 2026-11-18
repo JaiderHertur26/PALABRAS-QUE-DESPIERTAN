@@ -194,3 +194,12 @@
  .home-latest{contain-intrinsic-size:auto 440px}
  .discover{contain-intrinsic-size:auto 960px}
 }
+
+/* La comunidad se carga al aproximarse al lector, sin bloquear el artículo. */
+.discussion-lazy-root{margin-top:2.5rem;min-height:245px}
+.discussion-preview{border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft);background:linear-gradient(135deg,#22170e,#100b07);padding:clamp(1.3rem,3vw,2rem);min-height:220px}
+.discussion-preview h2{font-size:clamp(1.7rem,2.9vw,2.5rem);color:var(--gold-bright);margin:.3rem 0 .7rem}
+.discussion-preview>p:not(.eyebrow){font-family:var(--serif);font-size:1.06rem;line-height:1.65;color:var(--muted);max-width:72ch;margin:0 0 1rem}
+.discussion-preview-actions{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;margin-top:1.1rem}
+.discussion-preview-actions>*{min-height:44px}
+@media(max-width:510px){.discussion-preview-actions>*{width:100%}}

@@ -4,7 +4,7 @@ import type {Metadata} from "next";
 import {notFound} from "next/navigation";
 import {Breadcrumbs} from "@/components/Breadcrumbs";
 import {ArticleBody,articleHeadings} from "@/components/ArticleBody";
-import {Discussion} from "@/components/community/Discussion";
+import {DiscussionDeferred} from "@/components/community/DiscussionDeferred";
 import {publicArticulos,publicMensajes} from "@/lib/editorial-live";
 import {ArticleReadingTools} from "@/components/ArticleReadingTools";
 import {EditorialConnections} from "@/components/EditorialConnections";
@@ -89,7 +89,7 @@ export default async function Articulo({params}:{params:Promise<{slug:string}>})
     {after?<Link href={"/articulos/"+after.slug}><small>SIGUIENTE INVESTIGACIÓN →</small><strong>{after.titulo}</strong></Link>:<span/>}
    </nav>
    <EditorialConnections desde="articulo" codigo={a.id} articulos={articulos} mensajes={mensajes}/>
-   <Discussion tipo="articulo" id={a.slug} titulo={a.titulo}/>
+   <DiscussionDeferred tipo="articulo" id={a.slug} titulo={a.titulo}/>
    <div className="research-bottom"><Link href="/revista" className="button-outline">Volver a la revista ↗</Link></div>
   </div>
  </article>;
