@@ -1,11 +1,11 @@
 import Image from "next/image";
 import {autor,descripcion,etiquetaEstado,temporadas} from "@/lib/editorial";
 import {MessageCard} from "@/components/MessageCard";
-import {publicArticulos,publicTemas,publicMensajes} from "@/lib/editorial-live";
+import {publicInicio} from "@/lib/editorial-live";
 
 export const dynamic="force-dynamic";
 export default async function Inicio(){
- const [articulos,temas,mensajes]=await Promise.all([publicArticulos(),publicTemas(),publicMensajes()]);
+ const {articulos,temas,mensajes}=await publicInicio();
  const destacado=mensajes[0];
  const ultimoArticulo=[...articulos].sort((a,b)=>b.fecha.localeCompare(a.fecha))[0];
  const temporadasVisibles=temporadas.filter(t=>mensajes.some(m=>m.temporada===t.id)).slice(0,3);

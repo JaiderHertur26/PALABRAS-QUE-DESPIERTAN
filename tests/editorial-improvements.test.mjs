@@ -38,7 +38,8 @@ test("La portada y la navegación ofrecen acceso directo al contenido, sin filtr
  const home=load("app/page.tsx");
  const header=load("components/Header.tsx");
  assert.match(home,/ultimoArticulo/);
- assert.match(home,/publicArticulos/);
+ assert.match(home,/publicInicio/);
+ assert.match(load("lib/editorial-live.ts"),/export async function publicInicio/);
  assert.match(header,/nav-more/);
  assert.match(header,/secondary|secundarios/);
 });

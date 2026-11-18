@@ -22,7 +22,7 @@ function admin(){
   global:{fetch:(input,init)=>fetch(input,{...init,cache:"no-store"})}
  });
 }
-function effective(row:Row){
+function effective(row:Pick<Row,"state"|"scheduled_at">){
  return row.state==="published"||(row.state==="scheduled"&&!!row.scheduled_at&&new Date(row.scheduled_at).getTime()<=Date.now());
 }
 const rows=cache(async (kind:Kind):Promise<Row[]>=>{
@@ -91,4 +91,42 @@ export async function isPublic(kind:string,slug:string):Promise<boolean>{
   .eq("kind",kind).eq("slug",slug).maybeSingle();
  if(error||!data)return false;
  return effective({...data,kind} as Row);
+}
+
+// La portada necesita fichas breves, no los cuerpos íntegros de todos los artículos.
+// Esta consulta sigue validando estado y hora en cada petición, sin caché entre usuarios.
+type HomeRow=Pick<Row,"kind"|"slug"|"code"|"title"|"subtitle"|"summary"|"state"|"scheduled_at"|"published_at"|"cover_url"|"season"|"series"|"position">;
+export type InicioArticulo=Pick<ArticuloPublico,"id"|"slug"|"titulo"|"subtitulo"|"resumen"|"fecha"|"imagen">;
+export type InicioMensaje=Pick<Mensaje,"id"|"slug"|"titulo"|"temporada"|"serie"|"fecha"|"imagen">;
+const homeRows=cache(async():Promise<HomeRow[]>=>{
+ const {data,error}=await admin().from("editorial_items")
+  .select("kind,slug,code,title,subtitle,summary,state,scheduled_at,published_at,cover_url,season,series,position")
+  .in("kind",["articulo","mensaje"]).order("position",{ascending:true});
+ if(error)throw Error("No se pudo verificar la portada editorial: "+error.code);
+ return (data as HomeRow[]).filter(effective);
+});
+export async function publicInicio():Promise<{articulos:InicioArticulo[];mensajes:InicioMensaje[];temas:TestimonioTema[]}>{
+ const [list,temas]=await Promise.all([homeRows(),publicTemas()]);
+ const originalsArticles=new Map(snapshotArticles.map(a=>[a.slug,a]));
+ const originalsMessages=new Map(snapshotMessages.map(m=>[m.slug,m]));
+ const articulos:InicioArticulo[]=list.filter(r=>r.kind==="articulo").map(row=>{
+  const original=originalsArticles.get(row.slug);
+  return {
+   id:row.code,slug:row.slug,titulo:row.title,subtitulo:row.subtitle,
+   resumen:row.summary||original?.resumen||"",
+   fecha:row.published_at?.slice(0,10)||row.scheduled_at?.slice(0,10)||original?.fecha||"2026-11-13",
+   imagen:row.cover_url||original?.imagen||undefined
+  };
+ });
+ const mensajes:InicioMensaje[]=list.filter(r=>r.kind==="mensaje").map(row=>{
+  const original=originalsMessages.get(row.slug);
+  return {
+   id:row.code,slug:row.slug,titulo:row.title,
+   temporada:row.season||original?.temporada||"T07",
+   serie:row.series||original?.serie||"T07-S01",
+   fecha:row.published_at?.slice(0,10)||row.scheduled_at?.slice(0,10)||original?.fecha||new Date().toISOString().slice(0,10),
+   imagen:row.cover_url||original?.imagen||"/identidad/cruz-fondo.png"
+  };
+ }).sort((a,b)=>b.fecha.localeCompare(a.fecha));
+ return {articulos,mensajes,temas};
 }

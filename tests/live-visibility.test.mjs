@@ -4,7 +4,7 @@ import fs from "node:fs";
 const read=p=>fs.readFileSync(new URL("../"+p,import.meta.url),"utf8");
 test("Todas las listas públicas usan visibilidad dinámica de Supabase",()=>{
  for(const p of ["app/page.tsx","app/revista/page.tsx","app/articulos/page.tsx","app/testimonios/page.tsx","app/mensajes/page.tsx","app/sitemap.ts"]){
-  assert.match(read(p),/public(Articulos|Mensajes|Temas)|buscarPublicos/,p);
+  assert.match(read(p),/public(Articulos|Mensajes|Temas|Inicio)|buscarPublicos/,p);
   assert.match(read(p),/force-dynamic/,p);
  }
 });
