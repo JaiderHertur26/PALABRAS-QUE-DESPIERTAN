@@ -34,7 +34,7 @@ export default async function Articulo({params}:{params:Promise<{slug:string}>})
  const index=sorted.findIndex(item=>item.id===a.id);
  const before=index>0?sorted[index-1]:null;
  const after=index<sorted.length-1?sorted[index+1]:null;
- const headings=articleHeadings(a.contenido).filter(x=>x.level===2);
+ const headings=articleHeadings(a.contenido).slice(0,28);
  const schema={
   "@context":"https://schema.org","@type":"Article",headline:a.titulo,
   description:a.resumen,articleSection:"Teología católica",inLanguage:"es-CO",
@@ -69,7 +69,11 @@ export default async function Articulo({params}:{params:Promise<{slug:string}>})
     <aside className="research-aside" id="indice-articulo" aria-label="Navegación por el artículo">
       <div className="research-toc">
        <p className="eyebrow">EN ESTE ARTÍCULO</p>
-       <nav><ol>{headings.slice(0,28).map(h=><li key={h.anchor}><a href={"#"+h.anchor}>{h.title}</a></li>)}</ol></nav>
+       <nav className="research-toc-desktop" aria-label="Apartados de la investigación"><ol>{headings.map(h=><li key={h.anchor} className={h.level===3?"toc-subsection":undefined}><a href={"#"+h.anchor}>{h.title}</a></li>)}</ol></nav>
+       <details className="research-toc-mobile">
+        <summary>Explorar los {headings.length} apartados <span aria-hidden="true">⌄</span></summary>
+        <nav aria-label="Apartados de la investigación"><ol>{headings.map(h=><li key={h.anchor} className={h.level===3?"toc-subsection":undefined}><a href={"#"+h.anchor}>{h.title}</a></li>)}</ol></nav>
+       </details>
        <Link prefetch={false} href="/articulos" className="research-return">← Toda la biblioteca</Link>
       </div>
     </aside>

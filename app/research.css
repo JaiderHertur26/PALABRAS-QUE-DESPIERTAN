@@ -127,3 +127,31 @@
  .research-article-cover{max-width:175px;box-shadow:none;break-inside:avoid}
  .research-article-cover figcaption{color:#333}
 }
+
+/* Índice de artículos compacto en móvil: acceso nativo, sin JavaScript. */
+.research-toc-mobile{display:none}
+@media screen and (max-width:760px){
+ .research-toc-desktop{display:none}
+ .research-toc-mobile{display:block}
+ .research-toc-mobile>summary{display:flex;justify-content:space-between;align-items:center;gap:.8rem;min-height:48px;padding:.65rem .85rem;list-style:none;cursor:pointer;border:1px solid var(--line-soft);color:var(--cream);font-size:.9rem;font-weight:600}
+ .research-toc-mobile>summary::-webkit-details-marker{display:none}
+ .research-toc-mobile>summary span{color:var(--gold);transition:transform .2s}
+ .research-toc-mobile[open]>summary span{transform:rotate(180deg)}
+ .research-toc-mobile[open]>summary{border-color:var(--gold)}
+ .research-toc-mobile>summary:focus-visible{outline:2px solid var(--gold-bright);outline-offset:3px}
+ .research-toc{padding:.6rem 0 .65rem}
+ .research-toc>.eyebrow{display:none}
+ .research-toc-mobile nav{max-height:min(48vh,380px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding:.65rem .45rem .25rem}
+ .research-toc-mobile nav ol{grid-template-columns:1fr;gap:.25rem}
+ .research-toc-mobile li a{display:flex;align-items:center;padding:.45rem .35rem;min-height:44px}
+ .research-toc .research-return{display:inline-flex;align-items:center;min-height:36px;margin-top:.25rem}
+}
+
+/* Índice jerárquico: los subtítulos H3 también son navegables. */
+.research-toc ol{list-style:none;padding-left:.35rem}
+.research-toc li:not(.toc-subsection) a{font-weight:700;color:var(--gold-bright)}
+.research-toc .toc-subsection{list-style:none;margin-left:.25rem;padding-left:.75rem;border-left:1px solid var(--line-soft)}
+.research-toc .toc-subsection a{font-size:.77rem;line-height:1.55}
+
+/* Saltos de índice inmediatos en investigaciones largas; el resto del sitio conserva su desplazamiento suave. */
+@media screen{html:has(.research-article){scroll-behavior:auto}}
