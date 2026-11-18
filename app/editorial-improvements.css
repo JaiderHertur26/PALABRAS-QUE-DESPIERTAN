@@ -187,3 +187,10 @@
  .home-author{contain-intrinsic-size:auto 190px}
  .site-footer{contain-intrinsic-size:auto 620px}
 }
+
+/* Secciones editoriales a las que no alcanza el primer pantallazo móvil. */
+@media(max-width:820px){
+ .home-latest,.discover{content-visibility:auto}
+ .home-latest{contain-intrinsic-size:auto 440px}
+ .discover{contain-intrinsic-size:auto 960px}
+}

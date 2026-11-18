@@ -3,7 +3,6 @@ import "./globals.css";
 import "./site.css";
 import "./responsive.css";
 import "./social.css";
-import "./research.css";
 import "./magazine-community.css";
 import "./editorial-improvements.css";
 import {Header} from "@/components/Header";

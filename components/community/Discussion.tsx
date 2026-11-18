@@ -1,4 +1,5 @@
 "use client";
+import "@/app/community-interactions.css";
 import {useCallback,useEffect,useState} from "react";
 import Link from "next/link";
 import {AuthPanel} from "./AuthPanel";

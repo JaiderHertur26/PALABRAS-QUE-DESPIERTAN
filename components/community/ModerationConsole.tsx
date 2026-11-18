@@ -1,4 +1,5 @@
 "use client";
+import "@/app/community-interactions.css";
 import {useCallback,useEffect,useState} from "react";
 type Pendiente={id:string;subject_type:string;subject_id:string;display_name:string;body:string;created_at:string;parent_id:string|null};
 type Reporte={id:string;entry_id:string;motive:string;details:string|null;created_at:string;entry:{id:string;subject_type:string;subject_id:string;display_name:string;body:string;status:string}|null};

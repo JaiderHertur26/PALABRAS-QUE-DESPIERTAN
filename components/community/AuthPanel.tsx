@@ -1,4 +1,5 @@
 "use client";
+import "@/app/community-interactions.css";
 import {useEffect,useMemo,useState} from "react";
 import type {User} from "@supabase/supabase-js";
 import {clienteNavegador,comunidadConfigurada,accesoAutenticacionConfigurado} from "@/lib/supabase/client";
