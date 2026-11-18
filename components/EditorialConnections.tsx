@@ -26,11 +26,11 @@ export function EditorialConnections({articulos=[],mensajes=[],desde,codigo}:{
   <h2 id="continue-reading-title">{otros.length?"Profundiza en esta idea":"Sigue descubriendo"}</h2>
   {otros.length>0
    ?<><p>Estas publicaciones desarrollan una relación temática concreta, cada una con su propio contexto y nivel de profundidad.</p>
-      <div className="article-related-links">{otros.map(item=><Link key={item.id} href={item.href}><small>{item.etiqueta} · {item.id}</small><strong>{item.titulo} ↗</strong></Link>)}</div></>
+      <div className="article-related-links">{otros.map(item=><Link key={item.id} href={item.href} prefetch={false}><small>{item.etiqueta} · {item.id}</small><strong>{item.titulo} ↗</strong></Link>)}</div></>
    :<p>Continúa por los temas de esta lectura o explora otras publicaciones de la revista. No se atribuye aquí un fundamento idéntico a contenidos distintos.</p>}
   {etiquetas.length>0&&<nav className="editorial-topic-links" aria-label="Temas de esta lectura">
-   {etiquetas.map(id=><Link key={id} href={"/buscar?tema="+id}>{temaPorId(id).nombre}</Link>)}
+   {etiquetas.map(id=><Link key={id} href={"/buscar?tema="+id} prefetch={false}>{temaPorId(id).nombre}</Link>)}
   </nav>}
-  <p><Link className="text-link" href={catalogo}>Explorar {desde==="articulo"?"mensajes publicados":"investigaciones publicadas"} ↗</Link></p>
+  <p><Link className="text-link" href={catalogo} prefetch={false}>Explorar {desde==="articulo"?"mensajes publicados":"investigaciones publicadas"} ↗</Link></p>
  </aside>;
 }

@@ -48,7 +48,7 @@ export default async function Articulo({params}:{params:Promise<{slug:string}>})
  return <article className="research-article">
   <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(schema).replace(/</g,"\\u003c")}}/>
   <div className="shell">
-   <Breadcrumbs items={[{texto:"Revista",href:"/revista"},{texto:"Artículos",href:"/articulos"},{texto:a.titulo}]}/>
+   <Breadcrumbs prefetch={false} items={[{texto:"Revista",href:"/revista"},{texto:"Artículos",href:"/articulos"},{texto:a.titulo}]}/>
    <header className="research-article-header">
     <div className="research-article-cover-grid">
      <div className="research-article-intro">
@@ -70,7 +70,7 @@ export default async function Articulo({params}:{params:Promise<{slug:string}>})
       <div className="research-toc">
        <p className="eyebrow">EN ESTE ARTÍCULO</p>
        <nav><ol>{headings.slice(0,28).map(h=><li key={h.anchor}><a href={"#"+h.anchor}>{h.title}</a></li>)}</ol></nav>
-       <Link href="/articulos" className="research-return">← Toda la biblioteca</Link>
+       <Link prefetch={false} href="/articulos" className="research-return">← Toda la biblioteca</Link>
       </div>
     </aside>
     <div className="research-reading" id="lectura-articulo">
@@ -84,12 +84,12 @@ export default async function Articulo({params}:{params:Promise<{slug:string}>})
     </div>
    </div>
    <nav className="research-pagination" aria-label="Anterior y siguiente artículo">
-    {before?<Link href={"/articulos/"+before.slug}><small>← INVESTIGACIÓN ANTERIOR</small><strong>{before.titulo}</strong></Link>:<span/>}
-    {after?<Link href={"/articulos/"+after.slug}><small>SIGUIENTE INVESTIGACIÓN →</small><strong>{after.titulo}</strong></Link>:<span/>}
+    {before?<Link prefetch={false} href={"/articulos/"+before.slug}><small>← INVESTIGACIÓN ANTERIOR</small><strong>{before.titulo}</strong></Link>:<span/>}
+    {after?<Link prefetch={false} href={"/articulos/"+after.slug}><small>SIGUIENTE INVESTIGACIÓN →</small><strong>{after.titulo}</strong></Link>:<span/>}
    </nav>
    <EditorialConnections desde="articulo" codigo={a.id} articulos={[a]} mensajes={mensajes}/>
    <DiscussionDeferred tipo="articulo" id={a.slug} titulo={a.titulo}/>
-   <div className="research-bottom"><Link href="/revista" className="button-outline">Volver a la revista ↗</Link></div>
+   <div className="research-bottom"><Link prefetch={false} href="/revista" className="button-outline">Volver a la revista ↗</Link></div>
   </div>
  </article>;
 }
