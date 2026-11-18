@@ -5,7 +5,7 @@ import {notFound} from "next/navigation";
 import {Breadcrumbs} from "@/components/Breadcrumbs";
 import {ArticleBody,articleHeadings} from "@/components/ArticleBody";
 import {DiscussionDeferred} from "@/components/community/DiscussionDeferred";
-import {publicArticulos,publicMensajes} from "@/lib/editorial-live";
+import {publicArticulo,publicArticulosIndice,publicMensajes} from "@/lib/editorial-live";
 import {ArticleReadingTools} from "@/components/ArticleReadingTools";
 import {EditorialConnections} from "@/components/EditorialConnections";
 import {ArticleTopicBadges} from "@/components/ArticleTopicBadges";
@@ -14,7 +14,7 @@ export const dynamic="force-dynamic";
 
 export async function generateMetadata({params}:{params:Promise<{slug:string}>}):Promise<Metadata>{
  const {slug}=await params;
- const a=(await publicArticulos()).find(item=>item.slug===slug);
+ const a=await publicArticulo(slug);
  if(!a)return {title:"Artículo no disponible",robots:{index:false}};
  const excerpt=a.resumen.slice(0,160);
  return {
@@ -28,8 +28,7 @@ export async function generateMetadata({params}:{params:Promise<{slug:string}>})
 
 export default async function Articulo({params}:{params:Promise<{slug:string}>}){
  const {slug}=await params;
- const [articulos,mensajes]=await Promise.all([publicArticulos(),publicMensajes()]);
- const a=articulos.find(item=>item.slug===slug);
+ const [a,articulos,mensajes]=await Promise.all([publicArticulo(slug),publicArticulosIndice(),publicMensajes()]);
  if(!a)notFound();
  const sorted=[...articulos].sort((u,v)=>u.id.localeCompare(v.id));
  const index=sorted.findIndex(item=>item.id===a.id);
@@ -88,7 +87,7 @@ export default async function Articulo({params}:{params:Promise<{slug:string}>})
     {before?<Link href={"/articulos/"+before.slug}><small>← INVESTIGACIÓN ANTERIOR</small><strong>{before.titulo}</strong></Link>:<span/>}
     {after?<Link href={"/articulos/"+after.slug}><small>SIGUIENTE INVESTIGACIÓN →</small><strong>{after.titulo}</strong></Link>:<span/>}
    </nav>
-   <EditorialConnections desde="articulo" codigo={a.id} articulos={articulos} mensajes={mensajes}/>
+   <EditorialConnections desde="articulo" codigo={a.id} articulos={[a]} mensajes={mensajes}/>
    <DiscussionDeferred tipo="articulo" id={a.slug} titulo={a.titulo}/>
    <div className="research-bottom"><Link href="/revista" className="button-outline">Volver a la revista ↗</Link></div>
   </div>

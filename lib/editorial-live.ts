@@ -130,3 +130,33 @@ export async function publicInicio():Promise<{articulos:InicioArticulo[];mensaje
  }).sort((a,b)=>b.fecha.localeCompare(a.fecha));
  return {articulos,mensajes,temas};
 }
+
+/* Ficha individual: una investigación no debe descargar las demás completas. */
+export const publicArticulo=cache(async(slug:string):Promise<ArticuloPublico|null>=>{
+ if(!/^[a-z0-9-]+$/.test(slug))return null;
+ const {data,error}=await admin().from("editorial_items")
+  .select("kind,slug,code,title,subtitle,summary,body,state,scheduled_at,published_at,cover_url,bible_reference,season,series,featured,position,source_url")
+  .eq("kind","articulo").eq("slug",slug).maybeSingle();
+ if(error)throw Error("No se pudo verificar la lectura pública: "+error.code);
+ if(!data||!effective(data as Row))return null;
+ const row=data as Row;
+ const original=snapshotArticles.find(a=>a.slug===slug);
+ const body=row.body.trim()||original?.contenido||"";
+ const fecha=row.published_at?.slice(0,10)||row.scheduled_at?.slice(0,10)||original?.fecha||"2026-11-13";
+ return {
+  id:row.code,slug:row.slug,titulo:row.title,subtitulo:row.subtitle,
+  resumen:row.summary||original?.resumen||"",abstract:original?.abstract||"",
+  contenido:body,referencias:original?.referencias||[],fecha,
+  fechaEdicion:original?.fechaEdicion||fecha,autor:original?.autor||"P. Jaider Herrera Turizo",
+  integridad:original?.integridad||"",palabras:body.trim().split(/\s+/).length,
+  estado:"PUBLICADO EN REVISTA PROPIA",imagen:row.cover_url||original?.imagen||undefined
+ };
+});
+
+export type ArticuloIndice=Pick<ArticuloPublico,"id"|"slug"|"titulo">;
+export const publicArticulosIndice=cache(async():Promise<ArticuloIndice[]>=>{
+ const {data,error}=await admin().from("editorial_items")
+  .select("slug,code,title,state,scheduled_at").eq("kind","articulo");
+ if(error)throw Error("No se pudo verificar el índice de artículos: "+error.code);
+ return (data||[]).filter(effective).map(row=>({id:row.code,slug:row.slug,titulo:row.title}));
+});
