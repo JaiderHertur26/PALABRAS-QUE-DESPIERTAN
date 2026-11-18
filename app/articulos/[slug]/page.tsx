@@ -60,7 +60,7 @@ export default async function Articulo({params}:{params:Promise<{slug:string}>})
       <div className="research-article-jump"><a className="button-gold" href="#lectura-articulo">Comenzar a leer ↓</a><a className="button-outline" href="#indice-articulo">Ver índice ↓</a></div>
      </div>
      {a.imagen&&<figure className="research-article-cover">
-      <Image src={a.imagen} alt={"Imagen editorial original del artículo "+a.titulo} width={1254} height={1254} priority sizes="(max-width:760px) min(100vw - 3.5rem, 450px), 35vw"/>
+      <Image src={a.imagen} alt={"Imagen editorial original del artículo "+a.titulo} width={1254} height={1254} priority fetchPriority="high" sizes="(max-width:420px) 90vw, (max-width:760px) 420px, 35vw"/>
       <figcaption>Tarjeta gráfica original · {a.id}</figcaption>
      </figure>}
     </div>
